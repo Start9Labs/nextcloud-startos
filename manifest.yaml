@@ -1,0 +1,135 @@
+id: nextcloud 
+title: Nextcloud
+version: 24.0.2
+release-notes: Initial version for EmbassyOS v0.3.1
+  * Switch to using new EOS apis for faster configuration and properties
+license: mit
+wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
+upstream-repo: https://github.com/nextcloud/docker
+support-site: https://github.com/nextcloud/docker/issues
+marketing-site: https://lightning.engineering/
+build: ["make"]
+description:
+  short: A safe home for all your data
+  long: Access & share your files, calendars, contacts, mail & more from any device, on your terms.
+assets:
+  license: LICENSE
+  icon: icon.png
+  instructions: docs/instructions.md
+  docker-images: image.tar
+main:
+  type: docker
+  image: main
+  entrypoint: "docker_entrypoint.sh"
+  args: []
+  mounts:
+    compat: /mnt/assets
+    main: /root
+    nextcloud: /var/www/html
+    db: /var/lib/postgresql/13/main
+    config: /etc/postgresql/13/main
+health-checks:
+  web-ui:
+    name: Web Interface
+    success-message: The Nextcloud UI is ready to visit in a web browser
+    type: docker
+    image: main
+    system: false
+    entrypoint: check.sh
+    args: ["web"]
+    mounts: {}
+    io-format: json
+    inject: true
+  api:
+    name: Nextcloud Server
+    success-message: The Nextcloud Server is ready to accept requests
+    type: docker
+    image: main
+    system: false
+    entrypoint: check.sh
+    args: ["api"]
+    mounts: {}
+    io-format: json
+    inject: true
+config: 
+  get:
+    type: script
+  set:
+    type: script
+properties:
+  type: script
+volumes:
+  main:
+    type: data
+  compat:
+    type: assets
+  utils:
+    type: assets
+  nextcloud:
+    type: data
+  db:
+    type: data
+  config:
+    type: data
+interfaces:
+  main:
+    name: Nextcloud Web Interface
+    description: Specifies the interface to listen on for HTTP connections.
+    tor-config:
+      port-mapping:
+        80: "80"
+        3478: "3478"
+        8443: "8443"
+        5432: "5432"
+    lan-config:
+      443:
+        ssl: true
+        internal: 80
+      3478:
+        ssl: true
+        internal: 3478
+      8443:
+        ssl: true
+        internal: 8443
+      5432:
+        ssl: true
+        internal: 5432
+    ui: true
+    protocols:
+      - tcp
+      - http
+      - udp
+dependencies: {}
+alerts:
+  start: |
+    When starting Nextcloud for the first time it may take a few minutes, please be patient! The web interface health check will indicate when the service is ready |
+     |
+     |
+    ALPHA SOFTWARE!! This service is still under development. If you restart the Nextcloud service you will lose your data!!
+backup:
+  create:
+    type: docker
+    image: compat
+    system: true 
+    entrypoint: compat 
+    args: 
+      - duplicity
+      - create
+      - /mnt/backup
+      - /root/data
+    mounts:
+      BACKUP: "/mnt/backup" 
+      main: "/root/data"
+  restore:
+    type: docker
+    image: compat
+    system: true
+    entrypoint: compat
+    args:
+      - duplicity
+      - restore
+      - /root/data
+      - /mnt/backup
+    mounts:
+      BACKUP: /mnt/backup
+      main: /root/data
