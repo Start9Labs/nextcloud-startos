@@ -2,7 +2,6 @@ id: nextcloud
 title: Nextcloud
 version: 24.0.2
 release-notes: Initial version for EmbassyOS v0.3.1
-  * Switch to using new EOS apis for faster configuration and properties
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -26,8 +25,12 @@ main:
     compat: /mnt/assets
     main: /root
     nextcloud: /var/www/html
-    db: /var/lib/postgresql/13/main
-    config: /etc/postgresql/13/main
+    apps: /var/www/html/custom_apps
+    config: /var/www/html/config
+    data: /var/www/html/data
+    theme: /var/www/html/themes/start9
+    db: /var/lib/postgresql/13
+    dbconfig: /etc/postgresql/13
 health-checks:
   web-ui:
     name: Web Interface
@@ -66,10 +69,18 @@ volumes:
   utils:
     type: assets
   nextcloud:
+    type: data 
+  apps:
+    type: data 
+  config: 
+    type: data
+  data: 
+    type: data
+  theme: 
     type: data
   db:
     type: data
-  config:
+  dbconfig:
     type: data
 interfaces:
   main:
@@ -102,10 +113,7 @@ interfaces:
 dependencies: {}
 alerts:
   start: |
-    When starting Nextcloud for the first time it may take a few minutes, please be patient! The web interface health check will indicate when the service is ready |
-     |
-     |
-    ALPHA SOFTWARE!! This service is still under development. If you restart the Nextcloud service you will lose your data!!
+    When starting Nextcloud for the first time it may take a few minutes, please be patient! The web interface health check will indicate when the service is ready.
 backup:
   create:
     type: docker
@@ -133,3 +141,12 @@ backup:
     mounts:
       BACKUP: /mnt/backup
       main: /root/data
+migrations:
+  from:
+    "*":
+      type: script
+      args: ["from"]
+  to:
+    "*":
+      type: script
+      args: ["to"]

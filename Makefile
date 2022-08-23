@@ -1,15 +1,17 @@
 ASSETS := $(shell yq e '.assets.[].src' manifest.yaml)
 ASSET_PATHS := $(addprefix assets/,$(ASSETS))
 VERSION := $(shell yq e ".version" manifest.yaml)
-S9PK_PATH=$(shell find . -name nextcloud.s9pk -print)
 
 # delete the target of a rule if it has changed and its recipe exits with a nonzero exit status
 .DELETE_ON_ERROR:
 
 all: verify
 
-verify: nextcloud.s9pk $(S9PK_PATH)
-	embassy-sdk verify s9pk $(S9PK_PATH)
+install: all nextcloud.s9pk
+	embassy-cli package install nextcloud.s9pk
+
+verify: nextcloud.s9pk
+	embassy-sdk verify s9pk nextcloud.s9pk
 
 clean:
 	rm -f image.tar

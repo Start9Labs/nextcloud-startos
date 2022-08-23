@@ -35,12 +35,15 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "nullable": false,
     "name": "Nextcloud Password",
     "description": "The admin password for Nextcloud.",
-    "default": "pleasechangeme",
+    "default": {
+      "charset": "a-z,A-Z,0-9",
+      "len": 22
+    },
     "pattern": '^[^\\n"]*$',
     "pattern-description":
       "Must not contain newline or quote characters.",
     "copyable": true,
-    "masked": true,
+    "masked": true
   }
 });
 

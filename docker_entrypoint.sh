@@ -12,10 +12,14 @@ LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER=$(yq e '.username' /root/start9/config.yaml)
 NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
-POSTGRES_DATADIR="/var/lib/postgresql/13/main"
-POSTGRES_CONFIG="/etc/postgresql/13/main"
+POSTGRES_DATADIR="/var/lib/postgresql/13"
+POSTGRES_CONFIG="/etc/postgresql/13"
+NC_DATADIR_APPS="/var/www/html/custom_apps"
+NC_DATADIR_CONFIG="/var/www/html/config"
+NC_DATADIR_DATA="/var/www/html/data"
+NC_DATADIR_THEME="/var/www/html/themes/start9"
 export NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-export FILE="robots.txt"
+export FILE="/var/www/html/data/index.html"
 
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
@@ -36,23 +40,36 @@ echo '    masked: true' >> /root/start9/stats.yaml
 echo '    qr: false' >> /root/start9/stats.yaml
 
 # Changing default postgres data directory
-if [ -e "$FILE" ]; then {
+if [ -e "$FILE" ] ; then {
   echo "Existing Nextcloud database found, starting frontend..."
+  echo "Changing Permissions..."
+  chown -R www-data:www-data $NC_DATADIR_APPS
+  chown -R www-data:www-data $NC_DATADIR_CONFIG
+  chown -R www-data:www-data $NC_DATADIR_DATA
+  chown -R www-data:www-data $NC_DATADIR_THEME
+  chown -R postgres:postgres $POSTGRES_DATADIR
+  chown -R postgres:postgres $POSTGRES_CONFIG
+  chmod -R 700 $POSTGRES_DATADIR
+  chmod -R 700 $POSTGRES_CONFIG
   echo 'Starting db server...'
-  su - postgres -c "pg_ctlcluster 13 main start"
+  service postgresql start
   echo 'Starting web server...'
-  service apache2 restart
+  /entrypoint.sh apache2-foreground
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
-  echo 'Configuring folder permissions...'
+  # echo 'Configuring folder permissions...'
+  chown -R www-data:www-data $NC_DATADIR_APPS
+  chown -R www-data:www-data $NC_DATADIR_CONFIG
+  chown -R www-data:www-data $NC_DATADIR_DATA
+  chown -R www-data:www-data $NC_DATADIR_THEME
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
-  chmod -R a+x $POSTGRES_DATADIR
-  chmod -R a+x $POSTGRES_CONFIG
-  su - postgres -c "pg_createcluster 13 main"
-  su - postgres -c "pg_ctlcluster 13 main start"
-  echo 'Starting db server...'
+  chmod -R 700 $POSTGRES_DATADIR
+  chmod -R 700 $POSTGRES_CONFIG
+  su - postgres -c "pg_createcluster 13 lib"
+  su - postgres -c "pg_ctlcluster 13 lib start"
+  # echo 'Starting db server...'
   service postgresql start
   echo 'Creating user...'
   su - postgres -c "createuser $POSTGRES_USER"
@@ -68,7 +85,7 @@ if [ -e "$FILE" ]; then {
   chmod -R 0600 /var/lib/postgresql/.pgpass
   # Installing Nextcloud Frontend
   echo "Configuring frontend..."
-  /docker-entrypoint.sh apache2-foreground 
+  /entrypoint.sh apache2-foreground 
 }
 fi
 

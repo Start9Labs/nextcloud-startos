@@ -7,7 +7,7 @@ ENV POSTGRES_USER nextcloud
 ENV POSTGRES_PASSWORD nextclouddbpassword
 ENV POSTGRES_HOST localhost
 ENV NEXTCLOUD_ADMIN_USER embassy
-ENV NEXTCLOUD_ADMIN_PASSWORD pleasechangeme
+ENV NEXTCLOUD_ADMIN_PASSWORD=
 ENV NEXTCLOUD_INIT_LOCK true
 ENV NEXTCLOUD_TRUSTED_DOMAINS=
 ENV EXISTING_DB false
@@ -29,8 +29,8 @@ RUN set -ex; \
 
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
-ENV PHP_MEMORY_LIMIT 1024M
-ENV PHP_UPLOAD_LIMIT 512M
+ENV PHP_MEMORY_LIMIT -1
+ENV PHP_UPLOAD_LIMIT 2048M
 RUN set -ex; \
     \
     savedAptMark="$(apt-mark showmanual)"; \
@@ -120,9 +120,10 @@ RUN { \
     \
     mkdir /var/www/data; \
     chown -R www-data:root /var/www; \
-    chmod -R g=u /var/www
+    chmod -R g=u /var/www; \
+    mkdir -p /var/www/html/themes/start9
 
-VOLUME /var/www/html 
+VOLUME /var/www/html /var/www/html/custom_apps /var/www/html/config /var/www/html/data /var/www/html/themes/ /var/www/html/themes/start9
 
 RUN a2enmod headers rewrite remoteip ;\
     {\
@@ -162,10 +163,11 @@ RUN set -ex; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $fetchDeps; \
     rm -rf /var/lib/apt/lists/*
 
-COPY docker/*.sh docker/upgrade.exclude /
-COPY docker/.config/* /usr/src/nextcloud/config/
-VOLUME /var/lib/postgresql/13/main
-VOLUME /etc/postgresql/13/main
+COPY docker/24/apache/*.sh docker/24/apache/upgrade.exclude /
+COPY docker/24/apache/config/* /usr/src/nextcloud/config/
+COPY docker/24/apache/entrypoint.sh /
+VOLUME /var/lib/postgresql/13
+VOLUME /etc/postgresql/13
 
 # Import Entrypoint and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
