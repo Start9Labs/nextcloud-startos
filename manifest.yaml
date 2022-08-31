@@ -6,7 +6,7 @@ license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
 support-site: https://github.com/nextcloud/docker/issues
-marketing-site: https://lightning.engineering/
+marketing-site: https://nextcloud.com
 build: ["make"]
 description:
   short: A safe home for all your data
