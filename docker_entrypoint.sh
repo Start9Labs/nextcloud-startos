@@ -21,7 +21,7 @@ NC_DATADIR_THEME="/var/www/html/themes/start9"
 export NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 export FILE="/var/www/html/data/index.html"
 
-sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'nextcloud\.embassy'\,\n  'overwriteprotocol' => 'https'\,/" /var/www/html/config/config.php
+# sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'nextcloud\.embassy'\,\n  'overwriteprotocol' => 'http'\,/" /var/www/html/config/config.php
 
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
@@ -98,8 +98,8 @@ echo "Nextcloud is running."
 echo "------------------------------------------"
 echo
 echo "Please log in using your web browser."
-echo "LAN Address: "$LAN_ADDRESS
-echo "Tor Address: "$TOR_ADDRESS
+echo "LAN Address: https://"$LAN_ADDRESS
+echo "Tor Address: http://"$TOR_ADDRESS
 while true;
 do sleep 1000
 done
