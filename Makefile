@@ -7,7 +7,7 @@ VERSION := $(shell yq e ".version" manifest.yaml)
 
 all: verify
 
-install: all nextcloud.s9pk
+install: all
 	embassy-cli package install nextcloud.s9pk
 
 verify: nextcloud.s9pk

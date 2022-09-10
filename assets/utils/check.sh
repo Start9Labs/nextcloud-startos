@@ -8,7 +8,7 @@ check_api(){
         curl --silent --fail nextcloud.embassy &>/dev/null
         RES=$?
         if test "$RES" != 0; then
-            echo "Nextcloud Server is installing, this may take a few minutes" >&2
+            echo "Nextcloud Server is initializing, this may take a few minutes" >&2
             exit 61
         fi
     fi
@@ -16,14 +16,14 @@ check_api(){
 
 check_web(){
     DURATION=$(</dev/stdin)
-    if (($DURATION <= 5000 )); then
+    if (($DURATION <= 15000 )); then
         exit 60
     else
         curl --silent --fail nextcloud.embassy &>/dev/null
         RES=$?
         if test "$RES" != 0; then
-            echo "The Nextcloud UI is unreachable" >&2
-            exit 1
+            echo "The Nextcloud UI is unreachable, please wait if initializing" >&2
+            exit 61
         fi
     fi
 }

@@ -19,9 +19,8 @@ NC_DATADIR_CONFIG="/var/www/html/config"
 NC_DATADIR_DATA="/var/www/html/data"
 NC_DATADIR_THEME="/var/www/html/themes/start9"
 export NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-export FILE="/var/www/html/data/index.html"
-
-# sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'nextcloud\.embassy'\,\n  'overwriteprotocol' => 'http'\,/" /var/www/html/config/config.php
+export TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
+export FILE="/var/www/html/config/config.php"
 
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
@@ -56,7 +55,7 @@ if [ -e "$FILE" ] ; then {
   echo 'Starting db server...'
   service postgresql start
   echo 'Starting web server...'
-  /entrypoint.sh apache2-foreground
+  /entrypoint.sh apache2-foreground &
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
@@ -87,19 +86,22 @@ if [ -e "$FILE" ] ; then {
   chmod -R 0600 /var/lib/postgresql/.pgpass
   # Installing Nextcloud Frontend
   echo "Configuring frontend..."
-  /entrypoint.sh apache2-foreground 
+  /entrypoint.sh apache2-foreground &
 }
 fi
+until [ -e "$FILE" ]
+do
+  sleep 10
+done
+# Configuring security settings
+sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" /var/www/html/config/config.php
+sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
+echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
+echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
+echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
+echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
 
-# Configuring Nextcloud
-echo
-echo "------------------------------------------"
-echo "Nextcloud is running."
-echo "------------------------------------------"
-echo
-echo "Please log in using your web browser."
-echo "LAN Address: https://"$LAN_ADDRESS
-echo "Tor Address: http://"$TOR_ADDRESS
+
 while true;
 do sleep 1000
 done
