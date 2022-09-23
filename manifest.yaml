@@ -1,6 +1,6 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.4
+version: 24.0.4.1
 release-notes: Initial version for EmbassyOS v0.3.1
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
@@ -89,22 +89,10 @@ interfaces:
     tor-config:
       port-mapping:
         80: "80"
-        3478: "3478"
-        8443: "8443"
-        5432: "5432"
     lan-config:
       443:
         ssl: true
         internal: 80
-      3478:
-        ssl: true
-        internal: 3478
-      8443:
-        ssl: true
-        internal: 8443
-      5432:
-        ssl: true
-        internal: 5432
     ui: true
     protocols:
       - tcp

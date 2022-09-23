@@ -10,9 +10,9 @@ ENV NEXTCLOUD_ADMIN_USER embassy
 ENV NEXTCLOUD_ADMIN_PASSWORD=
 ENV NEXTCLOUD_INIT_LOCK true
 ENV NEXTCLOUD_TRUSTED_DOMAINS=
+ENV TRUSTED_PROXIES=
 ENV EXISTING_DB false
 ENV APACHE_DISABLE_REWRITE_IP 1
-ENV OVERWRITEPROTOCOL http
 
 # entrypoint.sh and cron.sh dependencies
 RUN set -ex; \
@@ -173,10 +173,5 @@ VOLUME /etc/postgresql/13
 
 # Import Entrypoint and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 ADD assets/utils/check.sh /usr/local/bin/check.sh
-RUN chmod +x /usr/local/bin/check.sh
-
-EXPOSE 80 8080 9000 3478 8443
-
-ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]
+RUN chmod a+x /usr/local/bin/*.sh
