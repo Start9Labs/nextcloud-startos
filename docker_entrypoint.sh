@@ -9,7 +9,7 @@ _term() {
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
-CONNECTION=$(yq e '.connection' /root/start9/config.yaml)
+CONNECTION=$(yq e '.connection.type' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER=$(yq e '.username' /root/start9/config.yaml)
 NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
@@ -19,16 +19,11 @@ NC_DATADIR_APPS="/var/www/html/custom_apps"
 NC_DATADIR_CONFIG="/var/www/html/config"
 NC_DATADIR_DATA="/var/www/html/data"
 NC_DATADIR_THEME="/var/www/html/themes/start9"
-export NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-export TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-export FILE="/var/www/html/config/config.php"
-if [ "$CONNECTION" = "tor" ]; then
-  export OVERWRITEPROTOCOL http
-else
-  export OVERWRITEPROTOCOL https
-fi
+NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
+TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
+FILE="/var/www/html/config/config.php"
 
- Properties Page
+# Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
 echo 'data:' >> /root/start9/stats.yaml
 echo '  Nextcloud Username:' >> /root/start9/stats.yaml
@@ -62,11 +57,12 @@ if [ -e "$FILE" ] ; then {
   service postgresql start
   echo 'Starting web server...'
   /entrypoint.sh apache2-foreground &
-  $nextcloud_process=$!
+
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
+  rm -f $FILE
   chown -R www-data:www-data $NC_DATADIR_APPS
   chown -R www-data:www-data $NC_DATADIR_CONFIG
   chown -R www-data:www-data $NC_DATADIR_DATA
@@ -94,24 +90,26 @@ if [ -e "$FILE" ] ; then {
   # Installing Nextcloud Frontend
   echo "Configuring frontend..."
   /entrypoint.sh apache2-foreground &
-  $nextcloud_process=$!
+  until [ -e "$FILE" ]
+  do
+    sleep 10
+  done
+  # Configuring trusted domains
+  sed -i "/0 => 'localhost',/a\t\t3 => 'https\:\/\/$LAN_ADDRESS'\," /var/www/html/config/config.php
+  sed -i "/0 => 'localhost',/a\t\t2 => 'http\:\/\/$TOR_ADDRESS'\," /var/www/html/config/config.php
+  sed -i "/0 => 'localhost',/a\t\t1 => 'http\:\/\/$SERVICE_ADDRESS'\," /var/www/html/config/config.php
+  sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" /var/www/html/config/config.php
+  sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
+  echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
+  echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
+  echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
+  echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
 }
 fi
-until [ -e "$FILE" ]
-do
-  sleep 10
-done
-# Configuring security settings
-sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" /var/www/html/config/config.php
-sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
-echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
-echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
-echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
-echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
-
 
 while true;
 do sleep 1000
 done
+
 trap _term SIGTERM
 wait -n $nextcloud_process

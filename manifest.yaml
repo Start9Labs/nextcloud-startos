@@ -1,7 +1,7 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.4.1
-release-notes: Initial version for EmbassyOS v0.3.1
+version: 24.0.4.2
+release-notes: Initial version for EmbassyOS
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -32,7 +32,7 @@ main:
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
-  web-ui:
+  main:
     name: Web Interface
     success-message: The Nextcloud UI is ready to visit in a web browser
     type: docker
@@ -40,17 +40,6 @@ health-checks:
     system: false
     entrypoint: check.sh
     args: ["web"]
-    mounts: {}
-    io-format: json
-    inject: true
-  api:
-    name: Nextcloud Server
-    success-message: The Nextcloud Server is ready to accept requests
-    type: docker
-    image: main
-    system: false
-    entrypoint: check.sh
-    args: ["api"]
     mounts: {}
     io-format: json
     inject: true
