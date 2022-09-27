@@ -44,6 +44,26 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "Must not contain newline or quote characters.",
     "copyable": true,
     "masked": true
+  },
+  "connection": {
+    "type": "union",
+    "name": "Connection Settings",
+    "description": "NextCloud Connection Settings",
+    "tag": {
+        "id": "type",
+        "name": "LAN only or Tor only Connection",
+        "variant-names": {
+            "lan": "LAN Only",
+            "tor": "Tor Only",
+        },
+        "description":
+            "Nextcloud connection settings",
+        },
+    "default": "lan",
+    "variants": {
+      "lan": {},
+      "tor":{},
+    }
   }
 });
 

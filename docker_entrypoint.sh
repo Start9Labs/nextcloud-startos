@@ -9,6 +9,7 @@ _term() {
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
+CONNECTION=$(yq e '.connection' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER=$(yq e '.username' /root/start9/config.yaml)
 NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
@@ -21,8 +22,13 @@ NC_DATADIR_THEME="/var/www/html/themes/start9"
 export NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 export TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 export FILE="/var/www/html/config/config.php"
+if [ "$CONNECTION" = "tor" ]; then
+  export OVERWRITEPROTOCOL http
+else
+  export OVERWRITEPROTOCOL https
+fi
 
-# Properties Page
+ Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
 echo 'data:' >> /root/start9/stats.yaml
 echo '  Nextcloud Username:' >> /root/start9/stats.yaml
@@ -56,6 +62,7 @@ if [ -e "$FILE" ] ; then {
   service postgresql start
   echo 'Starting web server...'
   /entrypoint.sh apache2-foreground &
+  $nextcloud_process=$!
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
@@ -87,6 +94,7 @@ if [ -e "$FILE" ] ; then {
   # Installing Nextcloud Frontend
   echo "Configuring frontend..."
   /entrypoint.sh apache2-foreground &
+  $nextcloud_process=$!
 }
 fi
 until [ -e "$FILE" ]
