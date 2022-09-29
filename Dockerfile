@@ -1,5 +1,5 @@
 FROM --platform=linux/arm64/v8 php:8.0-apache-bullseye
-RUN apt-get update && apt-get install -y wget postgresql-13 && wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_arm.tar.gz -O - |\
+RUN apt-get update && apt-get install -y wget postgresql-13 tini bash && wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_arm.tar.gz -O - |\
     tar xz && mv yq_linux_arm /usr/bin/yq
 
 ENV POSTGRES_DB nextcloud
@@ -10,7 +10,9 @@ ENV NEXTCLOUD_ADMIN_USER embassy
 ENV NEXTCLOUD_ADMIN_PASSWORD=
 ENV NEXTCLOUD_INIT_LOCK true
 ENV NEXTCLOUD_TRUSTED_DOMAINS=
+ENV TRUSTED_PROXIES=
 ENV EXISTING_DB false
+ENV APACHE_DISABLE_REWRITE_IP 1
 
 # entrypoint.sh and cron.sh dependencies
 RUN set -ex; \
@@ -29,8 +31,8 @@ RUN set -ex; \
 
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
-ENV PHP_MEMORY_LIMIT -1
-ENV PHP_UPLOAD_LIMIT 2048M
+ENV PHP_MEMORY_LIMIT 2048M
+ENV PHP_UPLOAD_LIMIT 20480M
 RUN set -ex; \
     \
     savedAptMark="$(apt-mark showmanual)"; \
@@ -108,15 +110,15 @@ RUN { \
         echo 'opcache.memory_consumption=128'; \
         echo 'opcache.save_comments=1'; \
         echo 'opcache.revalidate_freq=60'; \
-    } > /usr/local/etc/php/conf.d/opcache-recommended.ini; \
+    } > "${PHP_INI_DIR}/conf.d/opcache-recommended.ini"; \
     \
-    echo 'apc.enable_cli=1' >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini; \
+    echo 'apc.enable_cli=1' >> "${PHP_INI_DIR}/conf.d/docker-php-ext-apcu.ini"; \
     \
     { \
         echo 'memory_limit=${PHP_MEMORY_LIMIT}'; \
         echo 'upload_max_filesize=${PHP_UPLOAD_LIMIT}'; \
         echo 'post_max_size=${PHP_UPLOAD_LIMIT}'; \
-    } > /usr/local/etc/php/conf.d/nextcloud.ini; \
+    } > "${PHP_INI_DIR}/conf.d/nextcloud.ini"; \
     \
     mkdir /var/www/data; \
     chown -R www-data:root /var/www; \
@@ -134,7 +136,7 @@ RUN a2enmod headers rewrite remoteip ;\
     } > /etc/apache2/conf-available/remoteip.conf;\
     a2enconf remoteip
 
-ENV NEXTCLOUD_VERSION 24.0.2
+ENV NEXTCLOUD_VERSION 24.0.4
 
 RUN set -ex; \
     fetchDeps=" \
@@ -171,10 +173,5 @@ VOLUME /etc/postgresql/13
 
 # Import Entrypoint and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 ADD assets/utils/check.sh /usr/local/bin/check.sh
-RUN chmod +x /usr/local/bin/check.sh
-
-EXPOSE 80 8080 9000 3478 8443
-
-ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]
+RUN chmod a+x /usr/local/bin/*.sh

@@ -1,12 +1,12 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.2
-release-notes: Initial version for EmbassyOS v0.3.1
+version: 24.0.4.3
+release-notes: Initial version for EmbassyOS
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
 support-site: https://github.com/nextcloud/docker/issues
-marketing-site: https://lightning.engineering/
+marketing-site: https://nextcloud.com
 build: ["make"]
 description:
   short: A safe home for all your data
@@ -32,7 +32,7 @@ main:
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
-  web-ui:
+  main:
     name: Web Interface
     success-message: The Nextcloud UI is ready to visit in a web browser
     type: docker
@@ -40,17 +40,6 @@ health-checks:
     system: false
     entrypoint: check.sh
     args: ["web"]
-    mounts: {}
-    io-format: json
-    inject: true
-  api:
-    name: Nextcloud Server
-    success-message: The Nextcloud Server is ready to accept requests
-    type: docker
-    image: main
-    system: false
-    entrypoint: check.sh
-    args: ["api"]
     mounts: {}
     io-format: json
     inject: true
@@ -89,22 +78,10 @@ interfaces:
     tor-config:
       port-mapping:
         80: "80"
-        3478: "3478"
-        8443: "8443"
-        5432: "5432"
     lan-config:
       443:
         ssl: true
         internal: 80
-      3478:
-        ssl: true
-        internal: 3478
-      8443:
-        ssl: true
-        internal: 8443
-      5432:
-        ssl: true
-        internal: 5432
     ui: true
     protocols:
       - tcp

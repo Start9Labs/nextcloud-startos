@@ -44,6 +44,26 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "Must not contain newline or quote characters.",
     "copyable": true,
     "masked": true
+  },
+  "connection": {
+    "type": "union",
+    "name": "Connection Settings",
+    "description": "NextCloud Connection Settings",
+    "tag": {
+      "id": "type",
+      "name": "Select Connection Type",
+      "variant-names": {
+        "both": "Both LAN and Tor Connections",
+        "lan-only": "LAN Only Connection",
+      },
+      "description":
+        "Nextcloud connection settings.\n If you select 'Both' you will not be able to use the Desktop Sync App with your .local address.\n If you select 'LAN Only' you will be able to use the Desktop Sync App with your .local address, but Tor will be disabled.",
+      },
+    "default": "lan-only",
+    "variants": {
+      "both": {},
+      "lan-only": {},
+    }
   }
 });
 
