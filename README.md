@@ -2,10 +2,6 @@
 
 `Nextcloud` is a browser-based productivity platform. This .s9pk wrapper will allow you to run Nextcloud on your Embassy.
 
-## Embassy Service Pre-Requisites: 
-
-- [lnd](https://github.com/Start9Labs/lnd-wrapper)
-
 ## Dependencies
 
 - [docker](https://docs.docker.com/get-docker)
@@ -14,7 +10,7 @@
 - [toml](https://crates.io/crates/toml-cli)
 - [embassy-sdk](https://github.com/Start9Labs/embassy-os/tree/master/backend)
 - [make](https://www.gnu.org/software/make/)
-- Deno
+- [deno](https://deno.land/)
 
 ## Build enviroment
 Prepare your EmbassyOS build enviroment. In this example we are using Ubuntu 20.04.

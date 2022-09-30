@@ -1,5 +1,5 @@
 FROM --platform=linux/arm64/v8 php:8.0-apache-bullseye
-RUN apt-get update && apt-get install -y wget postgresql-13 tini bash && wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_arm.tar.gz -O - |\
+RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash && wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_arm.tar.gz -O - |\
     tar xz && mv yq_linux_arm /usr/bin/yq
 
 ENV POSTGRES_DB nextcloud
