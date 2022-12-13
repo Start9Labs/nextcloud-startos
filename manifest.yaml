@@ -1,7 +1,7 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.4.5
-release-notes: Updated to run on x86_64 architecture
+version: 24.0.4
+release-notes: Initial release for embassyOS
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -30,7 +30,7 @@ main:
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
-  web-ui:
+  alive:
     name: Web Interface
     success-message: The Nextcloud UI is ready to visit in a web browser
     type: script
