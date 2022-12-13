@@ -1,7 +1,7 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.4
-release-notes: Initial release for embassyOS
+version: 24.0.8
+release-notes: Initial release for embassyOS!!
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
