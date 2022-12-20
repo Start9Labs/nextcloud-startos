@@ -30,10 +30,20 @@ main:
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
-  alive:
+  # alive:
+  #   name: Web Interface
+  #   success-message: The Nextcloud UI is ready to visit in a web browser
+  #   type: script
+  main:
     name: Web Interface
-    success-message: The Nextcloud UI is ready to visit in a web browser
-    type: script
+    success-message: The Nextcloud UI is accessible
+    type: docker
+    image: main
+    entrypoint: "check-web.sh"
+    args: []
+    inject: true
+    system: false
+    io-format: json
 config: 
   get:
     type: script

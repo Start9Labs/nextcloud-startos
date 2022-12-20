@@ -180,4 +180,5 @@ VOLUME /etc/postgresql/13
 
 # Import Entrypoint and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
+ADD ./check-web.sh /usr/local/bin/check-web.sh
 RUN chmod a+x /usr/local/bin/*.sh
