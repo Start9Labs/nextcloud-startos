@@ -59,7 +59,6 @@ Make sure you have first set up LAN access for your OS (https://start9.com/lates
 1. Next, configure the local directory that you want to sync with Nextcloud. You may use the default or change it, and edit the sync settings to desired. When satisfied, click "Connect"
 1. Files will begin to sync immediately and you will see a green check when this is complete.
 1. That's it! From this desktop client you will recieve notifications, control accounts and syncing, and quickly access your Apps' WebUI pages
-To setup syncing for Apps, such as Calendar, Contacts, etc, please check out our Apps Guide
 
 ### Desktop Client (Tor)
 If you would like to setup a remote connection for your desktop client, you may do so here. Otherwise, skip to Mobile Client setup below.
