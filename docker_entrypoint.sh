@@ -71,6 +71,7 @@ if [ -e "$FILE" ] ; then {
   echo 'Starting db server...'
   service postgresql start
   echo 'Starting web server...'
+  touch /re.start
   exec tini -s -p SIGTERM /entrypoint.sh apache2-foreground 
 } else {
   #Starting and Configuring PostgreSQL

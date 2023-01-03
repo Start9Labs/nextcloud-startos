@@ -1,6 +1,13 @@
-FROM --platform=linux/arm64/v8 php:8.0-apache-bullseye
-RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash && wget https://github.com/mikefarah/yq/releases/download/v4.12.2/yq_linux_arm.tar.gz -O - |\
-    tar xz && mv yq_linux_arm /usr/bin/yq
+FROM php:8.0-apache-bullseye
+
+# arm64 or amd64
+ARG PLATFORM
+# aarch64 or x86_64
+ARG ARCH
+
+RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash 
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
+  tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
 
 ENV POSTGRES_DB nextcloud
 ENV POSTGRES_USER nextcloud
@@ -136,7 +143,7 @@ RUN a2enmod headers rewrite remoteip ;\
     } > /etc/apache2/conf-available/remoteip.conf;\
     a2enconf remoteip
 
-ENV NEXTCLOUD_VERSION 24.0.4
+ENV NEXTCLOUD_VERSION 24.0.8
 
 RUN set -ex; \
     fetchDeps=" \
@@ -173,5 +180,5 @@ VOLUME /etc/postgresql/13
 
 # Import Entrypoint and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-ADD assets/utils/check.sh /usr/local/bin/check.sh
+ADD ./check-web.sh /usr/local/bin/check-web.sh
 RUN chmod a+x /usr/local/bin/*.sh

@@ -1,7 +1,7 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.4.3
-release-notes: Initial version for EmbassyOS
+version: 24.0.8
+release-notes: Initial release for embassyOS!!
 license: mit
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -14,15 +14,13 @@ description:
 assets:
   license: LICENSE
   icon: icon.png
-  instructions: docs/instructions.md
-  docker-images: image.tar
+  instructions: instructions.md
 main:
   type: docker
   image: main
   entrypoint: "docker_entrypoint.sh"
   args: []
   mounts:
-    compat: /mnt/assets
     main: /root
     nextcloud: /var/www/html
     apps: /var/www/html/custom_apps
@@ -32,17 +30,20 @@ main:
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
+  # alive:
+  #   name: Web Interface
+  #   success-message: The Nextcloud UI is ready to visit in a web browser
+  #   type: script
   main:
     name: Web Interface
-    success-message: The Nextcloud UI is ready to visit in a web browser
+    success-message: The Nextcloud UI is accessible
     type: docker
     image: main
-    system: false
-    entrypoint: check.sh
-    args: ["web"]
-    mounts: {}
-    io-format: json
+    entrypoint: "check-web.sh"
+    args: []
     inject: true
+    system: false
+    io-format: json
 config: 
   get:
     type: script
@@ -53,10 +54,6 @@ properties:
 volumes:
   main:
     type: data
-  compat:
-    type: assets
-  utils:
-    type: assets
   nextcloud:
     type: data 
   apps:
