@@ -46,7 +46,7 @@ Nextcloud has its own app store with many offerings!
 ## Nextcloud Device Setup Guide
 Please see our [Nextcloud Master Thread](https://community.start9.com/t/nextcloud-master-thread) or [documentation](https://docs.start9.com/latest/user-manual/service-guides/nextcloud/index) for more detailed device guides and community feedback on clients and integrations.
 ### Desktop Client (LAN)
-Make sure you have first set up LAN access for your OS (https://start9.com/latest/user-manual/connecting/connecting-lan/lan-os/index)
+Make sure you have first set up LAN access for your OS (https://start9.com/latest/user-manual/connecting/connecting-lan/lan-os/index).
 
 1. Download the appropriate desktop client from https://nextcloud.com/install/#install-clients
     - On Linux, your distribution may include built-in Nextcloud account integration. For the best experience, we recommend trying these first.  You also may prefer to use your package manager (i.e. apt, pacman, rpm, etc) to get the client.
@@ -61,12 +61,12 @@ Make sure you have first set up LAN access for your OS (https://start9.com/lates
 1. That's it! From this desktop client you will recieve notifications, control accounts and syncing, and quickly access your Apps' WebUI pages
 
 ### Desktop Client (Tor)
-If you would like to setup a remote connection for your desktop client, you may do so here. Otherwise, skip to Mobile Client setup below.
+If you would like to setup a remote connection for your desktop client, you may do so here.
 
 You will need to have the [Tor daemon running on your OS](https://start9.com/latest/user-manual/connecting/connecting-tor/tor-os/index) first.
 
 1. First, enable Tor in the Nextcloud Config on Embassy, Services -> Nextcloud -> Config -> Connection Settings -> Connection Type -> LAN and Tor.
-1. On your desktop application. Click the account in the top left -> Settings, then in Settings, click Network, then "Specify proxy manually as" and "SOCKS5 proxy." Enter "127.0.0.1" for the Host and "9050" for the port.
+1. (Mac users - skip this step) On your desktop application, click the account in the top left -> Settings, then in Settings, click Network, then "Specify proxy manually as" and "SOCKS5 proxy." Enter "127.0.0.1" for the Host and "9050" for the port.
 1. Close the Settings screen and click the account in the top left again, then "Add Account."
 1. On the following screen, click "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor. This must start with http:// and end with .onion. Click Next.
 1. This will launch your browser and prompt you to log in to your account. Log in and then grant access as we did for LAN.
