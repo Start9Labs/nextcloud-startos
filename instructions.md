@@ -12,11 +12,11 @@ In the Config Menu you will be able to select one of the following options:
 - `LAN Only Connection`
 - `Both LAN and Tor Connections`
 
-If you select `LAN Only Connection` you will be able to use the Desktop Sync App with your .local address, but all Tor access will be disabled.
+If you select `LAN Only Connection` you will be able to use the Desktop Sync App with your .local address, but all Tor access will be disabled.  This is the default as it allows instant access from most systems, and easier setup.
 
 If you select `Both LAN and Tor Connections` you will be able to use your browser to navigate to both .local and .onion addresses for your NextCloud instance. 
 However, you will not be able to connect to your instance using the Desktop Sync App with your .local address, only your .onion address will work with this option. 
-You will also need to change your sync app network settings to accept socks5 proxy connections, and Tor should be running on your device connecting.
+You will also need to change your sync app's network settings to accept socks5 proxy connections (except MacOS), and Tor must be running on your device.
 ### First Login
 1. Start Nextcloud and Copy your credentials from Properties.
 1. Launch the UI and enter your credentials copied from above to log in.
