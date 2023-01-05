@@ -23,17 +23,9 @@ main:
   mounts:
     main: /root
     nextcloud: /var/www/html
-    apps: /var/www/html/custom_apps
-    config: /var/www/html/config
-    data: /var/www/html/data
-    theme: /var/www/html/themes
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
-  # alive:
-  #   name: Web Interface
-  #   success-message: The Nextcloud UI is ready to visit in a web browser
-  #   type: script
   main:
     name: Web Interface
     success-message: The Nextcloud UI is accessible
@@ -54,16 +46,10 @@ properties:
 volumes:
   main:
     type: data
+  compat:
+    type: assets
   nextcloud:
     type: data 
-  apps:
-    type: data 
-  config: 
-    type: data
-  data: 
-    type: data
-  theme: 
-    type: data
   db:
     type: data
   dbconfig:
@@ -93,40 +79,24 @@ backup:
     type: docker
     image: compat
     system: true 
-    entrypoint: compat 
-    args: 
-      - duplicity
-      - create
-      - /mnt/backup
-      - /var
+    entrypoint: /assets/compat/backup.sh 
     mounts:
-      BACKUP: "/mnt/backup" 
-      main: "/var/data"
+      BACKUP: /mnt/backup
+      compat: /assets/compat
+      main: /root
       nextcloud: /var/www/html
-      apps: /var/www/html/custom_apps
-      config: /var/www/html/config
-      data: /var/www/html/data
-      theme: /var/www/html/themes
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
   restore:
     type: docker
     image: compat
     system: true
-    entrypoint: compat
-    args:
-      - duplicity
-      - restore
-      - /mnt/backup
-      - /var
+    entrypoint: /assets/compat/restore.sh
     mounts:
       BACKUP: /mnt/backup
-      main: /var/data
+      compat: /assets/compat
+      main: /root
       nextcloud: /var/www/html
-      apps: /var/www/html/custom_apps
-      config: /var/www/html/config
-      data: /var/www/html/data
-      theme: /var/www/html/themes
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
 migrations:
