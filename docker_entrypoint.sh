@@ -111,7 +111,6 @@ if [ -e "$FILE" ] ; then {
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
   until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
-  sleep 21
   exit 0
 } 
 fi
