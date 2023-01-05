@@ -1,8 +1,8 @@
 id: nextcloud 
 title: Nextcloud
 version: 24.0.8
-release-notes: Initial release for embassyOS!!
-license: mit
+release-notes: Initial release for embassyOS
+license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
 support-site: https://github.com/nextcloud/docker/issues
@@ -26,7 +26,7 @@ main:
     apps: /var/www/html/custom_apps
     config: /var/www/html/config
     data: /var/www/html/data
-    theme: /var/www/html/themes/start9
+    theme: /var/www/html/themes
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
@@ -98,10 +98,17 @@ backup:
       - duplicity
       - create
       - /mnt/backup
-      - /root/data
+      - /var
     mounts:
       BACKUP: "/mnt/backup" 
-      main: "/root/data"
+      main: "/var/data"
+      nextcloud: /var/www/html
+      apps: /var/www/html/custom_apps
+      config: /var/www/html/config
+      data: /var/www/html/data
+      theme: /var/www/html/themes
+      db: /var/lib/postgresql/13
+      dbconfig: /etc/postgresql/13
   restore:
     type: docker
     image: compat
@@ -110,11 +117,18 @@ backup:
     args:
       - duplicity
       - restore
-      - /root/data
       - /mnt/backup
+      - /var
     mounts:
       BACKUP: /mnt/backup
-      main: /root/data
+      main: /var/data
+      nextcloud: /var/www/html
+      apps: /var/www/html/custom_apps
+      config: /var/www/html/config
+      data: /var/www/html/data
+      theme: /var/www/html/themes
+      db: /var/lib/postgresql/13
+      dbconfig: /etc/postgresql/13
 migrations:
   from:
     "*":
