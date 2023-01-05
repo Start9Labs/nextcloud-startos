@@ -132,8 +132,6 @@ RUN { \
     chmod -R g=u /var/www; \
     mkdir -p /var/www/html/themes/start9
 
-VOLUME /var/www/html /var/www/html/custom_apps /var/www/html/config /var/www/html/data /var/www/html/themes/ /var/www/html/themes/start9
-
 RUN a2enmod headers rewrite remoteip ;\
     {\
      echo RemoteIPHeader X-Real-IP ;\

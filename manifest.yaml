@@ -23,10 +23,6 @@ main:
   mounts:
     main: /root
     nextcloud: /var/www/html
-    apps: /var/www/html/custom_apps
-    config: /var/www/html/config
-    data: /var/www/html/data
-    theme: /var/www/html/themes
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
 health-checks:
@@ -53,14 +49,6 @@ volumes:
   compat:
     type: assets
   nextcloud:
-    type: data
-  apps:
-    type: data
-  config:
-    type: data
-  data:
-    type: data
-  theme:
     type: data
   db:
     type: data
@@ -95,12 +83,8 @@ backup:
     mounts:
       BACKUP: /mnt/backup
       compat: /assets
-      main: /root
+      main: /root/data
       nextcloud: /var/www/html
-      apps: /var/www/html/custom_apps
-      config: /var/www/html/config
-      data: /var/www/html/data
-      theme: /var/www/html/themes
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
   restore:
@@ -111,12 +95,8 @@ backup:
     mounts:
       BACKUP: /mnt/backup
       compat: /assets
-      main: /root
+      main: /root/data
       nextcloud: /var/www/html
-      apps: /var/www/html/custom_apps
-      config: /var/www/html/config
-      data: /var/www/html/data
-      theme: /var/www/html/themes
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
 migrations:
