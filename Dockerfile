@@ -1,4 +1,4 @@
-FROM php:8.0-apache-bullseye
+FROM php:8.1-apache-bullseye
 
 # arm64 or amd64
 ARG PLATFORM
@@ -129,8 +129,9 @@ RUN { \
     \
     mkdir /var/www/data; \
     chown -R www-data:root /var/www; \
-    chmod -R g=u /var/www; \
-    mkdir -p /var/www/html/themes/start9
+    chmod -R g=u /var/www; 
+
+VOLUME /var/www/html
 
 RUN a2enmod headers rewrite remoteip ;\
     {\
@@ -141,7 +142,7 @@ RUN a2enmod headers rewrite remoteip ;\
     } > /etc/apache2/conf-available/remoteip.conf;\
     a2enconf remoteip
 
-ENV NEXTCLOUD_VERSION 24.0.8
+ENV NEXTCLOUD_VERSION 25.0.2
 
 RUN set -ex; \
     fetchDeps=" \
@@ -170,9 +171,9 @@ RUN set -ex; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $fetchDeps; \
     rm -rf /var/lib/apt/lists/*
 
-COPY docker/24/apache/*.sh docker/24/apache/upgrade.exclude /
-COPY docker/24/apache/config/* /usr/src/nextcloud/config/
-COPY docker/24/apache/entrypoint.sh /
+COPY docker/25/apache/*.sh docker/25/apache/upgrade.exclude /
+COPY docker/25/apache/config/* /usr/src/nextcloud/config/
+COPY docker/25/apache/entrypoint.sh /
 VOLUME /var/lib/postgresql/13
 VOLUME /etc/postgresql/13
 

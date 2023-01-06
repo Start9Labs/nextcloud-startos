@@ -1,6 +1,6 @@
 id: nextcloud 
 title: Nextcloud
-version: 24.0.8
+version: 25.0.2
 release-notes: Initial release for embassyOS
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
