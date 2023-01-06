@@ -15,10 +15,6 @@ NEXTCLOUD_ADMIN_USER=$(yq e '.username' /root/start9/config.yaml)
 NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
 POSTGRES_DATADIR="/var/lib/postgresql/13"
 POSTGRES_CONFIG="/etc/postgresql/13"
-NC_DATADIR_APPS="/var/www/html/custom_apps"
-NC_DATADIR_CONFIG="/var/www/html/config"
-NC_DATADIR_DATA="/var/www/html/data"
-NC_DATADIR_THEME="/var/www/html/themes/start9"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
@@ -60,10 +56,6 @@ if [ -e "$FILE" ] ; then {
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
   echo "Changing Permissions..."
-  chown -R www-data:www-data $NC_DATADIR_APPS
-  chown -R www-data:www-data $NC_DATADIR_CONFIG
-  chown -R www-data:www-data $NC_DATADIR_DATA
-  chown -R www-data:www-data $NC_DATADIR_THEME
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
   chmod -R 700 $POSTGRES_DATADIR
@@ -78,10 +70,6 @@ if [ -e "$FILE" ] ; then {
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
   rm -f $FILE
-  chown -R www-data:www-data $NC_DATADIR_APPS
-  chown -R www-data:www-data $NC_DATADIR_CONFIG
-  chown -R www-data:www-data $NC_DATADIR_DATA
-  chown -R www-data:www-data $NC_DATADIR_THEME
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
   chmod -R 700 $POSTGRES_DATADIR

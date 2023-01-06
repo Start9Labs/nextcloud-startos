@@ -1,4 +1,4 @@
-FROM php:8.0-apache-bullseye
+FROM php:8.1-apache-bullseye
 
 # arm64 or amd64
 ARG PLATFORM
@@ -129,8 +129,9 @@ RUN { \
     \
     mkdir /var/www/data; \
     chown -R www-data:root /var/www; \
-    chmod -R g=u /var/www; \
-    mkdir -p /var/www/html/themes/start9
+    chmod -R g=u /var/www; 
+
+VOLUME /var/www/html
 
 RUN a2enmod headers rewrite remoteip ;\
     {\
