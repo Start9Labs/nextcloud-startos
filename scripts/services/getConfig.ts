@@ -45,25 +45,10 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "copyable": true,
     "masked": true
   },
-  "connection": {
-    "type": "union",
-    "name": "Client Connection Settings",
-    "description": "Nextcloud Client Connection Settings",
-    "tag": {
-      "id": "type",
-      "name": "Connection Type",
-      "variant-names": {
-        "both": "LAN and Tor",
-        "lan-only": "LAN Only",
-      },
-      "description":
-        "Nextcloud connection settings.\n If you select 'LAN and Tor' you will not be able to use the Desktop or Mobile clients with your .local address.\n If you select 'LAN Only' you will be able to use the Desktop and Mobile Apps with your .local address, but Tor will be disabled.",
-      },
-    "default": "lan-only",
-    "variants": {
-      "both": {},
-      "lan-only": {},
-    }
+  "enable-tor": {
+    "name": "Enable Tor",
+    "description": "Nextcloud connection settings.\n If you enable Tor, you will not be able to use the Desktop or Mobile clients with your .local address.\n If you disable Tor, you will be able to use the Desktop and Mobile Apps with your .local address, but your .onion address will be disabled.",
+    "type": "boolean",
+    "default": false,
   }
 });
-

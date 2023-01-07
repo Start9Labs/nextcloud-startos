@@ -9,7 +9,7 @@ _term() {
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
-CONNECTION=$(yq e '.connection.type' /root/start9/config.yaml)
+CONNECTION=$(yq e '.enable-tor' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER=$(yq e '.username' /root/start9/config.yaml)
 NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
@@ -42,7 +42,7 @@ if [ -e "$FILE" ] ; then {
   echo "Existing Nextcloud database found, starting frontend..."
 
   echo "Modifing Configuration files"
-  if [ "$CONNECTION" = "lan-only" ]; then 
+  if [ "$CONNECTION" = "false" ]; then 
     echo 'Setting LAN Only configuration...'
       sed -i "/'overwriteprotocol' =>.*/d" $FILE
       sleep 3
