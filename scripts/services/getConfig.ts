@@ -47,7 +47,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
   },
   "enable-tor": {
     "name": "Enable Tor",
-    "description": "Nextcloud connection settings.\n If you enable Tor, you will not be able to use the Desktop or Mobile clients with your .local address.\n If you disable Tor, you will be able to use the Desktop and Mobile Apps with your .local address, but your .onion address will be disabled.",
+    "description": "- If OFF: You can use Nextcloud from the browser or from any mobile or desktop client using its .local URL while connected to the same Local Area Network (LAN) as your Embassy. Note: .onion will not work at all.\n- If ON: You can use NextCloud from the browser by visiting its .onion or .local URL. You can also use Nextcloud from any mobile or desktop client using its .onion URL. Note: .local will not work from mobile or desktop clients.",
     "type": "boolean",
     "default": false,
   }
