@@ -58,4 +58,4 @@ It also assumes that you have set up LAN on your desktop machine. If you still n
 
     ![Joplin setup](./assets/joplin-setup14.png "Check synchronisation")
 
-1. You are have now connected your Joplin client to your Embassy's Nextcloud!
+1. You have now connected your Joplin client to your Embassy's Nextcloud!
