@@ -6,7 +6,11 @@ This guide assumes your Nextcloud username is _embassy_
 
 It also assumes that you have set up LAN on your desktop machine. If you still need to do that, please head here - https://docs.start9.com/latest/user-manual/connecting/connecting-lan/
 
-First go into Nextcloud on your Embassy and click here
+1. First go into Nextcloud on your Embassy and click here
+
+    ![Joplin setup](./assets/joplin-setup0.png "Click on Folders")
+
+Click on the + icon to add a new folder
 
 <pic>
 
@@ -14,23 +18,19 @@ Create a new folder called _joplin_
 
 <pic>
 
-Click on SOMETHING in here and copy the WebDAV link
+Click on _Files settings_ here and copy the WebDAV link
 
-Open up Joplin
-
-Click on _Joplin_ in the top left and click _Preferences_ (on Mac).
+Open up Joplin and click on _Joplin_ in the top left and click _Preferences_ (on Mac).
 
 <pic>
 
 Click on _Synchronisation_
 
-Under _Synchronization target_ select *Nextcloud*
-
-<pic>
-
-Paste the WebDAV and append onto the end of it _joplin_ so the entire URL should look like this:
+Under _Synchronization target_ select *Nextcloud*, paste the WebDAV and append onto the end of it _joplin_ so the entire URL should look like this:
 
 _https://xxxx.local/remote.php/dav/files/embassy/joplin_
+
+<pic>
 
 Under _Nextcloud username_ enter _embassy_
 
