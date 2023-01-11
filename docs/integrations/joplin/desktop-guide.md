@@ -10,27 +10,33 @@ It also assumes that you have set up LAN on your desktop machine. If you still n
 
     ![Joplin setup](./assets/joplin-setup0.png "Click on Folders")
 
-Click on the + icon to add a new folder
+Click on the + icon, then "New folder"
 
-<pic>
+    ![Joplin setup](./assets/joplin-setup1.png "New Folder")
 
-Create a new folder called _joplin_
+Create a new folder called _joplin_ and click the arrow to the right
 
-<pic>
+    ![Joplin setup](./assets/joplin-setup3.png "Joplin directory")
 
-Click on _Files settings_ here and copy the WebDAV link
+Click on _Files settings_ in the bottom left and copy the WebDAV link
 
-Open up Joplin and click on _Joplin_ in the top left and click _Preferences_ (on Mac).
+    ![Joplin setup](./assets/joplin-setup4.png "Files settings")
 
-<pic>
+    ![Joplin setup](./assets/joplin-setup5.png "WebDAV link")
+
+Open up Joplin, click on _Joplin_ in the top left and click _Preferences_ (on Mac).
+
+    ![Joplin setup](./assets/joplin-setup7.png "Preferences")
 
 Click on _Synchronisation_
 
-Under _Synchronization target_ select *Nextcloud*, paste the WebDAV and append onto the end of it _joplin_ so the entire URL should look like this:
+    ![Joplin setup](./assets/joplin-setup8.png "Click on synchronization")
+
+Under _Synchronization target_ select *Nextcloud*, paste the WebDAV and append onto the end of it _joplin_ so the entire URL should look like this (replace "xxxx" with your unique Nextcloud LAN address):
 
 _https://xxxx.local/remote.php/dav/files/embassy/joplin_
 
-<pic>
+    ![Joplin setup](./assets/joplin-setup9.png "Select NextCloud and enter URL")
 
 Under _Nextcloud username_ enter _embassy_
 
@@ -38,12 +44,20 @@ Under _Nextcloud password_ enter your password
 
 The username and password for your Nextcloud can be found in your Embassy UI by clicking on the Nextcloud service then clicking on _Properties_
 
-<pic>
+    ![Joplin setup](./assets/joplin-setup10.png "Enter Username and Password")
+
+    ![Joplin setup](./assets/joplin-setup11.png "Username and password entered")
 
 Now click _Show advanced settings_
 
-Then check the box that says _Ignore TLS certificate errors_
+    ![Joplin setup](./assets/joplin-setup12.png "advanced settings")
 
-Now scroll up and select _Check sychronisation configuration_ and you it should be successful.
+Scroll down then check the box that says _Ignore TLS certificate errors_
 
-You are have now connect your Joplin client to your Embassy's Nextcloud!
+    ![Joplin setup](./assets/joplin-setup13.png "Ignore TLS certificate errors")
+
+Now scroll back up and select _Check sychronisation configuration_ and you should see the following success message:
+
+    ![Joplin setup](./assets/joplin-setup14.png "Check synchronisation")
+
+You are have now connected your Joplin client to your Embassy's Nextcloud!
