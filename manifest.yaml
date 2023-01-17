@@ -25,6 +25,7 @@ main:
     nextcloud: /var/www/html
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
+    cert: /mnt/cert
 health-checks:
   main:
     name: Web Interface
@@ -54,6 +55,9 @@ volumes:
     type: data
   dbconfig:
     type: data
+  cert:
+    type: certificate
+    interface-id: rest
 interfaces:
   main:
     name: Nextcloud Web Interface
@@ -66,6 +70,21 @@ interfaces:
         ssl: true
         internal: 80
     ui: true
+    protocols:
+      - tcp
+      - http
+      - udp
+  rest:
+    name: Nextcloud Sync Client Interface
+    description: Specifies the interface to listen on for HTTP connections.
+    tor-config:
+      port-mapping:
+        80: "80"
+    lan-config:
+      443:
+        ssl: true
+        internal: 80
+    ui: false
     protocols:
       - tcp
       - http
@@ -87,6 +106,7 @@ backup:
       nextcloud: /var/www/html
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
+      cert: /mnt/cert
   restore:
     type: docker
     image: compat
@@ -99,6 +119,7 @@ backup:
       nextcloud: /var/www/html
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
+      cert: /mnt/cert
 migrations:
   from:
     "*":

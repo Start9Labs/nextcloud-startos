@@ -11,8 +11,8 @@ TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 CONNECTION=$(yq e '.enable-tor' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
-NEXTCLOUD_ADMIN_USER=$(yq e '.username' /root/start9/config.yaml)
-NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
+# NEXTCLOUD_ADMIN_USER='embassy'
+# NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
 POSTGRES_DATADIR="/var/lib/postgresql/13"
 POSTGRES_CONFIG="/etc/postgresql/13"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
@@ -22,17 +22,17 @@ FILE="/var/www/html/config/config.php"
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
 echo 'data:' >> /root/start9/stats.yaml
-echo '  Nextcloud Username:' >> /root/start9/stats.yaml
+echo '  Nextcloud Admin Username:' >> /root/start9/stats.yaml
 echo '    type: string' >> /root/start9/stats.yaml
 echo '    value: "'"$NEXTCLOUD_ADMIN_USER"'"' >> /root/start9/stats.yaml
 echo '    description: The admin username for Nextcloud' >> /root/start9/stats.yaml
 echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: false' >> /root/start9/stats.yaml
 echo '    qr: false' >> /root/start9/stats.yaml
-echo '  Nextcloud Password:' >> /root/start9/stats.yaml
+echo '  Nextcloud Admin Default Password:' >> /root/start9/stats.yaml
 echo '    type: string' >> /root/start9/stats.yaml
 echo '    value: "'"$NEXTCLOUD_ADMIN_PASSWORD"'"' >> /root/start9/stats.yaml
-echo '    description: The admin password for Nextcloud.' >> /root/start9/stats.yaml
+echo '    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.' >> /root/start9/stats.yaml
 echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: true' >> /root/start9/stats.yaml
 echo '    qr: false' >> /root/start9/stats.yaml
@@ -41,16 +41,21 @@ echo '    qr: false' >> /root/start9/stats.yaml
 if [ -e "$FILE" ] ; then {
   echo "Existing Nextcloud database found, starting frontend..."
 
-  echo "Modifing Configuration files"
-  if [ "$CONNECTION" = "false" ]; then 
-    echo 'Setting LAN Only configuration...'
-      sed -i "/'overwriteprotocol' =>.*/d" $FILE
-      sleep 3
-      sed -i "/'dbtype' => 'pgsql',/a\\ \ 'overwriteprotocol' => 'https'\," $FILE
-  else 
-    echo 'Setting Tor and LAN configuration...'
-    sed -i "/'overwriteprotocol' =>.*/d" $FILE
-  fi
+  # echo "Checking cert"
+  echo "Fetching system cert..."
+  while ! [ -e /mnt/cert/rest.key.pem ]; do
+    echo "Waiting for system cert key file..."
+    sleep 1
+  done
+  # mkdir -p /etc/ssl/certs
+  cp /mnt/cert/rest.key.pem /etc/ssl/certs/key.pem
+  while ! [ -e /mnt/cert/rest.cert.pem ]; do
+    echo "Waiting for system cert..."
+    sleep 1
+  done
+  cp /mnt/cert/rest.cert.pem /etc/ssl/certs/certificate.pem
+
+  echo "Modifing Configuration files..."
   until [ -e "/etc/apache2/sites-enabled/000-default.conf" ]; do { sleep 5; } done
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE

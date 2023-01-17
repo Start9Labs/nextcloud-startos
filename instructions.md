@@ -2,17 +2,6 @@
 
 Nextcloud is powerful and extensive software **Read these instructions carefully and reference them as needed**. Nextcloud also offers its own Apps. Scroll to the end of these instructions for more info about using Apps.
 
-## Initial Config
-
-During initial config, notice the setting called "Enable Tor".
-
-- **If OFF**: You can use Nextcloud from the browser or from any mobile or desktop client using its `.local` URL while connected to the same Local Area Network (LAN) as your Embassy. **Note**: _`.onion` will not work at all_.
-- **If ON**: You can use NextCloud from the browser by visiting its .onion _or_ .local URL. You can also use Nextcloud from any mobile or desktop client using its `.onion` URL. **Note**: _`.local` will not work from mobile or desktop clients_.
-
-The default is `Off` for two reasons:
-
-1. Initial sync over LAN will be _much_ faster.
-2. To use Tor with Nextcloud's desktop clients (Mac, Windows, Linux), you must first change a setting in the desktop client that can only be changed if you are already logged in. In other words, _you must first login over LAN in order to be able to login over Tor_.
 
 ## Using Nextcloud from a browser
 
@@ -20,8 +9,6 @@ The default is `Off` for two reasons:
 1. Insert your default username and password, located in "Properties".
 1. Bookmark the site for future visits, or better yet, save it to your Bitwarden server!
 1. Optionally change your default username/password.
-
-**Note**: You can only use Nextcloud from the browser over Tor if you have Tor enabled in Config. See "Initial Config" (above) for more details.
 
 ## Using Nextcloud client apps
 
@@ -51,7 +38,6 @@ If you would like to setup a remote connection for your desktop client, you may 
 1. Follow instructions for "Desktop Client (LAN)" (above).
 1. In the desktop client, click the account in the top left, then Settings. Click Network, then "Specify proxy manually as" and "SOCKS5 proxy." Enter "127.0.0.1" for the Host and "9050" for the port.
 1. Ensure you have the [Tor daemon running on your OS](https://start9.com/latest/user-manual/connecting/connecting-tor/tor-os/index).
-1. In Nextcloud Config on Embassy, set "Client Connection Method" to `Tor`.
 1. Back in the desktop client, click the account in the top left, then Add Account.
 1. On the following screen, click "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor Address. This must start with http:// and end with .onion. Click Next.
 1. This will launch your browser and prompt you to log in to your account. Log in and then grant access as we did for LAN.
@@ -82,7 +68,6 @@ Congratulations! You now have Nextcloud setup across Desktop and Mobile with fil
 1. You will need to have [Orbot running on your device](https://start9.com/latest/user-manual/connecting/connecting-tor/tor-os/index).
 1. Download the Nextcloud App for your device from wherever you get your apps (App Store, F-Droid, Play Store, etc).
 1. For Android, make sure Orbot is running VPN mode and Nextcloud is added as a VPN app.
-1. In Nextcloud Config on Embassy, set "Client Connection Method" to `Tor`.
 1. Launch the Nextcloud app. Tap the account menu in the top right, then "Add account."
 1. Tap "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor Address. This must start with http:// and end with .onion. Tap Next.
 1. This will launch your browser and prompt you to log in to your account. Log in and then grant access as we did for LAN.
