@@ -1,5 +1,4 @@
 #!/bin/bash 
-
 set -e
 
 # Define the path to the Nextcloud installation
