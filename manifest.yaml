@@ -49,8 +49,6 @@ properties:
 volumes:
   main:
     type: data
-  compat:
-    type: assets
   nextcloud:
     type: data
   db:
