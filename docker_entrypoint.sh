@@ -18,7 +18,7 @@ TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 
 if [ -e "$FILE" ] ; then {
-  NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
+  NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/password.dat)
 } 
 fi
 # Properties Page
@@ -77,7 +77,7 @@ if [ -e "$FILE" ] ; then {
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
-  echo 'password: '$NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/config.yaml
+  echo 'password: '$NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
   rm -f $FILE
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG

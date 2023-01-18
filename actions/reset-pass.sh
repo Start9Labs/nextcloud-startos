@@ -9,7 +9,7 @@ NEXTCLOUD_DIR="/var/www/html"
 USERNAME="embassy"
 
 # Define the new password
-OC_PASS=$(yq e '.password' /root/start9/config.yaml)
+OC_PASS=$(yq e '.password' /root/start9/password.dat)
 
 action_result_running="    {
     \"version\": \"0\",
