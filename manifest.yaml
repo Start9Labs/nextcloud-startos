@@ -119,6 +119,7 @@ actions:
       image: main
       system: false
       entrypoint: reset-pass.sh
+      inject: true
       args: []
       io-format: json
       mounts:
