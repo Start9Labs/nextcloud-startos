@@ -5,7 +5,7 @@ ARG PLATFORM
 # aarch64 or x86_64
 ARG ARCH
 
-RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash \
+RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo \
 && apt-get install -qq --no-install-recommends ca-certificates dirmngr
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
@@ -15,7 +15,7 @@ ENV POSTGRES_USER nextcloud
 ENV POSTGRES_PASSWORD nextclouddbpassword
 ENV POSTGRES_HOST localhost
 ENV NEXTCLOUD_ADMIN_USER embassy
-ENV NEXTCLOUD_ADMIN_PASSWORD="$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)"
+ENV NEXTCLOUD_ADMIN_PASSWORD=
 ENV NEXTCLOUD_INIT_LOCK true
 ENV NEXTCLOUD_TRUSTED_DOMAINS=
 ENV TRUSTED_PROXIES=
@@ -181,4 +181,5 @@ VOLUME /etc/postgresql/13
 # Import Entrypoint and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ADD ./check-web.sh /usr/local/bin/check-web.sh
+ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
 RUN chmod a+x /usr/local/bin/*.sh
