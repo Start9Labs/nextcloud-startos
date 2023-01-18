@@ -9,7 +9,6 @@ _term() {
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
-CONNECTION=$(yq e '.enable-tor' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER='embassy'
 POSTGRES_DATADIR="/var/lib/postgresql/13"
