@@ -47,8 +47,6 @@ properties:
 volumes:
   main:
     type: data
-  compat:
-    type: assets
   nextcloud:
     type: data
   db:
@@ -95,31 +93,9 @@ alerts:
     When starting Nextcloud for the first time it may take a few minutes, please be patient! The web interface health check will indicate when the service is ready.
 backup:
   create:
-    type: docker
-    image: compat
-    system: true 
-    entrypoint: /assets/backup.sh 
-    mounts:
-      BACKUP: /mnt/backup
-      compat: /assets
-      main: /root/data
-      nextcloud: /var/www/html
-      db: /var/lib/postgresql/13
-      dbconfig: /etc/postgresql/13
-      cert: /mnt/cert
+    type: script
   restore:
-    type: docker
-    image: compat
-    system: true
-    entrypoint: /assets/restore.sh
-    mounts:
-      BACKUP: /mnt/backup
-      compat: /assets
-      main: /root/data
-      nextcloud: /var/www/html
-      db: /var/lib/postgresql/13
-      dbconfig: /etc/postgresql/13
-      cert: /mnt/cert
+    type: script
 migrations:
   from:
     "*":
