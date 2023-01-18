@@ -11,14 +11,17 @@ TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 CONNECTION=$(yq e '.enable-tor' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
-# NEXTCLOUD_ADMIN_USER='embassy'
-# NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
+NEXTCLOUD_ADMIN_USER='embassy'
 POSTGRES_DATADIR="/var/lib/postgresql/13"
 POSTGRES_CONFIG="/etc/postgresql/13"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 
+if [ -e "$FILE" ] ; then {
+  NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/config.yaml)
+} 
+fi
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
 echo 'data:' >> /root/start9/stats.yaml
@@ -74,6 +77,8 @@ if [ -e "$FILE" ] ; then {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
+  NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
+  echo 'password: '$NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/config.yaml
   rm -f $FILE
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
