@@ -4,6 +4,7 @@ version: 25.0.3
 release-notes: |
   * Update backups to use new eOS APIs
   * Support for LAN and Tor simultaneously
+  * Change default background jobs to cron
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.3
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
