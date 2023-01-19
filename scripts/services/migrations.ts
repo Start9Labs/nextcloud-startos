@@ -29,7 +29,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           true,
           { version: "25.0.3", type: "up" },
         ),
-        down: () => { throw new Error('Cannot downgrade') },
+        down: () => { throw new Error('Downgrade prohibited') },
       },
     },
     "25.0.3",
