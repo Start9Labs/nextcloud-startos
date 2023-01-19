@@ -70,6 +70,7 @@ if [ -e "$FILE" ] ; then {
   echo 'Starting db server...'
   service postgresql start
   echo 'Starting web server...'
+  sudo -u www-data php cron.php > /dev/null 2>&1
   touch /re.start
   exec tini -s -p SIGTERM /entrypoint.sh apache2-foreground 
 } else {
