@@ -18,7 +18,7 @@ TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 
 if [ -e "$FILE" ] ; then {
-  NEXTCLOUD_ADMIN_PASSWORD=$(yq e '.password' /root/start9/password.dat)
+  NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
 } 
 fi
 # Properties Page
@@ -45,17 +45,17 @@ if [ -e "$FILE" ] ; then {
 
   # echo "Checking cert"
   echo "Fetching system cert..."
-  while ! [ -e /mnt/cert/rest.key.pem ]; do
+  while ! [ -e /mnt/cert/main.key.pem ]; do
     echo "Waiting for system cert key file..."
     sleep 1
   done
   # mkdir -p /etc/ssl/certs
-  cp /mnt/cert/rest.key.pem /etc/ssl/certs/key.pem
-  while ! [ -e /mnt/cert/rest.cert.pem ]; do
+  cp /mnt/cert/main.key.pem /etc/ssl/certs/key.pem
+  while ! [ -e /mnt/cert/main.cert.pem ]; do
     echo "Waiting for system cert..."
     sleep 1
   done
-  cp /mnt/cert/rest.cert.pem /etc/ssl/certs/certificate.pem
+  cp /mnt/cert/main.cert.pem /etc/ssl/certs/certificate.pem
 
   echo "Modifing Configuration files..."
   until [ -e "/etc/apache2/sites-enabled/000-default.conf" ]; do { sleep 5; } done

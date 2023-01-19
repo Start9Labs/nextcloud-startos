@@ -59,7 +59,7 @@ volumes:
     type: data
   cert:
     type: certificate
-    interface-id: rest
+    interface-id: main
 interfaces:
   main:
     name: Nextcloud Web Interface
@@ -68,29 +68,18 @@ interfaces:
       port-mapping:
         80: "80"
     lan-config:
+      80:
+        ssl: false
+        internal: 80
       443:
         ssl: true
-        internal: 80
+        internal: 443
     ui: true
     protocols:
       - tcp
       - http
       - udp
-  rest:
-    name: Nextcloud Sync Client Interface
-    description: Specifies the interface to listen on for HTTP connections.
-    tor-config:
-      port-mapping:
-        80: "80"
-    lan-config:
-      443:
-        ssl: true
-        internal: 80
-    ui: false
-    protocols:
-      - tcp
-      - http
-      - udp
+      - nextcloud
 dependencies: {}
 alerts:
   start: |

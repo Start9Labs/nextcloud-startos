@@ -18,7 +18,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
               delete config.username;
               await effects.writeFile({
                 path: "start9/password.dat",
-                toWrite: "password: "+ config.password || "",
+                toWrite: config.password || "",
                 volumeId: "main",
               });
               delete config.password;
