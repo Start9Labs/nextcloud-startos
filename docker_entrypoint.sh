@@ -42,22 +42,27 @@ echo '    qr: false' >> /root/start9/stats.yaml
 
 if [ -e "$FILE" ] ; then {
   echo "Existing Nextcloud database found, starting frontend..."
-
   # echo "Checking cert"
+  a2enmod ssl
+  a2ensite default-ssl
   echo "Fetching system cert..."
   while ! [ -e /mnt/cert/main.key.pem ]; do
     echo "Waiting for system cert key file..."
     sleep 1
   done
   # mkdir -p /etc/ssl/certs
-  cp /mnt/cert/main.key.pem /etc/ssl/certs/key.pem
+  cp /mnt/cert/main.key.pem /etc/ssl/private/ssl-cert-snakeoil.key
   while ! [ -e /mnt/cert/main.cert.pem ]; do
     echo "Waiting for system cert..."
     sleep 1
   done
-  cp /mnt/cert/main.cert.pem /etc/ssl/certs/certificate.pem
+  cp /mnt/cert/main.cert.pem /etc/ssl/certs/ssl-cert-snakeoil.pem
 
   echo "Modifing Configuration files..."
+  sed -i "/'overwriteprotocol' =>.*/d" $FILE
+  sleep 3
+  sed -i "/'dbtype' => 'pgsql',/a\\ \ 'overwriteprotocol' => 'https'\," $FILE
+  
   until [ -e "/etc/apache2/sites-enabled/000-default.conf" ]; do { sleep 5; } done
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
