@@ -83,7 +83,7 @@ if [ -e "$FILE" ] ; then {
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
-  echo 'password: '$NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
+  echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
   rm -f $FILE
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
