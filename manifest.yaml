@@ -114,3 +114,19 @@ actions:
       io-format: json
       mounts:
         main: /root
+  index-memories:
+    name: "Index media for Memories app"
+    description: "Indexes all media for the Memories media app and enables video support and previews.  You MUST install the Memories app AND stop the Nextcloud service before running this Action."
+    warning: ~
+    allowed-statuses:
+      - stopped
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: index-memories.sh
+      inject: true
+      args: []
+      io-format: json
+      mounts:
+        main: /root

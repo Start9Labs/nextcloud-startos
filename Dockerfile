@@ -5,7 +5,7 @@ ARG PLATFORM
 # aarch64 or x86_64
 ARG ARCH
 
-RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo \
+RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo exiftool ffmpeg \
 && apt-get install -qq --no-install-recommends ca-certificates dirmngr
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
@@ -21,6 +21,7 @@ ENV NEXTCLOUD_TRUSTED_DOMAINS=
 ENV TRUSTED_PROXIES=
 ENV EXISTING_DB false
 ENV APACHE_DISABLE_REWRITE_IP 1
+ENV NEXTCLOUD_DIR="/var/www/html"
 
 # entrypoint.sh and cron.sh dependencies
 RUN set -ex; \
@@ -109,6 +110,23 @@ RUN set -ex; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 
+# set additional config.php settings for Memories app
+# see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
+RUN { \
+        echo '\'preview_max_memory\' => 2048,'; \
+        echo '\'preview_max_filesize_image\' => 256,'; \
+        echo '\'enabledPreviewProviders\' => ' \
+        echo '    array (' \
+        echo '        0 => \'OC\\Preview\\Image\',' \
+        echo '        1 => \'OC\\Preview\\HEIC\',' \
+        echo '        2 => \'OC\\Preview\\TIFF\',' \
+        echo '        3 => \'OC\\Preview\\Movie\',' \
+        echo '        4 => \'OC\\Preview\\MKV\',' \
+        echo '        5 => \'OC\\Preview\\MP4\',' \
+        echo '        6 => \'OC\\Preview\\AVI\',' \
+        echo '    ),'; \
+    } > "$NEXTCLOUD_DIR/config/conf.php"; \
+
 # set recommended PHP.ini settings
 # see https://docs.nextcloud.com/server/latest/admin_manual/installation/server_tuning.html#enable-php-opcache
 RUN { \
@@ -182,4 +200,5 @@ VOLUME /etc/postgresql/13
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
+ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
 RUN chmod a+x /usr/local/bin/*.sh
