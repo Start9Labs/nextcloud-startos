@@ -5,7 +5,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
     {
       // 25.0.2 - initial release
       //
-      "25.0.3.2": {
+      "25.0.3.3": {
         up: compat.migrations.updateConfig(
           async (config, effects) => {
             if (
@@ -27,10 +27,10 @@ export const migration: T.ExpectedExports.migration = compat.migrations
             return config;
           },
           false, // setting to needs config due to potential bug on service update
-          { version: "25.0.3.2", type: "up" },
+          { version: "25.0.3.3", type: "up" },
         ),
         down: () => { throw new Error('Downgrade prohibited') },
       },
     },
-    "25.0.3.2",
+    "25.0.3.3",
   );
