@@ -115,8 +115,8 @@ actions:
       mounts:
         main: /root
   index-memories:
-    name: "Index media for Memories app"
-    description: "Indexes all media for the Memories media app and enables video support and previews.  You MUST install the Memories app AND stop the Nextcloud service before running this Action."
+    name: "Index Media for Memories App"
+    description: "Indexes all media for the Memories media app and enables video support and previews.  You MUST install the Memories app before running this Action."
     warning: ~
     allowed-statuses:
       - stopped

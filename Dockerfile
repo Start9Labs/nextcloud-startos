@@ -21,7 +21,6 @@ ENV NEXTCLOUD_TRUSTED_DOMAINS=
 ENV TRUSTED_PROXIES=
 ENV EXISTING_DB false
 ENV APACHE_DISABLE_REWRITE_IP 1
-ENV NEXTCLOUD_DIR="/var/www/html"
 
 # entrypoint.sh and cron.sh dependencies
 RUN set -ex; \
@@ -38,29 +37,10 @@ RUN set -ex; \
     mkdir -p /var/spool/cron/crontabs; \
     echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/www-data
 
-ENV PHP_MEMORY_LIMIT 4096M
-ENV PHP_UPLOAD_LIMIT 20480M
-
-# add pdlib deps and libs for Memories app
-# RUN apt-get update && apt-get install -y libx11-dev libopenblas-dev liblapack-dev git build-essential cmake
-# RUN git clone https://github.com/davisking/dlib.git
-# RUN cd dlib/dlib
-# RUN mkdir build
-# RUN cd build
-# RUN cmake -DBUILD_SHARED_LIBS=ON ..
-# RUN make
-# RUN sudo make install
-# RUN cd ..
-
-# RUN git clone https://github.com/goodspb/pdlib.git
-# RUN cd pdlib
-# RUN phpize
-# RUN ./configure
-# RUN make
-# RUN sudo make install
-
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
+ENV PHP_MEMORY_LIMIT 4096M
+ENV PHP_UPLOAD_LIMIT 20480M
 RUN set -ex; \
     \
     savedAptMark="$(apt-mark showmanual)"; \
@@ -101,7 +81,6 @@ RUN set -ex; \
         gmp \
     ; \
     \
-
 # pecl will claim success even if one install fails, so we need to perform each install separately
     pecl install APCu-5.1.21; \
     pecl install memcached-3.2.0; \
@@ -129,23 +108,6 @@ RUN set -ex; \
     \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
-
-# set additional config.php settings for Memories app
-# see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
-RUN { \
-        echo '\'preview_max_memory\' => 2048,'; \
-        echo '\'preview_max_filesize_image\' => 256,'; \
-        echo '\'enabledPreviewProviders\' => ' \
-        echo '    array (' \
-        echo '        0 => \'OC\\Preview\\Image\',' \
-        echo '        1 => \'OC\\Preview\\HEIC\',' \
-        echo '        2 => \'OC\\Preview\\TIFF\',' \
-        echo '        3 => \'OC\\Preview\\Movie\',' \
-        echo '        4 => \'OC\\Preview\\MKV\',' \
-        echo '        5 => \'OC\\Preview\\MP4\',' \
-        echo '        6 => \'OC\\Preview\\AVI\',' \
-        echo '    ),'; \
-    } > "$NEXTCLOUD_DIR/config/conf.php"; \
 
 # set recommended PHP.ini settings
 # see https://docs.nextcloud.com/server/latest/admin_manual/installation/server_tuning.html#enable-php-opcache
@@ -222,3 +184,21 @@ ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
 ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
 RUN chmod a+x /usr/local/bin/*.sh
+
+# add pdlib deps and libs for Memories app
+# RUN apt-get update && apt-get install -y libx11-dev libopenblas-dev liblapack-dev git build-essential cmake
+# RUN git clone https://github.com/davisking/dlib.git
+# RUN cd dlib/dlib
+# RUN mkdir build
+# RUN cd build
+# RUN cmake -DBUILD_SHARED_LIBS=ON ..
+# RUN make
+# RUN sudo make install
+# RUN cd ..
+
+# RUN git clone https://github.com/goodspb/pdlib.git
+# RUN cd pdlib
+# RUN phpize
+# RUN ./configure
+# RUN make
+# RUN sudo make install

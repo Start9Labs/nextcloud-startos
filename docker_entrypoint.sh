@@ -17,9 +17,8 @@ NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 
-if [ -e "$FILE" ] ; then {
+if [ -e "$FILE" ] ; then
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
-} 
 fi
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
@@ -39,8 +38,7 @@ echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: true' >> /root/start9/stats.yaml
 echo '    qr: false' >> /root/start9/stats.yaml
 
-
-if [ -e "$FILE" ] ; then {
+if [ -e "$FILE" ] ; then
   echo "Existing Nextcloud database found, starting frontend..."
   # echo "Checking cert"
   a2enmod ssl
@@ -67,6 +65,22 @@ if [ -e "$FILE" ] ; then {
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
+  # set additional config.php settings for Memories app
+  # see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
+  echo "
+  'preview_max_memory' => 2048,
+  'preview_max_filesize_image' => 256,
+  'enabledPreviewProviders' =>
+    array (
+        0 => 'OC\\Preview\\Image\',
+        1 => 'OC\\Preview\\HEIC\',
+        2 => 'OC\\Preview\\TIFF\',
+        3 => 'OC\\Preview\\Movie\',
+        4 => 'OC\\Preview\\MKV\',
+        5 => 'OC\\Preview\\MP4\',
+        6 => 'OC\\Preview\\AVI\',
+    )," >> "$FILE"
+
   echo "Changing Permissions..."
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
@@ -78,7 +92,7 @@ if [ -e "$FILE" ] ; then {
   sudo -u www-data php cron.php > /dev/null 2>&1
   touch /re.start
   exec tini -s -p SIGTERM /entrypoint.sh apache2-foreground 
-} else {
+else
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
@@ -115,7 +129,6 @@ if [ -e "$FILE" ] ; then {
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
   until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
   exit 0
-} 
 fi
 
 trap _term SIGTERM
