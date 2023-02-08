@@ -2,7 +2,6 @@ id: nextcloud
 title: Nextcloud
 version: 25.0.3.3
 release-notes: |
-  * Update backups to use new eOS APIs
   * Support for LAN and Tor simultaneously
   * Change default background jobs to cron
   * Added new action 'Restore Default Admin Password'
