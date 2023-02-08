@@ -3,7 +3,7 @@ title: Nextcloud
 version: 25.0.3.3
 release-notes: |
   * Support for LAN and Tor simultaneously
-  * Change default background jobs to cron
+  * Change default background jobs to cron (enables use of the RSS feed app "News")
   * Added new action 'Restore Default Admin Password'
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.3
 license: AGPL-3.0
