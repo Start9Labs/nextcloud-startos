@@ -74,8 +74,7 @@ if [ -e "$FILE" ] ; then {
   chmod -R 700 $POSTGRES_CONFIG
   echo 'Starting db server...'
   service postgresql start
-  echo 'Starting web server...'
-  sudo -u www-data php cron.php > /dev/null 2>&1
+  echo 'Starting web server...' 
   touch /re.start
   exec tini -s -p SIGTERM /entrypoint.sh apache2-foreground 
 } else {
