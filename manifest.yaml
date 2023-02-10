@@ -97,7 +97,6 @@ backup:
       nextcloud: /var/www/html
       db: /var/lib/postgresql/13
       dbconfig: /etc/postgresql/13
-      cert: /mnt/cert
   restore:
     type: docker
     image: compat
@@ -109,8 +108,7 @@ backup:
       main: /root/data
       nextcloud: /var/www/html
       db: /var/lib/postgresql/13
-      dbconfig: /etc/postgresql/
-      cert: /mnt/cert
+      dbconfig: /etc/postgresql/13
 migrations:
   from:
     "*":
