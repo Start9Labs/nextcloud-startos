@@ -1,7 +1,11 @@
 id: nextcloud 
 title: Nextcloud
-version: 25.0.2
-release-notes: Initial release for embassyOS
+version: 25.0.3.3
+release-notes: |
+  * Support for LAN and Tor simultaneously
+  * Change default background jobs to cron (enables use of the RSS feed app "News")
+  * Added new action 'Restore Default Admin Password'
+  * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.3
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -25,6 +29,7 @@ main:
     nextcloud: /var/www/html
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
+    cert: /mnt/cert
 health-checks:
   main:
     name: Web Interface
@@ -54,6 +59,9 @@ volumes:
     type: data
   dbconfig:
     type: data
+  cert:
+    type: certificate
+    interface-id: main
 interfaces:
   main:
     name: Nextcloud Web Interface
@@ -61,6 +69,7 @@ interfaces:
     tor-config:
       port-mapping:
         80: "80"
+        443: "443"
     lan-config:
       443:
         ssl: true
@@ -70,6 +79,7 @@ interfaces:
       - tcp
       - http
       - udp
+      - nextcloud
 dependencies: {}
 alerts:
   start: |
@@ -108,3 +118,20 @@ migrations:
     "*":
       type: script
       args: ["to"]
+actions:
+  reset-pass:
+    name: "Restore Default Admin Password"
+    description: "Resets the admin password to the default password."
+    warning: ~
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: reset-pass.sh
+      inject: true
+      args: []
+      io-format: json
+      mounts:
+        main: /root

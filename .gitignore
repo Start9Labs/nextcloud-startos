@@ -1,4 +1,5 @@
 nextcloud.s9pk
-image.tar
+.DS_Store
 scripts/*.js
 docker-images/
+.vscode/
