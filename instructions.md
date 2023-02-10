@@ -39,7 +39,7 @@ If you would like to setup a remote connection for your desktop client, you may 
 1. In the desktop client, click the account in the top left, then Settings. Click Network, then "Specify proxy manually as" and "SOCKS5 proxy." Enter "127.0.0.1" for the Host and "9050" for the port.
 1. Ensure you have the [Tor daemon running on your OS](https://start9.com/latest/user-manual/connecting/connecting-tor/tor-os/index).
 1. Back in the desktop client, click the account in the top left, then Add Account.
-1. On the following screen, click "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor Address. This must start with http:// and end with .onion. Click Next.
+1. On the following screen, click "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor Address. This must start with *https://* (NOTE: You __will__ need to manually change this) and end with .onion. Click Next.
 1. This will launch your browser and prompt you to log in to your account. Log in and then grant access as we did for LAN.
 1. You may wish to set up some select folders for remote sync, but for large files, it is best to sync on LAN only, so you can "Skip folders configuration" on the resulting screen if you wish. Check your connection by clicking the newly created account in the client app.
 
@@ -69,7 +69,7 @@ Congratulations! You now have Nextcloud setup across Desktop and Mobile with fil
 1. Download the Nextcloud App for your device from wherever you get your apps (App Store, F-Droid, Play Store, etc).
 1. For Android, make sure Orbot is running VPN mode and Nextcloud is added as a VPN app.
 1. Launch the Nextcloud app. Tap the account menu in the top right, then "Add account."
-1. Tap "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor Address. This must start with http:// and end with .onion. Tap Next.
+1. Tap "Log in," then enter your Nextcloud Tor server address, which you can copy from the Nextcloud page on your Embassy -> Interfaces - Tor Address. This must start with *https://* (NOTE: You __will__ need to manually change this) and end with .onion. Tap Next.
 1. This will launch your browser and prompt you to log in to your account. Log in and then grant access as we did for LAN.
 
 That's it! You may wish to set up some select folders for remote sync. Check your connection by clicking the newly created account in the client app.
