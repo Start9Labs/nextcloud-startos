@@ -76,7 +76,9 @@ if [ -e "$FILE" ] ; then {
   service postgresql start
   echo 'Starting web server...' 
   touch /re.start
-  exec tini -s -p SIGTERM /entrypoint.sh apache2-foreground 
+  /entrypoint.sh apache2-foreground &
+  nextcloud_process=$!
+  sleep 60 && sudo -u www-data php cron.php
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
@@ -117,6 +119,6 @@ if [ -e "$FILE" ] ; then {
 } 
 fi
 
-trap _term SIGTERM
+trap _term TERM
 
-wait -n $nextcloud_process
+wait $nextcloud_process
