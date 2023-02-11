@@ -39,7 +39,7 @@ RUN set -ex; \
 
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
-ENV PHP_MEMORY_LIMIT 2048M
+ENV PHP_MEMORY_LIMIT 3072M
 ENV PHP_UPLOAD_LIMIT 20480M
 RUN set -ex; \
     \
