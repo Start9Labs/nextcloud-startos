@@ -26,10 +26,10 @@ export const migration: T.ExpectedExports.migration = compat.migrations
             }
             return config;
           },
-          false, // setting to needs config due to potential bug on service update
+          true,
           { version: "25.0.3.3", type: "up" },
         ),
-        down: () => { throw new Error('Downgrade prohibited') },
+        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development recommendations') },
       },
     },
     "25.0.3.3",

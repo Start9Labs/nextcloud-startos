@@ -1,7 +1,8 @@
 id: nextcloud 
 title: Nextcloud
-version: 25.0.3.3
+version: 25.0.3.4
 release-notes: |
+  * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
   * Support for LAN and Tor simultaneously
   * Change default background jobs to cron (enables use of the RSS feed app "News")
   * Added new action 'Restore Default Admin Password'
