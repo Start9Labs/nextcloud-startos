@@ -69,19 +69,23 @@ if [ -e "$FILE" ] ; then {
 
   # set additional config.php settings for Memories app
   # see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
-  # echo "
-  # 'preview_max_memory' => 2048,
-  # 'preview_max_filesize_image' => 256,
-  # 'enabledPreviewProviders' =>
-  #   array (
-  #     'OC\\Preview\\Image',
-  #     'OC\\Preview\\HEIC',
-  #     'OC\\Preview\\TIFF',
-  #     'OC\\Preview\\Movie',
-  #     'OC\\Preview\\MKV',
-  #     'OC\\Preview\\MP4',
-  #     'OC\\Preview\\AVI',
-  #   )," >> "$FILE"
+  sed -i "s/);//" $FILE
+  echo "  'preview_max_memory' => 2048,
+  'preview_max_filesize_image' => 256,
+  'preview_max_x' => 2048,
+  'preview_max_y' => 2048,
+  'enabledPreviewProviders' =>
+    array (
+      'OC\\Preview\\Image',
+      'OC\\Preview\\HEIC',
+      'OC\\Preview\\TIFF',
+      'OC\\Preview\\Movie',
+      'OC\\Preview\\MKV',
+      'OC\\Preview\\MP4',
+      'OC\\Preview\\AVI',
+    ),
+  );" >> $FILE
+  
 
   echo "Changing Permissions..."
   chown -R postgres:postgres $POSTGRES_DATADIR
