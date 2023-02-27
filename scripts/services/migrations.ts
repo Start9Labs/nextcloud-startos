@@ -3,7 +3,7 @@ import { compat, matches, types as T } from "../deps.ts";
 export const migration: T.ExpectedExports.migration = compat.migrations
   .fromMapping(
     {
-      "25.0.3.3": {
+      "25.0.3.4": {
         up: compat.migrations.updateConfig(
           async (config, effects) => {
             if (
@@ -25,7 +25,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
             return config;
           },
           false, // setting to needs config due to potential bug on service update
-          { version: "25.0.3.3", type: "up" },
+          { version: "25.0.3.4", type: "up" },
         ),
         down: () => { throw new Error('Downgrades prohibited') },
       },
