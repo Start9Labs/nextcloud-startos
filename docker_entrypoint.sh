@@ -67,6 +67,22 @@ if [ -e "$FILE" ] ; then {
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
+  # set additional config.php settings for Memories app
+  # see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
+  # echo "
+  # 'preview_max_memory' => 2048,
+  # 'preview_max_filesize_image' => 256,
+  # 'enabledPreviewProviders' =>
+  #   array (
+  #     'OC\\Preview\\Image',
+  #     'OC\\Preview\\HEIC',
+  #     'OC\\Preview\\TIFF',
+  #     'OC\\Preview\\Movie',
+  #     'OC\\Preview\\MKV',
+  #     'OC\\Preview\\MP4',
+  #     'OC\\Preview\\AVI',
+  #   )," >> "$FILE"
+
   echo "Changing Permissions..."
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG

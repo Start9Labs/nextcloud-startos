@@ -1,11 +1,13 @@
 id: nextcloud 
 title: Nextcloud
-version: 25.0.3.3
+version: 25.0.4
 release-notes: |
-  * Support for LAN and Tor simultaneously
-  * Change default background jobs to cron (enables use of the RSS feed app "News")
-  * Added new action 'Restore Default Admin Password'
-  * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.3
+  * Added new action 'Index Media for Memories App'
+    * Indexes photos and videos for your desired media folders
+    * Enables video transcoding and HLS
+  * Increase memory limit to accomodate indexing
+  * 
+  * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.4
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -133,5 +135,17 @@ actions:
       inject: true
       args: []
       io-format: json
-      mounts:
-        main: /root
+  index-memories:
+    name: "Index Media for Memories App"
+    description: "Indexes all media for the Memories media app and enables video support and previews.  You MUST install the Memories app before running this Action."
+    warning: ~
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: index-memories.sh
+      inject: true
+      args: []
+      io-format: json

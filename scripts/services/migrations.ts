@@ -3,8 +3,6 @@ import { compat, matches, types as T } from "../deps.ts";
 export const migration: T.ExpectedExports.migration = compat.migrations
   .fromMapping(
     {
-      // 25.0.2 - initial release
-      //
       "25.0.3.3": {
         up: compat.migrations.updateConfig(
           async (config, effects) => {
