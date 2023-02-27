@@ -38,6 +38,20 @@ echo '    description: The default admin password for Nextcloud. If this passwor
 echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: true' >> /root/start9/stats.yaml
 echo '    qr: false' >> /root/start9/stats.yaml
+echo '  Nextcloud WebDAV Base LAN URL:' >> /root/start9/stats.yaml
+echo '    type: string' >> /root/start9/stats.yaml
+echo '    value: "'"$LAN_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
+echo '    description: Address for WebDAV syncing over LAN' >> /root/start9/stats.yaml
+echo '    copyable: true' >> /root/start9/stats.yaml
+echo '    masked: false' >> /root/start9/stats.yaml
+echo '    qr: true' >> /root/start9/stats.yaml
+echo '  Nextcloud WebDAV Base Tor URL:' >> /root/start9/stats.yaml
+echo '    type: string' >> /root/start9/stats.yaml
+echo '    value: "'"$TOR_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
+echo '    description: Address for WebDAV syncing over Tor' >> /root/start9/stats.yaml
+echo '    copyable: true' >> /root/start9/stats.yaml
+echo '    masked: false' >> /root/start9/stats.yaml
+echo '    qr: true' >> /root/start9/stats.yaml
 
 
 if [ -e "$FILE" ] ; then {
@@ -138,6 +152,8 @@ if [ -e "$FILE" ] ; then {
   exit 0
 } 
 fi
+
+exec busybox crond -f -l 0 -L /dev/stdout
 
 trap _term TERM
 

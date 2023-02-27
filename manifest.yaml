@@ -2,9 +2,12 @@ id: nextcloud
 title: Nextcloud
 version: 25.0.4
 release-notes: |
-  * Added new action 'Index Media for Memories App'
+  * Fix bug in `cron` jobs
+  * Add WebDAV URLs to 'Properties'
+  * Added new action 'Index Media for Memories'
     * Indexes photos and videos for your desired media folders
     * Enables video transcoding and HLS
+  * Added new action for 'Setup Map for Memories'
   * Increase memory limit to accomodate indexing, etc
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.4
 license: AGPL-3.0
@@ -134,8 +137,22 @@ actions:
       inject: true
       args: []
       io-format: json
+  places-setup:
+    name: "Setup Map for Memories"
+    description: "This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application.  This mostly consists of downloading map data.  You MUST install the Memories app before running this Action, and you will want to run the \"Index Media for Memories\" Action after completion."
+    warning: "This is an intensive process that will require non-trivial system resources and time.  On an Embassy Pro this will take a few minutes, and on an Embassy One, may take up to an hour.  If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time.  Estimated space on disk is 2-3 GB."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: places-setup.sh
+      inject: true
+      args: []
+      io-format: json
   index-memories:
-    name: "Index Media for Memories App"
+    name: "Index Media for Memories"
     description: "Indexes all media for the Memories media app and enables video support and previews.  You MUST install the Memories app before running this Action."
     warning: ~
     allowed-statuses:

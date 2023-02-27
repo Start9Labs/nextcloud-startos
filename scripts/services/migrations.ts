@@ -27,8 +27,9 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           false, // setting to needs config due to potential bug on service update
           { version: "25.0.3.3", type: "up" },
         ),
-        down: () => { throw new Error('Downgrade prohibited') },
+        down: () => { throw new Error('Downgrades prohibited') },
       },
     },
-    "25.0.3.3",
+    // No migrations for 25.0.4
+    "25.0.4",
   );
