@@ -72,7 +72,7 @@ if [ -e "$FILE" ] ; then {
   done
   cp /mnt/cert/main.cert.pem /etc/ssl/certs/ssl-cert-snakeoil.pem
 
-  echo "Modifing Configuration files..."
+  echo "Modifying Configuration files..."
   sed -i "/'overwriteprotocol' =>.*/d" $FILE
   sleep 3
   sed -i "/'dbtype' => 'pgsql',/a\\ \ 'overwriteprotocol' => 'https'\," $FILE
