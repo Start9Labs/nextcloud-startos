@@ -100,6 +100,8 @@ if [ -e "$FILE" ] ; then {
     ),
   );" >> $FILE
   
+  # Enable bz2 in PHP for Face Recognition (optional app install)
+  docker-php-ext-install bz2
 
   echo "Changing Permissions..."
   chown -R postgres:postgres $POSTGRES_DATADIR

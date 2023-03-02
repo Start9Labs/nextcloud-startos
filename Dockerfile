@@ -5,7 +5,7 @@ ARG PLATFORM
 # aarch64 or x86_64
 ARG ARCH
 
-RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo ed exiftool libc-bin ffmpeg \
+RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo ed exiftool libc-bin ffmpeg gnupg2 \
 && apt-get install -qq --no-install-recommends ca-certificates dirmngr
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
@@ -36,6 +36,32 @@ RUN set -ex; \
     \
     mkdir -p /var/spool/cron/crontabs; \
     echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/www-data
+
+# Enable repo and install dlib and other deps for some NC apps
+# RUN echo "deb https://repo.delellis.com.ar bullseye bullseye" > /etc/apt/sources.list.d/20-pdlib.list \
+#   && wget -qO - https://repo.delellis.com.ar/repo.gpg.key | apt-key add -
+RUN apt update \
+  && apt install -y libopenblas-dev liblapack-dev libbz2-dev cmake make gcc libc-dev g++ unzip libx11-dev pkgconf libpng-dev
+RUN docker-php-ext-install bz2
+
+ARG DLIB_BRANCH=v19.19
+
+RUN wget -c -q https://github.com/davisking/dlib/archive/${DLIB_BRANCH}.tar.gz \
+  && tar xf ${DLIB_BRANCH}.tar.gz \
+  && mv dlib-* dlib \
+  && cd dlib/dlib \
+  && mkdir build \
+  && cd build \
+  && cmake -DBUILD_SHARED_LIBS=ON --config Release .. \
+  && make \
+  && make install
+
+# Install pdlib extension
+RUN wget https://github.com/goodspb/pdlib/archive/master.zip \
+  && mkdir -p /usr/src/php/ext/ \
+  && unzip -d /usr/src/php/ext/ master.zip \
+  && rm master.zip
+RUN docker-php-ext-install pdlib-master
 
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
@@ -130,6 +156,7 @@ RUN { \
         echo 'post_max_size=${PHP_UPLOAD_LIMIT}'; \
     } > "${PHP_INI_DIR}/conf.d/nextcloud.ini"; \
     \
+    # echo 'memory_limit=${PHP_MEMORY_LIMIT}' > "${PHP_INI_DIR}/conf.d/memory-limit.ini"; \
     mkdir /var/www/data; \
     chown -R www-data:root /var/www; \
     chmod -R g=u /var/www; 
@@ -180,10 +207,11 @@ COPY docker/25/apache/entrypoint.sh /
 VOLUME /var/lib/postgresql/13
 VOLUME /etc/postgresql/13
 
-# Import Entrypoint and Actions scripts and give permissions
+# Import .ini files, Entrypoint, Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
-ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
 ADD actions/places-setup.sh /usr/local/bin/places-setup.sh
+ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
+ADD actions/download-models.sh /usr/local/bin/download-models.sh
 RUN chmod a+x /usr/local/bin/*.sh
