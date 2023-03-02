@@ -29,7 +29,15 @@ export const migration: T.ExpectedExports.migration = compat.migrations
         ),
         down: () => { throw new Error('Downgrades prohibited') },
       },
+      // No config migration for 25.0.4
+      "25.0.4": {
+        up: compat.migrations.updateConfig(
+          x => x,
+          // setting to needs config due to potential bug on service update
+          false,
+        ),
+        down: () => { throw new Error('Downgrades prohibited') },
+      },
     },
-    // No migrations for 25.0.4
     "25.0.4",
   );
