@@ -9,7 +9,7 @@ release-notes: |
       * Indexes photos and videos for your desired media folders
       * Enables video transcoding and HLS
     * 'Setup Map for Memories'
-    * 'Download machine learning models for Recognize'
+    * 'Download Machine Learning Models for Recognize'
   * Increase memory limit to accomodate indexing, etc
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.4
 license: AGPL-3.0
@@ -168,7 +168,7 @@ actions:
       args: []
       io-format: json
   download-models:
-    name: "Download machine learning models for Recognize"
+    name: "Download Machine Learning Models for Recognize"
     description: "This downloads the machine learning models required for identifying objects and faces with the Recognize app.  You MUST install the Recognize app in your Nextcloud instance before running this action."
     warning: "This process can take up to 15 minutes on an Embassy One.  It will consume approximately 1-2 GB of disk space."
     allowed-statuses:
