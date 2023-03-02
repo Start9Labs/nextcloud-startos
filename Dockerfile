@@ -186,4 +186,5 @@ ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
 ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
 ADD actions/places-setup.sh /usr/local/bin/places-setup.sh
+ADD actions/download-models.sh /usr/local/bin/download-models.sh
 RUN chmod a+x /usr/local/bin/*.sh
