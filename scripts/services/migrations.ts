@@ -4,7 +4,7 @@ import { compat, matches, types as T } from "../deps.ts";
 export const migration: T.ExpectedExports.migration = compat.migrations
   .fromMapping(
     {
-      "25.0.3.4": {
+      "25.0.3.3": {
         up: compat.migrations.updateConfig(
           async (config, effects) => {
             if (
@@ -25,17 +25,16 @@ export const migration: T.ExpectedExports.migration = compat.migrations
             }
             return config;
           },
-          false, // setting to needs config due to potential bug on service update
-          { version: "25.0.3.4", type: "up" },
+          true,
+          { version: "25.0.3.3", type: "up" },
         ),
-        down: () => { throw new Error('Downgrades prohibited') },
+        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development recommendations') },
       },
-      // No config migration for 25.0.4
       "25.0.4": {
         up: compat.migrations.updateConfig(
           x => x,
-          // setting to needs config due to potential bug on service update
           false,
+          { version: "25.0.4", type: "up" },
         ),
         down: () => { throw new Error('Downgrades prohibited') },
       },
