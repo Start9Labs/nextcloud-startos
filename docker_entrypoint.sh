@@ -9,6 +9,7 @@ _term() {
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
+LOG_LEVEL=$(yq e '.log-level' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER='embassy'
 POSTGRES_DATADIR="/var/lib/postgresql/13"
@@ -76,6 +77,7 @@ if [ -e "$FILE" ] ; then {
   sed -i "/'overwriteprotocol' =>.*/d" $FILE
   sleep 3
   sed -i "/'dbtype' => 'pgsql',/a\\ \ 'overwriteprotocol' => 'https'\," $FILE
+
   
   until [ -e "/etc/apache2/sites-enabled/000-default.conf" ]; do { sleep 5; } done
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
@@ -88,6 +90,7 @@ if [ -e "$FILE" ] ; then {
   'preview_max_filesize_image' => 256,
   'preview_max_x' => 2048,
   'preview_max_y' => 2048,
+  'loglevel' => $LOG_LEVEL,
   'enabledPreviewProviders' =>
     array (
       'OC\\Preview\\Image',
