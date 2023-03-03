@@ -41,8 +41,6 @@ case "$LOG_LEVEL_RAW" in
         ;;
 esac
 
-echo "loglevel: $loglevel"   # This line is just for testing, you can remove it
-
 if [ -e "$FILE" ] ; then {
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
 } 
