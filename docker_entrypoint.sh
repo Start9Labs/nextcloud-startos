@@ -9,7 +9,6 @@ _term() {
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
-LOG_LEVEL=$(yq e '.log-level' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 NEXTCLOUD_ADMIN_USER='embassy'
 POSTGRES_DATADIR="/var/lib/postgresql/13"
@@ -17,6 +16,32 @@ POSTGRES_CONFIG="/etc/postgresql/13"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
+
+LOG_LEVEL_RAW=$(yq e '.log-level' /root/start9/config.yaml)
+
+case "$LOG_LEVEL_RAW" in
+    "debug")
+        LOG_LEVEL=0
+        ;;
+    "info")
+        LOG_LEVEL=1
+        ;;
+    "warn")
+        LOG_LEVEL=2
+        ;;
+    "error")
+        LOG_LEVEL=3
+        ;;
+    "fatal")
+        LOG_LEVEL=4
+        ;;
+    *)
+        echo "Unknown raw log level: $LOG_LEVEL_RAW"
+        exit 1
+        ;;
+esac
+
+echo "loglevel: $loglevel"   # This line is just for testing, you can remove it
 
 if [ -e "$FILE" ] ; then {
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
