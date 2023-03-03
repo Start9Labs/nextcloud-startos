@@ -5,6 +5,7 @@ set -ea
 _term() { 
   echo "Caught SIGTERM signal!" 
   kill -TERM "$nextcloud_process" 2>/dev/null
+  kill -TERM "$crond_process" 2>/dev/null
 }
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
@@ -138,6 +139,8 @@ if [ -e "$FILE" ] ; then {
   touch /re.start
   /entrypoint.sh apache2-foreground &
   nextcloud_process=$!
+  busybox crond -f -l 0 -L /dev/stdout &
+  crond_process=$!
   sleep 60 && sudo -u www-data php cron.php
 } else {
   #Starting and Configuring PostgreSQL
@@ -179,8 +182,6 @@ if [ -e "$FILE" ] ; then {
 } 
 fi
 
-exec busybox crond -f -l 0 -L /dev/stdout
-
 trap _term TERM
 
-wait $nextcloud_process
+wait $nextcloud_process $crond_process
