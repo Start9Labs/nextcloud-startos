@@ -1,4 +1,3 @@
-// deno-lint-ignore-file
 import { compat, matches, types as T } from "../deps.ts";
 
 export const migration: T.ExpectedExports.migration = compat.migrations
@@ -28,7 +27,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           true,
           { version: "25.0.3.3", type: "up" },
         ),
-        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development recommendations') },
+        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
       },
       "25.0.4": {
         up: compat.migrations.updateConfig(

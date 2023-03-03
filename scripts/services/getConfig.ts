@@ -21,7 +21,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
   },
   "log-level": {
     "name": "Log Level",
-    "description": 'How much logs do you want? The most is "Debug" and the least is "Fatal" (neither recommended). "Warn" is recommended in most cases.',
+    "description": 'How many logs do you want? The most is "Debug" and the least is "Fatal" (neither recommended). "Warn" is recommended in most cases.',
     "type": "enum",
     "values": ["debug", "info", "warn", "error", "fatal"],
     "value-names": {
