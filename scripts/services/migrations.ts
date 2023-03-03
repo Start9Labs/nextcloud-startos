@@ -32,8 +32,10 @@ export const migration: T.ExpectedExports.migration = compat.migrations
       },
       "25.0.4": {
         up: compat.migrations.updateConfig(
-          x => x,
-          false,
+          _ =>  ({
+            "log-level": "2",
+          }),
+          true,
           { version: "25.0.4", type: "up" },
         ),
         down: () => { throw new Error('Downgrades prohibited') },
