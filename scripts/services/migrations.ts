@@ -33,12 +33,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
       // No config migration for 25.0.4
       "25.0.4": {
         up: compat.migrations.updateConfig(
-          (config: any, _) => {
-            return {
-              ...config,
-              "log-level": "2"
-            }
-          },
+          x => x,
           // setting to needs config due to potential bug on service update
           false,
         ),

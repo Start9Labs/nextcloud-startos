@@ -32,5 +32,5 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "4": "Fatal",
     },
     "default": "2",
-  }
+  },
 });
