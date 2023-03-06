@@ -7,7 +7,7 @@ else
     if ! [ -e "/re.start" ]; then 
         echo "Nextcloud is initializing" >&2
         exit 61
-    elif ! curl --silent --fail nextcloud.embassy &>/dev/null; then
+    elif ! curl --silent --fail nextcloud.embassy/login &>/dev/null; then
         echo "Web interface is unreachable" >&2
         exit 1
     fi
