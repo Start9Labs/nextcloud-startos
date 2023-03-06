@@ -3,7 +3,7 @@ title: Nextcloud
 version: 25.0.4
 release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
-  * Bugfixes for healthcheck and `cron`
+  * Several bugfixes
   * Add WebDAV URLs to 'Properties'
   * Added new Actions for Nextcloud media apps:
     * 'Index Media for Memories'

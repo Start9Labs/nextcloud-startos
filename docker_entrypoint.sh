@@ -146,7 +146,6 @@ if [ -e "$FILE" ] ; then {
   nextcloud_process=$!
   busybox crond -f -l 0 -L /dev/stdout &
   crond_process=$!
-  sleep 60 && sudo -u www-data php cron.php
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
@@ -176,8 +175,9 @@ if [ -e "$FILE" ] ; then {
   chmod -R 0600 /var/lib/postgresql/.pgpass
   # Installing Nextcloud Frontend
   echo "Configuring frontend..."
-  sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbitcoin." > \/re.start' /entrypoint.sh 
+  sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
   /entrypoint.sh apache2-foreground &
+  nextcloud_process=$!
   echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
   echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
