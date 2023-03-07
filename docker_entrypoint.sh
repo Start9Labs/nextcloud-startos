@@ -177,7 +177,6 @@ if [ -e "$FILE" ] ; then {
   echo "Configuring frontend..."
   sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
   /entrypoint.sh apache2-foreground &
-  nextcloud_process=$!
   echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
   echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
@@ -189,4 +188,4 @@ fi
 
 trap _term TERM
 
-wait $nextcloud_process $crond_process
+wait $crond_process $nextcloud_process
