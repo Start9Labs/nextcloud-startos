@@ -5,7 +5,7 @@ ARG PLATFORM
 # aarch64 or x86_64
 ARG ARCH
 
-RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo ed \
+RUN apt-get update && apt-get install -y wget libmagickcore-6.q16-6-extra postgresql-13 tini bash sudo ed exiftool ffmpeg \
 && apt-get install -qq --no-install-recommends ca-certificates dirmngr
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
@@ -39,7 +39,7 @@ RUN set -ex; \
 
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
-ENV PHP_MEMORY_LIMIT 2048M
+ENV PHP_MEMORY_LIMIT 3072M
 ENV PHP_UPLOAD_LIMIT 20480M
 RUN set -ex; \
     \
@@ -118,6 +118,8 @@ RUN { \
         echo 'opcache.memory_consumption=128'; \
         echo 'opcache.save_comments=1'; \
         echo 'opcache.revalidate_freq=60'; \
+        echo 'opcache.jit=1255'; \
+        echo 'opcache.jit_buffer_size=128M'; \
     } > "${PHP_INI_DIR}/conf.d/opcache-recommended.ini"; \
     \
     echo 'apc.enable_cli=1' >> "${PHP_INI_DIR}/conf.d/docker-php-ext-apcu.ini"; \
@@ -143,7 +145,7 @@ RUN a2enmod headers rewrite remoteip ;\
     } > /etc/apache2/conf-available/remoteip.conf;\
     a2enconf remoteip
 
-ENV NEXTCLOUD_VERSION 25.0.3
+ENV NEXTCLOUD_VERSION 25.0.4
 
 RUN set -ex; \
     fetchDeps=" \
@@ -178,8 +180,11 @@ COPY docker/25/apache/entrypoint.sh /
 VOLUME /var/lib/postgresql/13
 VOLUME /etc/postgresql/13
 
-# Import Entrypoint and give permissions
+# Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
+ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
+ADD actions/places-setup.sh /usr/local/bin/places-setup.sh
+ADD actions/download-models.sh /usr/local/bin/download-models.sh
 RUN chmod a+x /usr/local/bin/*.sh

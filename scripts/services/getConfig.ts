@@ -17,6 +17,20 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "subtype": "package",
       "package-id": "nextcloud",
       "target": "lan-address",
-      "interface": "main"
-  }
+      "interface": "main",
+  },
+  "log-level": {
+    "name": "Log Level",
+    "description": 'How many logs do you want? The most is "Debug" and the least is "Fatal" (neither recommended). "Warn" is recommended in most cases.',
+    "type": "enum",
+    "values": ["debug", "info", "warn", "error", "fatal"],
+    "value-names": {
+      "debug": "Debug",
+      "info": "Info",
+      "warn": "Warn",
+      "error": "Error",
+      "fatal": "Fatal",
+    },
+    "default": "warn",
+  },
 });

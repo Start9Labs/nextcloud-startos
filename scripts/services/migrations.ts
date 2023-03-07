@@ -3,8 +3,6 @@ import { compat, matches, types as T } from "../deps.ts";
 export const migration: T.ExpectedExports.migration = compat.migrations
   .fromMapping(
     {
-      // 25.0.2 - initial release
-      //
       "25.0.3.3": {
         up: compat.migrations.updateConfig(
           async (config, effects) => {
@@ -29,8 +27,18 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           true,
           { version: "25.0.3.3", type: "up" },
         ),
-        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development recommendations') },
+        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
+      },
+      "25.0.4": {
+        up: compat.migrations.updateConfig(
+          _ =>  ({
+            "log-level": "warn",
+          }),
+          true,
+          { version: "25.0.4", type: "up" },
+        ),
+        down: () => { throw new Error('Downgrades prohibited') },
       },
     },
-    "25.0.3.3",
+    "25.0.4",
   );

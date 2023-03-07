@@ -5,6 +5,7 @@ set -ea
 _term() { 
   echo "Caught SIGTERM signal!" 
   kill -TERM "$nextcloud_process" 2>/dev/null
+  kill -TERM "$crond_process" 2>/dev/null
 }
 echo "Starting Container..."
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
@@ -16,6 +17,30 @@ POSTGRES_CONFIG="/etc/postgresql/13"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
+
+LOG_LEVEL_RAW=$(yq e '.log-level' /root/start9/config.yaml)
+
+case "$LOG_LEVEL_RAW" in
+    "debug")
+        LOG_LEVEL=0
+        ;;
+    "info")
+        LOG_LEVEL=1
+        ;;
+    "warn")
+        LOG_LEVEL=2
+        ;;
+    "error")
+        LOG_LEVEL=3
+        ;;
+    "fatal")
+        LOG_LEVEL=4
+        ;;
+    *)
+        echo "Unknown raw log level: $LOG_LEVEL_RAW"
+        exit 1
+        ;;
+esac
 
 if [ -e "$FILE" ] ; then {
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
@@ -38,6 +63,20 @@ echo '    description: The default admin password for Nextcloud. If this passwor
 echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: true' >> /root/start9/stats.yaml
 echo '    qr: false' >> /root/start9/stats.yaml
+echo '  Nextcloud WebDAV Base LAN URL:' >> /root/start9/stats.yaml
+echo '    type: string' >> /root/start9/stats.yaml
+echo '    value: "'"$LAN_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
+echo '    description: Address for WebDAV syncing over LAN' >> /root/start9/stats.yaml
+echo '    copyable: true' >> /root/start9/stats.yaml
+echo '    masked: false' >> /root/start9/stats.yaml
+echo '    qr: true' >> /root/start9/stats.yaml
+echo '  Nextcloud WebDAV Base Tor URL:' >> /root/start9/stats.yaml
+echo '    type: string' >> /root/start9/stats.yaml
+echo '    value: "'"$TOR_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
+echo '    description: Address for WebDAV syncing over Tor' >> /root/start9/stats.yaml
+echo '    copyable: true' >> /root/start9/stats.yaml
+echo '    masked: false' >> /root/start9/stats.yaml
+echo '    qr: true' >> /root/start9/stats.yaml
 
 
 if [ -e "$FILE" ] ; then {
@@ -58,15 +97,42 @@ if [ -e "$FILE" ] ; then {
   done
   cp /mnt/cert/main.cert.pem /etc/ssl/certs/ssl-cert-snakeoil.pem
 
-  echo "Modifing Configuration files..."
+  echo "Modifying Configuration files..."
   sed -i "/'overwriteprotocol' =>.*/d" $FILE
   sleep 3
   sed -i "/'dbtype' => 'pgsql',/a\\ \ 'overwriteprotocol' => 'https'\," $FILE
-  
+
   until [ -e "/etc/apache2/sites-enabled/000-default.conf" ]; do { sleep 5; } done
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
+  # Remove default log level and add user-selected from Config
+  sed -i "/'loglevel' => .*/d" $FILE
+  sed -i "/);/d" $FILE
+  echo "  'loglevel' => $LOG_LEVEL,
+  );" >> $FILE
+
+  # set additional config.php settings for Memories app (if they do not exist yet)
+  # see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
+  if [ -z "$(grep "'preview_max_filesize_image'" "$FILE")" ]; then 
+  sed -i "/);/d" $FILE
+  echo "  'preview_max_memory' => 2048,
+  'preview_max_filesize_image' => 256,
+  'preview_max_x' => 2048,
+  'preview_max_y' => 2048,
+  'enabledPreviewProviders' =>
+    array (
+      'OC\\Preview\\Image',
+      'OC\\Preview\\HEIC',
+      'OC\\Preview\\TIFF',
+      'OC\\Preview\\Movie',
+      'OC\\Preview\\MKV',
+      'OC\\Preview\\MP4',
+      'OC\\Preview\\AVI',
+    ),
+  );" >> $FILE
+  fi
+  
   echo "Changing Permissions..."
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
@@ -78,7 +144,8 @@ if [ -e "$FILE" ] ; then {
   touch /re.start
   /entrypoint.sh apache2-foreground &
   nextcloud_process=$!
-  sleep 60 && sudo -u www-data php cron.php
+  busybox crond -f -l 0 -L /dev/stdout &
+  crond_process=$!
 } else {
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
@@ -108,7 +175,7 @@ if [ -e "$FILE" ] ; then {
   chmod -R 0600 /var/lib/postgresql/.pgpass
   # Installing Nextcloud Frontend
   echo "Configuring frontend..."
-  sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbitcoin." > \/re.start' /entrypoint.sh 
+  sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
   /entrypoint.sh apache2-foreground &
   echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
   echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
@@ -121,4 +188,4 @@ fi
 
 trap _term TERM
 
-wait $nextcloud_process
+wait $crond_process $nextcloud_process
