@@ -1,6 +1,6 @@
 id: nextcloud 
 title: Nextcloud
-version: 25.0.4
+version: 25.0.4.1
 release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
   * Several bugfixes
@@ -12,6 +12,7 @@ release-notes: |
     * 'Setup Map for Memories'
     * 'Download Machine Learning Models for Recognize'
   * Increase memory limit to accomodate indexing, etc
+  * Added config options for default locale and phone region
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.4
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper

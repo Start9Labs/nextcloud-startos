@@ -29,16 +29,17 @@ export const migration: T.ExpectedExports.migration = compat.migrations
         ),
         down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
       },
-      "25.0.4": {
+      "25.0.4.1": {
         up: compat.migrations.updateConfig(
           _ =>  ({
-            "log-level": "warn",
+            "default-locale": "en_US",
+            "default-phone-region": "US",
           }),
           true,
-          { version: "25.0.4", type: "up" },
+          { version: "25.0.4.1", type: "up" },
         ),
-        down: () => { throw new Error('Downgrades prohibited') },
+        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
       },
     },
-    "25.0.4",
+    "25.0.4.1",
   );
