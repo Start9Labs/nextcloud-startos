@@ -35,7 +35,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
             "default-locale": "en_US",
             "default-phone-region": "US",
           }),
-          true,
+          false,
           { version: "25.0.4.1", type: "up" },
         ),
         down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
