@@ -18,29 +18,8 @@ NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 
-LOG_LEVEL_RAW=$(yq e '.log-level' /root/start9/config.yaml)
-
-case "$LOG_LEVEL_RAW" in
-    "debug")
-        LOG_LEVEL=0
-        ;;
-    "info")
-        LOG_LEVEL=1
-        ;;
-    "warn")
-        LOG_LEVEL=2
-        ;;
-    "error")
-        LOG_LEVEL=3
-        ;;
-    "fatal")
-        LOG_LEVEL=4
-        ;;
-    *)
-        echo "Unknown raw log level: $LOG_LEVEL_RAW"
-        exit 1
-        ;;
-esac
+DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
+DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 
 if [ -e "$FILE" ] ; then {
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
@@ -107,9 +86,11 @@ if [ -e "$FILE" ] ; then {
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
   # Remove default log level and add user-selected from Config
-  sed -i "/'loglevel' => .*/d" $FILE
+  sed -i "/'default_locale' => .*/d" $FILE
+  sed -i "/'default_phone_region' => .*/d" $FILE
   sed -i "/);/d" $FILE
-  echo "  'loglevel' => $LOG_LEVEL,
+  echo "  'default_locale' => '$DEFAULT_LOCALE',
+  'default_phone_region' => '$DEFAULT_PHONE_REGION',
   );" >> $FILE
 
   # set additional config.php settings for Memories app (if they do not exist yet)
