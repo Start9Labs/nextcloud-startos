@@ -1,19 +1,9 @@
 id: nextcloud 
 title: Nextcloud
-version: 25.0.4.1
+version: 25.0.5
 release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
-  * Several bugfixes
-  * Add WebDAV URLs to 'Properties'
-  * Added new Actions for Nextcloud media apps:
-    * 'Index Media for Memories'
-      * Indexes photos and videos for your desired media folders
-      * Enables video transcoding and HLS
-    * 'Setup Map for Memories'
-    * 'Download Machine Learning Models for Recognize'
-  * Increase memory limit to accomodate indexing, etc
-  * Added config options for default locale and phone region
-  * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) under Version 25.0.4
+  * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 25.0.5
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
