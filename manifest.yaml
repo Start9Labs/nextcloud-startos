@@ -131,6 +131,20 @@ actions:
       inject: true
       args: []
       io-format: json
+  disable-maintenance-mode:
+    name: "Disable Maintenance Mode"
+    description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update or restart.  Please be patient and give it plenty of opportunity to progress organically.  Resort to this action when necessary."
+    warning: ~
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: disable-maintenance-mode.sh
+      inject: true
+      args: []
+      io-format: json
   places-setup:
     name: "Setup Map for Memories"
     description: "This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application.  This mostly consists of downloading map data.  You MUST install the Memories app before running this Action, and you will want to run the \"Index Media for Memories\" Action after completion."
