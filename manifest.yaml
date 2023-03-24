@@ -4,6 +4,7 @@ version: 25.0.5
 release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 25.0.5
+  * Add Action to `Disable Maintenance Mode`
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -133,7 +134,7 @@ actions:
       io-format: json
   disable-maintenance-mode:
     name: "Disable Maintenance Mode"
-    description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update or restart.  Please be patient and give it plenty of opportunity to progress organically.  Resort to this action when necessary."
+    description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including NC app updates) or restart.  The typical solution is to BE PATIENT and give it plenty of opportunity to progress organically.  Resort to this action only if necessary."
     warning: ~
     allowed-statuses:
       - running
