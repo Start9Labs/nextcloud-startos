@@ -21,10 +21,10 @@ FILE="/var/www/html/config/config.php"
 DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 
-if [ -e "$FILE" ] ; then {
+if [ -e "$FILE" ] ; then
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
-} 
 fi
+
 # Properties Page
 echo 'version: 2' > /root/start9/stats.yaml
 echo 'data:' >> /root/start9/stats.yaml
@@ -58,7 +58,7 @@ echo '    masked: false' >> /root/start9/stats.yaml
 echo '    qr: true' >> /root/start9/stats.yaml
 
 
-if [ -e "$FILE" ] ; then {
+if [ -e "$FILE" ] ; then
   echo "Existing Nextcloud database found, starting frontend..."
   # echo "Checking cert"
   a2enmod ssl
@@ -85,33 +85,37 @@ if [ -e "$FILE" ] ; then {
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
-  # Remove default log level and add user-selected from Config
+  # Add default locale and phone region from config and turn off update checker from UI
   sed -i "/'default_locale' => .*/d" $FILE
   sed -i "/'default_phone_region' => .*/d" $FILE
+  sed -i "/'updatechecker' => .*/d" $FILE
+  sed -i "/'updater.server.url' => .*/d" $FILE
   sed -i "/);/d" $FILE
   echo "  'default_locale' => '$DEFAULT_LOCALE',
   'default_phone_region' => '$DEFAULT_PHONE_REGION',
+  'updatechecker' => false,
+  'updater.server.url' => '$SERVICE_ADDRESS',
   );" >> $FILE
 
   # set additional config.php settings for Memories app (if they do not exist yet)
   # see https://github.com/pulsejet/memories/wiki/Configuration and https://github.com/pulsejet/memories/wiki/File-Type-Support
   if [ -z "$(grep "'preview_max_filesize_image'" "$FILE")" ]; then 
-  sed -i "/);/d" $FILE
-  echo "  'preview_max_memory' => 2048,
-  'preview_max_filesize_image' => 256,
-  'preview_max_x' => 2048,
-  'preview_max_y' => 2048,
-  'enabledPreviewProviders' =>
-    array (
-      'OC\\Preview\\Image',
-      'OC\\Preview\\HEIC',
-      'OC\\Preview\\TIFF',
-      'OC\\Preview\\Movie',
-      'OC\\Preview\\MKV',
-      'OC\\Preview\\MP4',
-      'OC\\Preview\\AVI',
-    ),
-  );" >> $FILE
+    sed -i "/);/d" $FILE
+    echo "  'preview_max_memory' => 2048,
+    'preview_max_filesize_image' => 256,
+    'preview_max_x' => 2048,
+    'preview_max_y' => 2048,
+    'enabledPreviewProviders' =>
+      array (
+        'OC\\Preview\\Image',
+        'OC\\Preview\\HEIC',
+        'OC\\Preview\\TIFF',
+        'OC\\Preview\\Movie',
+        'OC\\Preview\\MKV',
+        'OC\\Preview\\MP4',
+        'OC\\Preview\\AVI',
+      ),
+    );" >> $FILE
   fi
   
   echo "Changing Permissions..."
@@ -127,7 +131,7 @@ if [ -e "$FILE" ] ; then {
   nextcloud_process=$!
   busybox crond -f -l 0 -L /dev/stdout &
   crond_process=$!
-} else {
+else
   #Starting and Configuring PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
   # echo 'Configuring folder permissions...'
@@ -164,7 +168,6 @@ if [ -e "$FILE" ] ; then {
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
   until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
   exit 0
-} 
 fi
 
 trap _term TERM

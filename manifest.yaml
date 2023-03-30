@@ -5,6 +5,8 @@ release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 25.0.5
   * Add Action to `Disable Maintenance Mode`
+  * Disable internal update checker (for privacy and simplicity)
+  * Minor bugfixes
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
