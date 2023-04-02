@@ -169,6 +169,8 @@ else
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
   until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
+  sudo -u www-data php /var/www/html/occ app:install calendar > /dev/null 2>&1
+  sudo -u www-data php /var/www/html/occ app:install contacts > /dev/null 2>&1
   exit 0
 fi
 

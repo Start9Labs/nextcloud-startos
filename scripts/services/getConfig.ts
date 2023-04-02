@@ -55,7 +55,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "RU": "Russia",
       "JP": "Japan",
       "DE": "Germany",
-      "FR": "Franc",
+      "FR": "France",
     },
     "default": "US",
   },
