@@ -13,8 +13,7 @@ action_result_running="    {
     \"qr\": false
 }"
 
-# Run the occ command to index photos for the Memories app
+# Run the occ command to disable Maintenance Mode in case it gets hung
 sudo -u www-data php $NEXTCLOUD_DIR/occ maintenance:mode --off > /dev/null 2>&1
-# yes | sudo -u www-data php $NEXTCLOUD_DIR/occ memories:video-setup > /dev/null 2>&1
 
 echo $action_result_running
