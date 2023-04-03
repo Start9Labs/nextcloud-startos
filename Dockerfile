@@ -145,7 +145,7 @@ RUN a2enmod headers rewrite remoteip ;\
     } > /etc/apache2/conf-available/remoteip.conf;\
     a2enconf remoteip
 
-ENV NEXTCLOUD_VERSION 25.0.4
+ENV NEXTCLOUD_VERSION 25.0.5
 
 RUN set -ex; \
     fetchDeps=" \
@@ -184,6 +184,7 @@ VOLUME /etc/postgresql/13
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
+ADD actions/disable-maintenance-mode.sh /usr/local/bin/disable-maintenance-mode.sh
 ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
 ADD actions/places-setup.sh /usr/local/bin/places-setup.sh
 ADD actions/download-models.sh /usr/local/bin/download-models.sh
