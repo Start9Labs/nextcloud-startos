@@ -23,7 +23,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "name": "Default Locale",
     "description": 'This sets the default locale on your Nextcloud server.  It overrides automatic locale detection on public pages like login or shared items. User\'s locale preferences configured under “personal -> locale” override this setting after they have logged in.',
     "type": "enum",
-    "values": ["en_US", "en_GB", "zh", "es", "es_419", "hi", "pt", "ru", "ja", "de", "fr"],
+    "values": ["en_US", "en_GB", "zh", "es", "es_419", "hi", "pt", "ru", "ja", "de", "fr", "pl"],
     "value-names": {
       "en_US": "English (US)",
       "en_GB": "English (GB)",
@@ -36,6 +36,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "ja": "Japanese",
       "de": "German",
       "fr": "French",
+      "pl": "Polish",
     },
     "default": "en_US",
   },
@@ -43,7 +44,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "name": "Default Phone Region",
     "description": 'This sets the default region for phone numbers on your Nextcloud server.  It is required to allow inserting phone numbers in the user profiles starting without the country code (e.g. +49 for Germany).',
     "type": "enum",
-    "values": ["US", "GB", "CN", "ES", "MX", "IN", "RU", "JP", "DE", "FR"],
+    "values": ["US", "GB", "CN", "ES", "MX", "IN", "RU", "JP", "DE", "FR", "PL"],
     "value-names": {
       "US": "United States",
       "GB": "United Kingdom",
@@ -56,6 +57,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "JP": "Japan",
       "DE": "Germany",
       "FR": "France",
+      "PL": "Polish",
     },
     "default": "US",
   },
