@@ -23,7 +23,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "name": "Default Locale",
     "description": 'This sets the default locale on your Nextcloud server.  It overrides automatic locale detection on public pages like login or shared items. User\'s locale preferences configured under “personal -> locale” override this setting after they have logged in.',
     "type": "enum",
-    "values": ["en_US", "en_GB", "zh", "es_419", "hi", "pt", "ru", "ja", "de", "fr"],
+    "values": ["en_US", "en_GB", "zh", "es", "es_419", "hi", "pt", "ru", "ja", "de", "fr"],
     "value-names": {
       "en_US": "English (US)",
       "en_GB": "English (GB)",
@@ -55,7 +55,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "RU": "Russia",
       "JP": "Japan",
       "DE": "Germany",
-      "FR": "Franc",
+      "FR": "France",
     },
     "default": "US",
   },

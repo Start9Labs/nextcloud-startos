@@ -57,10 +57,10 @@ echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: false' >> /root/start9/stats.yaml
 echo '    qr: true' >> /root/start9/stats.yaml
 
-
 if [ -e "$FILE" ] ; then
   echo "Existing Nextcloud database found, starting frontend..."
-  # echo "Checking cert"
+
+  # Check certificate
   a2enmod ssl
   a2ensite default-ssl
   echo "Fetching system cert..."
@@ -68,7 +68,6 @@ if [ -e "$FILE" ] ; then
     echo "Waiting for system cert key file..."
     sleep 1
   done
-  # mkdir -p /etc/ssl/certs
   cp /mnt/cert/main.key.pem /etc/ssl/private/ssl-cert-snakeoil.key
   while ! [ -e /mnt/cert/main.cert.pem ]; do
     echo "Waiting for system cert..."
@@ -76,6 +75,7 @@ if [ -e "$FILE" ] ; then
   done
   cp /mnt/cert/main.cert.pem /etc/ssl/certs/ssl-cert-snakeoil.pem
 
+  # config.php modification
   echo "Modifying Configuration files..."
   sed -i "/'overwriteprotocol' =>.*/d" $FILE
   sleep 3
@@ -85,8 +85,8 @@ if [ -e "$FILE" ] ; then
   sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
-  # Add default locale and phone region from config and turn off update checker from UI
-  sed -i "/'default_locale' => .*/d" $FILE
+  # Add default locale and phone region from user config and turn off update checker from UI
+    sed -i "/'default_locale' => .*/d" $FILE
   sed -i "/'default_phone_region' => .*/d" $FILE
   sed -i "/'updatechecker' => .*/d" $FILE
   sed -i "/'updater.server.url' => .*/d" $FILE
@@ -132,9 +132,9 @@ if [ -e "$FILE" ] ; then
   busybox crond -f -l 0 -L /dev/stdout &
   crond_process=$!
 else
-  #Starting and Configuring PostgreSQL
+  
+  #Start and Configure PostgreSQL
   echo 'Starting PostgreSQL database server for the first time...'
-  # echo 'Configuring folder permissions...'
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
   echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
   rm -f $FILE
@@ -144,7 +144,8 @@ else
   chmod -R 700 $POSTGRES_CONFIG
   su - postgres -c "pg_createcluster 13 lib" 
   su - postgres -c "pg_ctlcluster 13 lib start"
-  # echo 'Starting db server...'
+  
+  # Start db server
   service postgresql start
   echo 'Creating user...'
   su - postgres -c "createuser $POSTGRES_USER"
@@ -158,7 +159,8 @@ else
   su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
   su - postgres -c "chmod -R 0600 .pgpass"
   chmod -R 0600 /var/lib/postgresql/.pgpass
-  # Installing Nextcloud Frontend
+  
+  # Install Nextcloud Frontend
   echo "Configuring frontend..."
   sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
   /entrypoint.sh apache2-foreground &
@@ -167,6 +169,10 @@ else
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
   until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
+
+  # Install default apps
+  sudo -u www-data php /var/www/html/occ app:install calendar > /dev/null 2>&1
+  sudo -u www-data php /var/www/html/occ app:install contacts > /dev/null 2>&1
   exit 0
 fi
 
