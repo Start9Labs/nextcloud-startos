@@ -6,6 +6,8 @@ release-notes: |
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 25.0.5
   * Add Action to `Disable Maintenance Mode`
   * Disable internal update checker (for privacy and simplicity)
+  * Calendar and Contacts apps will now be installed by default on fresh install
+    * Can be disabled/removed by user if desired
   * Minor bugfixes
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper

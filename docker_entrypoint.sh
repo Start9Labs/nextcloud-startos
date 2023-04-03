@@ -86,7 +86,7 @@ if [ -e "$FILE" ] ; then
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
   # Add default locale and phone region from user config and turn off update checker from UI
-  sed -i "/'default_locale' => .*/d" $FILE
+    sed -i "/'default_locale' => .*/d" $FILE
   sed -i "/'default_phone_region' => .*/d" $FILE
   sed -i "/'updatechecker' => .*/d" $FILE
   sed -i "/'updater.server.url' => .*/d" $FILE
@@ -169,6 +169,8 @@ else
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
   until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
+
+  # Install default apps
   sudo -u www-data php /var/www/html/occ app:install calendar > /dev/null 2>&1
   sudo -u www-data php /var/www/html/occ app:install contacts > /dev/null 2>&1
   exit 0
