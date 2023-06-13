@@ -1,4 +1,4 @@
-id: nextcloud 
+id: nextcloud
 title: Nextcloud
 version: 26.0.2
 release-notes: |
@@ -29,7 +29,7 @@ main:
   entrypoint: "docker_entrypoint.sh"
   args: []
   mounts:
-    main: /root
+    main: /root/data
     nextcloud: /var/www/html
     db: /var/lib/postgresql/13
     dbconfig: /etc/postgresql/13
@@ -45,7 +45,7 @@ health-checks:
     inject: true
     system: false
     io-format: json
-config: 
+config:
   get:
     type: script
   set:
@@ -92,8 +92,8 @@ backup:
   create:
     type: docker
     image: compat
-    system: true 
-    entrypoint: /assets/backup.sh 
+    system: true
+    entrypoint: /assets/backup.sh
     mounts:
       BACKUP: /mnt/backup
       compat: /assets
