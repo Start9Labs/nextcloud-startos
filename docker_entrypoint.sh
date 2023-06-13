@@ -119,18 +119,18 @@ if [ -e "$FILE" ] ; then
   fi
   
   echo "Changing Permissions..."
-  chown -R postgres:postgres $POSTGRES_DATADIR
-  chown -R postgres:postgres $POSTGRES_CONFIG
-  chmod -R 700 $POSTGRES_DATADIR
-  chmod -R 700 $POSTGRES_CONFIG
-  echo 'Starting db server...'
-  service postgresql start
-  echo 'Starting web server...' 
-  touch /re.start
-  /entrypoint.sh apache2-foreground &
-  nextcloud_process=$!
-  busybox crond -f -l 0 -L /dev/stdout &
-  crond_process=$!
+  # chown -R postgres:postgres $POSTGRES_DATADIR
+  # chown -R postgres:postgres $POSTGRES_CONFIG
+  # chmod -R 700 $POSTGRES_DATADIR
+  # chmod -R 700 $POSTGRES_CONFIG
+  # echo 'Starting db server...'
+  # service postgresql start
+  # echo 'Starting web server...' 
+  # touch /re.start
+  # /entrypoint.sh apache2-foreground &
+  # nextcloud_process=$!
+  # busybox crond -f -l 0 -L /dev/stdout &
+  # crond_process=$!
 else
   
   #Start and Configure PostgreSQL
@@ -138,37 +138,39 @@ else
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 16)
   echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
   rm -f $FILE
+  su post
   chown -R postgres:postgres $POSTGRES_DATADIR
   chown -R postgres:postgres $POSTGRES_CONFIG
   chmod -R 700 $POSTGRES_DATADIR
   chmod -R 700 $POSTGRES_CONFIG
-  su - postgres -c "pg_createcluster 13 lib" 
-  su - postgres -c "pg_ctlcluster 13 lib start"
+  su - postgres -c "initdb -D $POSTGRES_DATADIR" 
+  # su - postgres -c "pg_createcluster 13 lib" 
+  # su - postgres -c "pg_ctlcluster 13 lib start"
   
   # Start db server
-  service postgresql start
-  echo 'Creating user...'
-  su - postgres -c "createuser $POSTGRES_USER"
-  echo 'Creating db...'
-  su - postgres -c "createdb $POSTGRES_DB"
-  echo 'Setting password...'
-  su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
-  echo 'Granting db permissions...'
-  su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
-  echo 'Creating .pgpass file...'
-  su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
-  su - postgres -c "chmod -R 0600 .pgpass"
-  chmod -R 0600 /var/lib/postgresql/.pgpass
+  # service postgresql start
+  # echo 'Creating user...'
+  # su - postgres -c "createuser $POSTGRES_USER"
+  # echo 'Creating db...'
+  # su - postgres -c "createdb $POSTGRES_DB"
+  # echo 'Setting password...'
+  # su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
+  # echo 'Granting db permissions...'
+  # su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
+  # echo 'Creating .pgpass file...'
+  # su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
+  # su - postgres -c "chmod -R 0600 .pgpass"
+  # chmod -R 0600 /var/lib/postgresql/.pgpass
   
   # Install Nextcloud Frontend
   echo "Configuring frontend..."
-  sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
-  /entrypoint.sh apache2-foreground &
+  # sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
+  # /entrypoint.sh apache2-foreground &
   echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
   echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
   echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
   echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
-  until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
+  # until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
 
   # Install default apps
   sudo -u www-data php /var/www/html/occ app:install calendar > /dev/null 2>&1

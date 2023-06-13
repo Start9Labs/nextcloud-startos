@@ -1,6 +1,6 @@
 id: nextcloud 
 title: Nextcloud
-version: 25.0.5
+version: 26.0.2
 release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
   * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 25.0.5
