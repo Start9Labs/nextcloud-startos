@@ -1,4 +1,4 @@
-FROM nextcloud:26.0.2-fpm-alpine
+FROM nextcloud:27.0.0-fpm-alpine
 
 # arm64 or amd64
 ARG PLATFORM
@@ -7,27 +7,30 @@ ARG PLATFORM
 RUN apk add --no-cache \
     sudo \
     bash \
-    # postgresql13 \
-    # postgresql13-client \
-    exiftool \
+    postgresql15 \
+    postgresql15-client \
+    # exiftool \
     # ffmpeg \
     yq \
     # imagemagick \
-    supervisor \
-    libreoffice \
+    # supervisor \
+    # libreoffice \
 ;
+
+# # Set environment variables
+ENV NEXTCLOUD_VERSION 27.0.0
 
 ENV POSTGRES_DB nextcloud
 ENV POSTGRES_USER nextcloud
 ENV POSTGRES_PASSWORD nextclouddbpassword
 ENV POSTGRES_HOST localhost
 ENV EXISTING_DB false
-ENV APACHE_DISABLE_REWRITE_IP 1
+
 ENV PHP_MEMORY_LIMIT 4096M
 ENV PHP_UPLOAD_LIMIT 20480M
 
-# VOLUME /var/lib/postgresql/13
-VOLUME /etc/postgresql/13
+RUN mkdir -p /run/postgresql
+RUN chown postgres:postgres /run/postgresql
 
 # Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh

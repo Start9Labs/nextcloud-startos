@@ -1,15 +1,12 @@
 id: nextcloud
 title: Nextcloud
-version: 26.0.2
+version: 27.0.0
 release-notes: |
   * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
-  * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 25.0.5
-  * Add Action to `Disable Maintenance Mode`
-  * Disable internal update checker (for privacy and simplicity)
-  * Calendar and Contacts apps will now be installed by default on fresh install
-    * Can be disabled/removed by user if desired
-  * Add Polish to default locales
-  * Minor bugfixes
+  * Upstream changes:
+    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27
+  * StartOS Wrapper changes:
+    * Complete refactor to Alpine Linux base for performance and efficiency
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -29,10 +26,10 @@ main:
   entrypoint: "docker_entrypoint.sh"
   args: []
   mounts:
-    main: /root/data
+    main: /root
     nextcloud: /var/www/html
-    db: /var/lib/postgresql/13
-    dbconfig: /etc/postgresql/13
+    db: /var/lib/postgresql/15
+    dbconfig: /etc/postgresql/15
     cert: /mnt/cert
 health-checks:
   main:
@@ -99,8 +96,8 @@ backup:
       compat: /assets
       main: /root/data
       nextcloud: /var/www/html
-      db: /var/lib/postgresql/13
-      dbconfig: /etc/postgresql/13
+      db: /var/lib/postgresql/15
+      dbconfig: /etc/postgresql/15
   restore:
     type: docker
     image: compat
@@ -111,8 +108,8 @@ backup:
       compat: /assets
       main: /root/data
       nextcloud: /var/www/html
-      db: /var/lib/postgresql/13
-      dbconfig: /etc/postgresql/13
+      db: /var/lib/postgresql/15
+      dbconfig: /etc/postgresql/15
 migrations:
   from:
     "*":
