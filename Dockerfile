@@ -1,4 +1,4 @@
-FROM nextcloud:27.0.0-fpm-alpine
+FROM nextcloud:27.0.1-fpm-alpine
 
 # arm64 or amd64
 ARG PLATFORM
@@ -11,14 +11,16 @@ RUN apk add --no-cache \
     postgresql15-client \
     # exiftool \
     # ffmpeg \
+    nginx \
     yq \
+    vim \
     # imagemagick \
     # supervisor \
     # libreoffice \
 ;
 
 # # Set environment variables
-ENV NEXTCLOUD_VERSION 27.0.0
+# ENV NEXTCLOUD_VERSION 27.0.1
 
 ENV POSTGRES_DB nextcloud
 ENV POSTGRES_USER nextcloud
@@ -30,7 +32,9 @@ ENV PHP_MEMORY_LIMIT 4096M
 ENV PHP_UPLOAD_LIMIT 20480M
 
 RUN mkdir -p /run/postgresql
+RUN mkdir -p /run/php
 RUN chown postgres:postgres /run/postgresql
+RUN chown www-data:www-data /run/php
 
 # Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh

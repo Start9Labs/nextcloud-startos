@@ -4,8 +4,9 @@ set -ea
 
 _term() { 
   echo "Caught SIGTERM signal!" 
-  kill -TERM "$crond_process" 2>/dev/null
+  # kill -TERM " 2>/dev/null
   kill -TERM "$nextcloud_process" 2>/dev/null
+  kill -TERM "$nginx_process" 2>/dev/null
   kill -TERM "$postgres_process" 2>/dev/null
 }
 
@@ -132,7 +133,7 @@ echo '    qr: true' >> /root/start9/stats.yaml
   # /entrypoint.sh apache2-foreground &
   # nextcloud_process=$!
   # busybox crond -f -l 0 -L /dev/stdout &
-  # crond_process=$!
+  # =$!
 # else
   
 # Initialize and Configure PostgreSQL
@@ -145,15 +146,17 @@ chmod -R 0700 $PGDATA
 chown -R postgres:postgres $PGDATA
 # chown -R postgres:postgres $POSTGRES_CONFIG
 # chmod -R 0700 $POSTGRES_CONFIG
-# Start db server and initialize
+# Initialize db
 echo "InitDB..."
 su - postgres -c "pg_ctl initdb -D $PGDATA"
+# Start server
 echo "Starting Postgres db server..."
 su - postgres -c "pg_ctl start -D $PGDATA" &
 postgres_process=$!
 # Setup user/creds/db, grant permissions, config .pgpass
 echo 'Creating user...'
-# sleep 30s - possible race condition here on re-installs
+sleep 7s
+# possible race condition here on install, sleep fixes
 su - postgres -c "createuser $POSTGRES_USER"
 echo 'Creating db...'
 su - postgres -c "createdb $POSTGRES_DB"
@@ -166,10 +169,14 @@ su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >>
 su - postgres -c "chmod -R 0600 .pgpass"
 chmod -R 0600 /var/lib/postgresql/.pgpass
 
-sleep 1d
+# Start nginx web server
+echo "Starting nginx server..."
+chown nginx:nginx /usr/sbin/nginx
+sudo -u nginx nginx &
+nginx_proc=$!
 
 # Install Nextcloud Frontend
-echo "Configuring frontend..."
+echo "Configuring Nextcloud frontend..."
 # sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
 # /entrypoint.sh apache2-foreground &
 echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
@@ -178,13 +185,21 @@ echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
 echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
 # until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
 
+echo "Starting Nextcloud frontend..."
+chown www-data:www-data /usr/local/sbin/php-fpm
+chown www-data:www-data /proc/self/fd/{1,2}
+sudo -u www-data php-fpm &
+nextcloud_proc=$!
+
+sleep 1d
 # Install default apps
 echo "Installing default apps..."
-sudo -u www-data php /var/www/html/occ app:install calendar > /dev/null 2>&1
-sudo -u www-data php /var/www/html/occ app:install contacts > /dev/null 2>&1
+su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
+su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
 exit 0
 # fi
 
+
 trap _term TERM
 
-wait $crond_process $nextcloud_process $postgres_process
+wait $nextcloud_process $nginx_proc $postgres_process

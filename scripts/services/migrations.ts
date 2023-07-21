@@ -41,5 +41,5 @@ export const migration: T.ExpectedExports.migration = compat.migrations
         down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
       },
     },
-    "26.0.2",
+    "27.0.1",
   );
