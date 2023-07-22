@@ -3,14 +3,14 @@
 set -ea
 
 _term() { 
-  echo "Caught SIGTERM signal!" 
-  # kill -TERM " 2>/dev/null
+  echo "Caught SIGTERM signal!"
   kill -TERM "$nextcloud_process" 2>/dev/null
   kill -TERM "$nginx_process" 2>/dev/null
   kill -TERM "$postgres_process" 2>/dev/null
 }
 
 echo "Starting Container..."
+
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
@@ -21,30 +21,27 @@ NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 
+# User Config
 # DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 # DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 
-if [ -e "$FILE" ] ; then
-  NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
-fi
-
 # Properties Page
-# echo 'version: 2' > /root/start9/stats.yaml
-# echo 'data:' >> /root/start9/stats.yaml
-# echo '  Nextcloud Admin Username:' >> /root/start9/stats.yaml
-# echo '    type: string' >> /root/start9/stats.yaml
-# echo '    value: "'"$NEXTCLOUD_ADMIN_USER"'"' >> /root/start9/stats.yaml
-# echo '    description: The admin username for Nextcloud' >> /root/start9/stats.yaml
-# echo '    copyable: true' >> /root/start9/stats.yaml
-# echo '    masked: false' >> /root/start9/stats.yaml
-# echo '    qr: false' >> /root/start9/stats.yaml
-# echo '  Nextcloud Admin Default Password:' >> /root/start9/stats.yaml
-# echo '    type: string' >> /root/start9/stats.yaml
-# echo '    value: "'"$NEXTCLOUD_ADMIN_PASSWORD"'"' >> /root/start9/stats.yaml
-# echo '    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.' >> /root/start9/stats.yaml
-# echo '    copyable: true' >> /root/start9/stats.yaml
-# echo '    masked: true' >> /root/start9/stats.yaml
-# echo '    qr: false' >> /root/start9/stats.yaml
+echo 'version: 2' > /root/start9/stats.yaml
+echo 'data:' >> /root/start9/stats.yaml
+echo '  Nextcloud Admin Username:' >> /root/start9/stats.yaml
+echo '    type: string' >> /root/start9/stats.yaml
+echo '    value: "'"$NEXTCLOUD_ADMIN_USER"'"' >> /root/start9/stats.yaml
+echo '    description: The admin username for Nextcloud' >> /root/start9/stats.yaml
+echo '    copyable: true' >> /root/start9/stats.yaml
+echo '    masked: false' >> /root/start9/stats.yaml
+echo '    qr: false' >> /root/start9/stats.yaml
+echo '  Nextcloud Admin Default Password:' >> /root/start9/stats.yaml
+echo '    type: string' >> /root/start9/stats.yaml
+echo '    value: "'"$NEXTCLOUD_ADMIN_PASSWORD"'"' >> /root/start9/stats.yaml
+echo '    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.' >> /root/start9/stats.yaml
+echo '    copyable: true' >> /root/start9/stats.yaml
+echo '    masked: true' >> /root/start9/stats.yaml
+echo '    qr: false' >> /root/start9/stats.yaml
 echo '  Nextcloud WebDAV Base LAN URL:' >> /root/start9/stats.yaml
 echo '    type: string' >> /root/start9/stats.yaml
 echo '    value: "'"$LAN_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
@@ -59,6 +56,72 @@ echo '    description: Address for WebDAV syncing over Tor' >> /root/start9/stat
 echo '    copyable: true' >> /root/start9/stats.yaml
 echo '    masked: false' >> /root/start9/stats.yaml
 echo '    qr: true' >> /root/start9/stats.yaml
+
+if [ -e "$FILE" ] ; then
+  NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
+fi
+  
+# Initialize and Configure PostgreSQL
+echo 'Initializing PostgreSQL database server...'
+NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 24)
+echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
+su - postgres -c "mkdir $PGDATA"
+chmod -R 0700 $PGDATA
+chown -R postgres:postgres $PGDATA
+# Initialize db & Start server
+echo "Initializing Postgres Database..."
+su - postgres -c "pg_ctl initdb -D $PGDATA"
+echo "Starting Postgres db server..."
+su - postgres -c "pg_ctl start -D $PGDATA" &
+postgres_process=$!
+
+# Setup user/creds/db, grant permissions, config .pgpass
+echo 'Creating user...'
+# possible race condition here on install, sleep fixes
+sleep 7s
+su - postgres -c "createuser $POSTGRES_USER"
+echo 'Creating db...'
+su - postgres -c "createdb $POSTGRES_DB"
+echo 'Setting password...'
+su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
+echo 'Granting db permissions...'
+su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
+echo 'Creating .pgpass file...'
+su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
+su - postgres -c "chmod -R 0600 .pgpass"
+chmod -R 0600 /var/lib/postgresql/.pgpass
+
+# Start nginx web server
+echo "Starting nginx server..."
+chown nginx:nginx /usr/sbin/nginx
+sudo -u nginx nginx &
+nginx_proc=$!
+
+# Install Nextcloud Frontend
+echo "Configuring Nextcloud frontend..."
+echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
+echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
+echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
+echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
+
+# Start Nextcloud
+echo "Starting Nextcloud frontend..."
+chown www-data:www-data /usr/local/sbin/php-fpm
+chown www-data:www-data /proc/self/fd/{1,2}
+sudo -u www-data php-fpm &
+nextcloud_proc=$!
+
+sleep 1d
+
+# Install default apps
+echo "Installing default apps..."
+su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
+su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
+exit 0
+
+trap _term TERM
+
+wait $nextcloud_process $nginx_proc $postgres_process
 
 # if [ -e "$FILE" ] ; then
 #   echo "Existing Nextcloud database found, starting frontend..."
@@ -135,71 +198,14 @@ echo '    qr: true' >> /root/start9/stats.yaml
   # busybox crond -f -l 0 -L /dev/stdout &
   # =$!
 # else
-  
-# Initialize and Configure PostgreSQL
-echo 'Initializing PostgreSQL database server...'
-NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 24)
-echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
+
+
 # rm -f $FILE
-su - postgres -c "mkdir $PGDATA"
-chmod -R 0700 $PGDATA
-chown -R postgres:postgres $PGDATA
 # chown -R postgres:postgres $POSTGRES_CONFIG
 # chmod -R 0700 $POSTGRES_CONFIG
-# Initialize db
-echo "InitDB..."
-su - postgres -c "pg_ctl initdb -D $PGDATA"
-# Start server
-echo "Starting Postgres db server..."
-su - postgres -c "pg_ctl start -D $PGDATA" &
-postgres_process=$!
-# Setup user/creds/db, grant permissions, config .pgpass
-echo 'Creating user...'
-sleep 7s
-# possible race condition here on install, sleep fixes
-su - postgres -c "createuser $POSTGRES_USER"
-echo 'Creating db...'
-su - postgres -c "createdb $POSTGRES_DB"
-echo 'Setting password...'
-su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
-echo 'Granting db permissions...'
-su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
-echo 'Creating .pgpass file...'
-su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
-su - postgres -c "chmod -R 0600 .pgpass"
-chmod -R 0600 /var/lib/postgresql/.pgpass
 
-# Start nginx web server
-echo "Starting nginx server..."
-chown nginx:nginx /usr/sbin/nginx
-sudo -u nginx nginx &
-nginx_proc=$!
-
-# Install Nextcloud Frontend
-echo "Configuring Nextcloud frontend..."
 # sed -i '/echo "Initializing finished"/a touch re.start && echo "Follow the White Rabbit." > \/re.start' /entrypoint.sh 
+
 # /entrypoint.sh apache2-foreground &
-echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
-echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
-echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
-echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
+
 # until [ -e "/re.start" ]; do { sleep 21; echo 'Waiting on NextCloud Initialization...'; } done
-
-echo "Starting Nextcloud frontend..."
-chown www-data:www-data /usr/local/sbin/php-fpm
-chown www-data:www-data /proc/self/fd/{1,2}
-sudo -u www-data php-fpm &
-nextcloud_proc=$!
-
-sleep 1d
-# Install default apps
-echo "Installing default apps..."
-su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
-su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
-exit 0
-# fi
-
-
-trap _term TERM
-
-wait $nextcloud_process $nginx_proc $postgres_process

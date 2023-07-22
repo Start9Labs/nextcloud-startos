@@ -7,13 +7,14 @@ ARG PLATFORM
 RUN apk add --no-cache \
     sudo \
     bash \
+    htop \
     postgresql15 \
     postgresql15-client \
-    # exiftool \
-    # ffmpeg \
     nginx \
     yq \
     vim \
+    # exiftool \
+    # ffmpeg \
     # imagemagick \
     # supervisor \
     # libreoffice \
@@ -28,7 +29,7 @@ ENV POSTGRES_PASSWORD nextclouddbpassword
 ENV POSTGRES_HOST localhost
 ENV EXISTING_DB false
 
-ENV PHP_MEMORY_LIMIT 4096M
+ENV PHP_MEMORY_LIMIT 512M
 ENV PHP_UPLOAD_LIMIT 20480M
 
 RUN mkdir -p /run/postgresql

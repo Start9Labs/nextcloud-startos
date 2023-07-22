@@ -2,11 +2,10 @@ id: nextcloud
 title: Nextcloud
 version: 27.0.1
 release-notes: |
-  * PLEASE NOTE: A SERVICE "RESTART" WILL BE REQUIRED FOLLOWING THIS UPDATE
   * Upstream changes:
-    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27
+    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.0.1
   * StartOS Wrapper changes:
-    * Complete refactor to Alpine Linux base for performance and efficiency
+    * Complete refactor using Alpine Linux, nginx, and postgres for performance and efficiency
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
