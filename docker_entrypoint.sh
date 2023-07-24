@@ -63,65 +63,67 @@ fi
   
 # Initialize and Configure PostgreSQL
 echo 'Initializing PostgreSQL database server...'
-NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 24)
+#NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 24)
+NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
 echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
-su - postgres -c "mkdir $PGDATA"
-chmod -R 0700 $PGDATA
-chown -R postgres:postgres $PGDATA
+#su - postgres -c "mkdir $PGDATA"
+#chmod -R 0700 $PGDATA
+#chown -R postgres:postgres $PGDATA
 # Initialize db & Start server
-echo "Initializing Postgres Database..."
-su - postgres -c "pg_ctl initdb -D $PGDATA"
-echo "Starting Postgres db server..."
-su - postgres -c "pg_ctl start -D $PGDATA" &
+#echo "Initializing Postgres Database..."
+#su - postgres -c "pg_ctl initdb -D $PGDATA"
+#echo "Starting Postgres db server..."
+#su - postgres -c "pg_ctl start -D $PGDATA" &
+exec /usr/local/bin/start-postgres.sh postgres &
 postgres_process=$!
 
 # Setup user/creds/db, grant permissions, config .pgpass
-echo 'Creating user...'
+#echo 'Creating user...'
 # possible race condition here on install, sleep fixes
-sleep 7s
-su - postgres -c "createuser $POSTGRES_USER"
-echo 'Creating db...'
-su - postgres -c "createdb $POSTGRES_DB"
-echo 'Setting password...'
-su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
-echo 'Granting db permissions...'
-su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
-echo 'Creating .pgpass file...'
-su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
-su - postgres -c "chmod -R 0600 .pgpass"
-chmod -R 0600 /var/lib/postgresql/.pgpass
+#sleep 7s
+#su - postgres -c "createuser $POSTGRES_USER"
+#echo 'Creating db...'
+#su - postgres -c "createdb $POSTGRES_DB"
+#echo 'Setting password...'
+#su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
+#echo 'Granting db permissions...'
+#su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
+#echo 'Creating .pgpass file...'
+#su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
+#su - postgres -c "chmod -R 0600 .pgpass"
+#chmod -R 0600 /var/lib/postgresql/.pgpass
 
 # Start nginx web server
 echo "Starting nginx server..."
-chown nginx:nginx /usr/sbin/nginx
-sudo -u nginx nginx &
-nginx_proc=$!
+#chown nginx:nginx /usr/sbin/nginx
+nginx -g "daemon off;" &
+nginx_process=$!
 
 # Install Nextcloud Frontend
-echo "Configuring Nextcloud frontend..."
-echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
-echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
-echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
-echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
+#echo "Configuring Nextcloud frontend..."
+#echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
+#echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
+#echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
+#echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
 
 # Start Nextcloud
 echo "Starting Nextcloud frontend..."
-chown www-data:www-data /usr/local/sbin/php-fpm
-chown www-data:www-data /proc/self/fd/{1,2}
-sudo -u www-data php-fpm &
-nextcloud_proc=$!
+#chown www-data:www-data /usr/local/sbin/php-fpm
+#chown www-data:www-data /proc/self/fd/{1,2}
+exec /entrypoint.sh php-fpm &
+nextcloud_process=$!
 
-sleep 1d
+#sleep 1d
 
 # Install default apps
-echo "Installing default apps..."
-su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
-su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
-exit 0
+#echo "Installing default apps..."
+#su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
+#su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
+#exit 0
 
 trap _term TERM
 
-wait $nextcloud_process $nginx_proc $postgres_process
+wait $nextcloud_process $nginx_process $postgres_process
 
 # if [ -e "$FILE" ] ; then
 #   echo "Existing Nextcloud database found, starting frontend..."

@@ -5,7 +5,7 @@ ARG PLATFORM
 
 # Install additional dependencies
 RUN apk add --no-cache \
-    sudo \
+    su-exec \
     bash \
     htop \
     postgresql15 \
@@ -32,13 +32,24 @@ ENV EXISTING_DB false
 ENV PHP_MEMORY_LIMIT 512M
 ENV PHP_UPLOAD_LIMIT 20480M
 
-RUN mkdir -p /run/postgresql
-RUN mkdir -p /run/php
-RUN chown postgres:postgres /run/postgresql
-RUN chown www-data:www-data /run/php
+RUN mkdir -p /var/run/postgresql && \
+    chown -R postgres:postgres /var/run/postgresql && \
+    chmod 3777 /var/run/postgresql
+ENV PGDATA /var/lib/postgresql/data
+RUN mkdir -p "$PGDATA" && \
+    chown -R postgres:postgres "$PGDATA" && \
+    chmod 1777 "$PGDATA"
+
+USER postgres
+RUN initdb /var/lib/postgresql/data && \
+    echo "host all  all    0.0.0.0/0  md5" >> "$PGDATA"/pg_hba.conf && \
+    echo "listen_addresses='localhost'" >> "$PGDATA"postgresql.conf
+USER root
 
 # Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
+ADD ./start-postgres.sh /usr/local/bin/start-postgres.sh
+ADD ./nginx.conf /etc/nginx/http.d/default.conf
 ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
 ADD actions/disable-maintenance-mode.sh /usr/local/bin/disable-maintenance-mode.sh
