@@ -68,7 +68,7 @@ interfaces:
     description: Specifies the interface to listen on for HTTP connections.
     tor-config:
       port-mapping:
-        80: "9000"
+        80: "80"
         443: "18443"
     lan-config:
       443:

@@ -66,28 +66,28 @@ echo 'Initializing PostgreSQL database server...'
 #NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 24)
 NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
 echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
-#su - postgres -c "mkdir $PGDATA"
-#chmod -R 0700 $PGDATA
-#chown -R postgres:postgres $PGDATA
+su - postgres -c "mkdir $PGDATA"
+chmod -R 0700 $PGDATA
+chown -R postgres:postgres $PGDATA
 # Initialize db & Start server
-#echo "Initializing Postgres Database..."
-#su - postgres -c "pg_ctl initdb -D $PGDATA"
-#echo "Starting Postgres db server..."
-#su - postgres -c "pg_ctl start -D $PGDATA" &
-exec /usr/local/bin/start-postgres.sh postgres &
+echo "Initializing Postgres Database..."
+su - postgres -c "pg_ctl initdb -D $PGDATA"
+echo "Starting Postgres db server..."
+su - postgres -c "pg_ctl start -D $PGDATA" &
 postgres_process=$!
+# exec /usr/local/bin/start-postgres.sh postgres &
 
 # Setup user/creds/db, grant permissions, config .pgpass
-#echo 'Creating user...'
+echo 'Creating user...'
 # possible race condition here on install, sleep fixes
-#sleep 7s
-#su - postgres -c "createuser $POSTGRES_USER"
-#echo 'Creating db...'
-#su - postgres -c "createdb $POSTGRES_DB"
-#echo 'Setting password...'
-#su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
-#echo 'Granting db permissions...'
-#su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
+sleep 7s
+su - postgres -c "createuser $POSTGRES_USER"
+echo 'Creating db...'
+su - postgres -c "createdb $POSTGRES_DB"
+echo 'Setting password...'
+su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
+echo 'Granting db permissions...'
+su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
 #echo 'Creating .pgpass file...'
 #su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
 #su - postgres -c "chmod -R 0600 .pgpass"
@@ -113,8 +113,6 @@ echo "Starting Nextcloud frontend..."
 exec /entrypoint.sh php-fpm &
 nextcloud_process=$!
 
-#sleep 1d
-
 # Install default apps
 #echo "Installing default apps..."
 #su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
@@ -123,7 +121,7 @@ nextcloud_process=$!
 
 trap _term TERM
 
-wait $nextcloud_process $nginx_process $postgres_process
+wait $postgres_process $nginx_process $nextcloud_process
 
 # if [ -e "$FILE" ] ; then
 #   echo "Existing Nextcloud database found, starting frontend..."
