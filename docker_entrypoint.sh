@@ -14,84 +14,106 @@ echo "Starting Container..."
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
-NEXTCLOUD_ADMIN_USER='admin'
 PGDATA="/var/lib/postgresql/data"
 POSTGRES_CONFIG="/etc/postgresql/15"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
+NEXTCLOUD_ADMIN_USER='admin'
+PASSWORD_FILE="/root/start9/password.dat"
+
+if [ -e "$PASSWORD_FILE" ] && [ -s "$PASSWORD_FILE" ]; then
+  NEXTCLOUD_ADMIN_PASSWORD=$(cat "$PASSWORD_FILE")
+else
+  NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
+  echo "$NEXTCLOUD_ADMIN_PASSWORD" > "$PASSWORD_FILE"
+fi
 
 # User Config
 # DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 # DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 
 # Properties Page
-echo 'version: 2' > /root/start9/stats.yaml
-echo 'data:' >> /root/start9/stats.yaml
-echo '  Nextcloud Admin Username:' >> /root/start9/stats.yaml
-echo '    type: string' >> /root/start9/stats.yaml
-echo '    value: "'"$NEXTCLOUD_ADMIN_USER"'"' >> /root/start9/stats.yaml
-echo '    description: The admin username for Nextcloud' >> /root/start9/stats.yaml
-echo '    copyable: true' >> /root/start9/stats.yaml
-echo '    masked: false' >> /root/start9/stats.yaml
-echo '    qr: false' >> /root/start9/stats.yaml
-echo '  Nextcloud Admin Default Password:' >> /root/start9/stats.yaml
-echo '    type: string' >> /root/start9/stats.yaml
-echo '    value: "'"$NEXTCLOUD_ADMIN_PASSWORD"'"' >> /root/start9/stats.yaml
-echo '    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.' >> /root/start9/stats.yaml
-echo '    copyable: true' >> /root/start9/stats.yaml
-echo '    masked: true' >> /root/start9/stats.yaml
-echo '    qr: false' >> /root/start9/stats.yaml
-echo '  Nextcloud WebDAV Base LAN URL:' >> /root/start9/stats.yaml
-echo '    type: string' >> /root/start9/stats.yaml
-echo '    value: "'"$LAN_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
-echo '    description: Address for WebDAV syncing over LAN' >> /root/start9/stats.yaml
-echo '    copyable: true' >> /root/start9/stats.yaml
-echo '    masked: false' >> /root/start9/stats.yaml
-echo '    qr: true' >> /root/start9/stats.yaml
-echo '  Nextcloud WebDAV Base Tor URL:' >> /root/start9/stats.yaml
-echo '    type: string' >> /root/start9/stats.yaml
-echo '    value: "'"$TOR_ADDRESS/remote.php/dav/"'"' >> /root/start9/stats.yaml
-echo '    description: Address for WebDAV syncing over Tor' >> /root/start9/stats.yaml
-echo '    copyable: true' >> /root/start9/stats.yaml
-echo '    masked: false' >> /root/start9/stats.yaml
-echo '    qr: true' >> /root/start9/stats.yaml
+cat <<EOP > /root/start9/stats.yaml
+version: 2
+data:
+  Admin Username:
+    type: string
+    value: "$NEXTCLOUD_ADMIN_USER"
+    description: The admin username for Nextcloud
+    copyable: true
+    masked: false
+    qr: false
+  Admin Password:
+    type: string
+    value: "$NEXTCLOUD_ADMIN_PASSWORD"
+    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.
+    copyable: true
+    masked: true
+    qr: false
+  WebDAV Base LAN URL:
+    type: string
+    value: "$LAN_ADDRESS/remote.php/dav/"
+    description: Address for WebDAV syncing over LAN
+    copyable: true
+    masked: false
+    qr: true
+  WebDAV Base Tor URL:
+    type: string
+    value: "$TOR_ADDRESS/remote.php/dav/"
+    description: Address for WebDAV syncing over Tor
+    copyable: true
+    masked: false
+    qr: true
+EOP
 
-if [ -e "$FILE" ] ; then
-  NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
+# Check if PostgreSQL db is already initialized
+if [ -f "$PGDATA/PG_VERSION" ] && [ -d "$PGDATA/base" ]; then
+  echo "PostgreSQL database is already initialized. Skipping initialization..."
+else
+  # Initialize PostgreSQL
+  echo 'Initializing PostgreSQL database server...'
+  su - postgres -c "mkdir -p $PGDATA"
+  chmod -R 3777 "$PGDATA"
+  chown -R postgres:postgres "$PGDATA"
+  echo "Initializing PostgreSQL database..."
+  su - postgres -c "pg_ctl initdb -D $PGDATA"
 fi
-  
-# Initialize and Configure PostgreSQL
-echo 'Initializing PostgreSQL database server...'
-#NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 24)
-NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
-echo $NEXTCLOUD_ADMIN_PASSWORD >> /root/start9/password.dat
-su - postgres -c "mkdir $PGDATA"
-chmod -R 0700 $PGDATA
-chown -R postgres:postgres $PGDATA
-# Initialize db & Start server
-echo "Initializing Postgres Database..."
-su - postgres -c "pg_ctl initdb -D $PGDATA"
-echo "Starting Postgres db server..."
+echo "Starting PostgreSQL db server..."
 su - postgres -c "pg_ctl start -D $PGDATA" &
 postgres_process=$!
-# exec /usr/local/bin/start-postgres.sh postgres &
 
-# Setup user/creds/db, grant permissions, config .pgpass
-echo 'Creating user...'
-# possible race condition here on install, sleep fixes
-sleep 7s
-su - postgres -c "createuser $POSTGRES_USER"
-echo 'Creating db...'
-su - postgres -c "createdb $POSTGRES_DB"
+trap _term TERM
+wait $postgres_process
+
+# Wait until PostgreSQL server is ready
+while ! su - postgres -c "pg_isready"; do
+  sleep 1
+done
+
+# Check if PostgreSQL user exists
+if su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$POSTGRES_USER'\"" | grep -q 1; then
+  echo "PostgreSQL user '$POSTGRES_USER' already exists. Skipping user creation..."
+else
+  echo 'Creating user...'
+  su - postgres -c "createuser --superuser $POSTGRES_USER"
+fi
+
+# Check if PostgreSQL database exists
+if su - postgres -c "psql -lqt | cut -d \| -f 1 | grep -qw $POSTGRES_DB"; then
+  echo "PostgreSQL database '$POSTGRES_DB' already exists. Skipping database creation..."
+else
+  echo 'Creating db...'
+  su - postgres -c "createdb $POSTGRES_DB"
+fi
+
+# Set password for PostgreSQL user
 echo 'Setting password...'
-su - postgres -c 'psql -c "ALTER USER '$POSTGRES_USER' WITH ENCRYPTED PASSWORD '"'"$POSTGRES_PASSWORD"'"';"'
+su - postgres -c "psql -c \"ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';\""
+
+# Grant database permissions
 echo 'Granting db permissions...'
-su - postgres -c 'psql -c "grant all privileges on database '$POSTGRES_DB' to '$POSTGRES_USER';"'
-#echo 'Creating .pgpass file...'
-#su - postgres -c 'echo "localhost:5432:'$POSTGRES_USER':'$POSTGRES_PASSWORD'" >> .pgpass'
-#su - postgres -c "chmod -R 0600 .pgpass"
-#chmod -R 0600 /var/lib/postgresql/.pgpass
+su - postgres -c "psql -c \"grant all privileges on database $POSTGRES_DB to $POSTGRES_USER;\""
 
 # Start nginx web server
 echo "Starting nginx server..."
@@ -118,10 +140,8 @@ nextcloud_process=$!
 #su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
 #su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
 #exit 0
-
-trap _term TERM
-
-wait $postgres_process $nginx_process $nextcloud_process
+touch /re.start
+wait $nginx_process $nextcloud_process
 
 # if [ -e "$FILE" ] ; then
 #   echo "Existing Nextcloud database found, starting frontend..."
