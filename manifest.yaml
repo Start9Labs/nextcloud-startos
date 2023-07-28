@@ -27,7 +27,7 @@ main:
   mounts:
     main: /root
     nextcloud: /var/www/html
-    db: /var/lib/postgresql/data
+    db: /var/lib/postgresql/15
     dbconfig: /etc/postgresql/15
     cert: /mnt/cert
 health-checks:
@@ -95,7 +95,7 @@ backup:
       compat: /assets
       main: /root/data
       nextcloud: /var/www/html
-      db: /var/lib/postgresql/data
+      db: /var/lib/postgresql/15
       dbconfig: /etc/postgresql/15
   restore:
     type: docker
@@ -107,7 +107,7 @@ backup:
       compat: /assets
       main: /root/data
       nextcloud: /var/www/html
-      db: /var/lib/postgresql/data
+      db: /var/lib/postgresql/15
       dbconfig: /etc/postgresql/15
 migrations:
   from:
