@@ -4,13 +4,15 @@ set -ea
 
 _term() { 
   echo "Caught SIGTERM signal!"
-  kill -TERM "$nextcloud_process" 2>/dev/null
-  kill -TERM "$nginx_process" 2>/dev/null
   kill -TERM "$postgres_process" 2>/dev/null
+  kill -TERM "$nginx_process" 2>/dev/null
+  kill -TERM "$nextcloud_process" 2>/dev/null
+  kill -TERM "$crond_process" 2>/dev/null
 }
 
 echo "Starting Container..."
 
+# Environment Variables
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
@@ -22,16 +24,16 @@ FILE="/var/www/html/config/config.php"
 NEXTCLOUD_ADMIN_USER='admin'
 PASSWORD_FILE="/root/start9/password.dat"
 
+# User Config
+DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
+DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
+
 if [ -e "$PASSWORD_FILE" ] && [ -s "$PASSWORD_FILE" ]; then
   NEXTCLOUD_ADMIN_PASSWORD=$(cat "$PASSWORD_FILE")
 else
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
   echo "$NEXTCLOUD_ADMIN_PASSWORD" > "$PASSWORD_FILE"
 fi
-
-# User Config
-# DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
-# DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 
 # Properties Page
 cat <<EOP > /root/start9/stats.yaml
@@ -130,18 +132,23 @@ nginx_process=$!
 
 # Start Nextcloud
 echo "Starting Nextcloud frontend..."
-#chown www-data:www-data /usr/local/sbin/php-fpm
-#chown www-data:www-data /proc/self/fd/{1,2}
 exec /entrypoint.sh php-fpm &
 nextcloud_process=$!
+busybox crond -f -l 0 -L /dev/stdout &
+crond_process=$!
 
 # Install default apps
 #echo "Installing default apps..."
 #su -u www-data php-fpm /var/www/html/occ app:install calendar > /dev/null 2>&1
 #su -u www-data php-fpm /var/www/html/occ app:install contacts > /dev/null 2>&1
 #exit 0
+
 touch /re.start
-wait $nginx_process $nextcloud_process
+wait $postgres_process $nginx_process $nextcloud_process $crond_process
+
+
+#chown www-data:www-data /usr/local/sbin/php-fpm
+#chown www-data:www-data /proc/self/fd/{1,2}
 
 # if [ -e "$FILE" ] ; then
 #   echo "Existing Nextcloud database found, starting frontend..."

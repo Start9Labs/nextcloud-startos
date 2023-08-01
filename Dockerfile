@@ -7,6 +7,7 @@ ARG PLATFORM
 RUN apk add --no-cache \
     su-exec \
     bash \
+    busybox \
     htop \
     postgresql15 \
     postgresql15-client \
@@ -30,10 +31,15 @@ ENV EXISTING_DB false
 ENV PHP_MEMORY_LIMIT 512M
 ENV PHP_UPLOAD_LIMIT 20480M
 
+# Create and own Postgres/PHP run dirs
 RUN mkdir -p /run/postgresql
 RUN mkdir -p /run/php
 RUN chown postgres:postgres /run/postgresql
 RUN chown www-data:www-data /run/php
+
+# Setup Cron
+RUN mkdir -p /var/spool/cron/crontabs
+RUN echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/www-data
 
 # Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
