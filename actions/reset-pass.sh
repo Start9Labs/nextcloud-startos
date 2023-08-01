@@ -6,7 +6,7 @@ set -e
 NEXTCLOUD_DIR="/var/www/html"
 
 # Define the username of the user whose password you want to reset
-USERNAME="embassy"
+USERNAME="admin"
 
 # Define the new password
 OC_PASS=$(cat /root/start9/password.dat)

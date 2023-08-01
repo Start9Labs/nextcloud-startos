@@ -150,7 +150,7 @@ actions:
   places-setup:
     name: "Setup Map for Memories"
     description: "This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application.  This mostly consists of downloading map data.  You MUST install the Memories app before running this Action, and you will want to run the \"Index Media for Memories\" Action after completion."
-    warning: "This is an intensive process that will require non-trivial system resources and time.  On an Embassy Pro this will take a few minutes, and on an Embassy One, may take up to an hour.  If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time.  This action will consume approximately 2-3 GB of disk space."
+    warning: "This is an intensive process that will require non-trivial system resources and time.  On a 2023 Server One, this may take up to an hour.  If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time.  This action will consume approximately 2-3 GB of disk space."
     allowed-statuses:
       - running
     implementation:
@@ -178,7 +178,7 @@ actions:
   download-models:
     name: "Download Machine Learning Models for Recognize"
     description: "This downloads the machine learning models required for identifying objects and faces with the Recognize app.  You MUST install the Recognize app in your Nextcloud instance before running this action."
-    warning: "This process can take up to 15 minutes on an Embassy One.  It will consume approximately 1-2 GB of disk space."
+    warning: "This process can take up to 15 minutes on a 2023 Server One.  It will consume approximately 1-2 GB of disk space."
     allowed-statuses:
       - running
     implementation:

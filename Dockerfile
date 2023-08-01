@@ -5,20 +5,18 @@ ARG PLATFORM
 
 # Install additional dependencies
 RUN apk add --no-cache \
-    su-exec \
     bash \
     busybox \
+    ffmpeg \
     htop \
+    nginx \
     postgresql15 \
     postgresql15-client \
-    nginx \
-    yq \
+    su-exec \
+    sudo \
     vim \
-    # exiftool \
-    # ffmpeg \
-    # imagemagick \
-    # supervisor \
-    # libreoffice \
+    yq \
+    # libreoffice \ install as an action?
 ;
 
 # # Set environment variables

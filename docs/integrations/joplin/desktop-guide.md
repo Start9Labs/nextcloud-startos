@@ -1,12 +1,12 @@
 # Connecting Joplin to Nextcloud
 
-This guide will go over how to connect Joplin running on a Desktop machine to your Embassy's Nextcloud over LAN.
+This guide will go over how to connect Joplin running on a desktop machine to your StartOS Nextcloud over LAN.
 
-This guide assumes your Nextcloud username is _embassy_
+This guide assumes your Nextcloud username is _admin_
 
 It also assumes that you have set up LAN on your desktop machine. If you still need to do that, please head here - https://docs.start9.com/latest/user-manual/connecting/connecting-lan/
 
-1. First go into Nextcloud on your Embassy and click here
+1. First go into Nextcloud on your server and click here
 
     ![Joplin setup](./assets/joplin-setup0.png "Click on Folders")
 
@@ -32,15 +32,15 @@ It also assumes that you have set up LAN on your desktop machine. If you still n
 
     ![Joplin setup](./assets/joplin-setup8.png "Click on synchronization")
 
-1. Under _Synchronization target_ select *Nextcloud*, paste the WebDAV and append onto the end of it _joplin_ so the entire URL should look like this (replace "xxxx" with your unique Nextcloud LAN address): _https://xxxx.local/remote.php/dav/files/embassy/joplin_
+1. Under _Synchronization target_ select *Nextcloud*, paste the WebDAV and append onto the end of it _joplin_ so the entire URL should look like this (replace "xxxx" with your unique Nextcloud LAN address): _https://xxxx.local/remote.php/dav/files/admin/joplin_
 
     ![Joplin setup](./assets/joplin-setup9.png "Select NextCloud and enter URL")
 
-1. Under _Nextcloud username_ enter _embassy_
+1. Under _Nextcloud username_ enter _admin_
 
 1. Under _Nextcloud password_ enter your password
 
-1. The username and password for your Nextcloud can be found in your Embassy UI by clicking on the Nextcloud service then clicking on _Properties_
+1. The username and password for your Nextcloud can be found in your StartOS UI by clicking on the Nextcloud service then clicking on _Properties_
 
     ![Joplin setup](./assets/joplin-setup10.png "Enter Username and Password")
 
@@ -58,4 +58,4 @@ It also assumes that you have set up LAN on your desktop machine. If you still n
 
     ![Joplin setup](./assets/joplin-setup14.png "Check synchronisation")
 
-1. You have now connected your Joplin client to your Embassy's Nextcloud!
+1. You have now connected your Joplin client to your server's Nextcloud!

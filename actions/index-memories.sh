@@ -1,4 +1,5 @@
-#!/bin/bash 
+# Wipe this out - now in UI
+#!/bin/bash
 
 set -e
 
