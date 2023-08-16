@@ -20,6 +20,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to reset the password
-printf "$OC_PASS\n$OC_PASS\n" | sudo -u www-data php $NEXTCLOUD_DIR/occ user:resetpassword $USERNAME > /dev/null 2>&1
+printf "$OC_PASS\n$OC_PASS\n" | sudo -u www-data -E php $NEXTCLOUD_DIR/occ user:resetpassword $USERNAME > /dev/null 2>&1
 
 echo $action_result_running

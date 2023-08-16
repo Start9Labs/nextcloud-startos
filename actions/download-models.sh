@@ -14,6 +14,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to download machine learning models for the Recognize app
-sudo -u www-data php $NEXTCLOUD_DIR/occ recognize:download-models > /dev/null 2>&1
+sudo -u www-data -E php $NEXTCLOUD_DIR/occ recognize:download-models > /dev/null 2>&1
 
 echo $action_result_running

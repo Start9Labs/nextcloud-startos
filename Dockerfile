@@ -1,4 +1,4 @@
-FROM nextcloud:27.0.1-fpm-alpine
+FROM nextcloud:27.0.2-fpm-alpine
 
 # arm64 or amd64
 ARG PLATFORM
@@ -26,7 +26,7 @@ ENV POSTGRES_PASSWORD nextclouddbpassword
 ENV POSTGRES_HOST localhost
 ENV EXISTING_DB false
 
-ENV PHP_MEMORY_LIMIT 512M
+ENV PHP_MEMORY_LIMIT 1024M
 ENV PHP_UPLOAD_LIMIT 20480M
 
 # Create and own Postgres/PHP run dirs
@@ -48,4 +48,6 @@ ADD actions/disable-maintenance-mode.sh /usr/local/bin/disable-maintenance-mode.
 ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
 ADD actions/places-setup.sh /usr/local/bin/places-setup.sh
 ADD actions/download-models.sh /usr/local/bin/download-models.sh
+ADD nextcloud-init.sh /usr/local/bin/nextcloud-init.sh
+ADD nextcloud-run.sh /usr/local/bin/nextcloud-run.sh
 RUN chmod a+x /usr/local/bin/*.sh

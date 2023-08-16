@@ -1,9 +1,9 @@
 id: nextcloud
 title: Nextcloud
-version: 27.0.1
+version: 27.0.2
 release-notes: |
   * Upstream changes:
-    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.0.1
+    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.0.2
   * StartOS Wrapper changes:
     * Complete refactor using Alpine Linux, nginx, and postgres for performance and efficiency
 license: AGPL-3.0
@@ -149,7 +149,7 @@ actions:
       io-format: json
   places-setup:
     name: "Setup Map for Memories"
-    description: "This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application.  This mostly consists of downloading map data.  You MUST install the Memories app before running this Action, and you will want to run the \"Index Media for Memories\" Action after completion."
+    description: "This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application.  This mostly consists of downloading map data.  A re-index will be triggered at the end of this process.  You MUST install the Memories app before running this Action."
     warning: "This is an intensive process that will require non-trivial system resources and time.  On a 2023 Server One, this may take up to an hour.  If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time.  This action will consume approximately 2-3 GB of disk space."
     allowed-statuses:
       - running
@@ -163,7 +163,7 @@ actions:
       io-format: json
   index-memories:
     name: "Index Media for Memories"
-    description: "Indexes all media for the Memories media app and enables video support and previews.  You MUST install the Memories app before running this Action."
+    description: "Indexes all media for the Memories media app and enables video support and previews.  Indexing is now done automatically by Memories when Nextcloud background tasks are triggered (every 5min by default), so you only need to use this if you want to force a re-index, or do not want to wait for the initial index.  You MUST install the Memories app before running this Action."
     warning: ~
     allowed-statuses:
       - running

@@ -15,7 +15,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to index photos for the Memories app
-sudo -u www-data php $NEXTCLOUD_DIR/occ memories:index -f > /dev/null 2>&1
-yes | sudo -u www-data php $NEXTCLOUD_DIR/occ memories:video-setup > /dev/null 2>&1
+sudo -u www-data -E php $NEXTCLOUD_DIR/occ memories:index -f > /dev/null 2>&1
 
 echo $action_result_running
