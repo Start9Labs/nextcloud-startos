@@ -2,7 +2,18 @@
 
 set -ea
 
-INITIALIZED_FILE=/root/initialized
+# Environment Variables
+export LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
+export TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
+export SERVICE_ADDRESS='nextcloud.embassy'
+export PGDATA="/var/lib/postgresql/15"
+export POSTGRES_CONFIG="/etc/postgresql/15"
+export NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
+export TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
+export FILE="/var/www/html/config/config.php"
+export NEXTCLOUD_ADMIN_USER='admin'
+export PASSWORD_FILE="/root/start9/password.dat"
+export INITIALIZED_FILE=/root/initialized
 
 if ! [ -f $INITIALIZED_FILE ]; then
   echo "Performing initialization..."

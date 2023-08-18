@@ -13,6 +13,7 @@ TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 NEXTCLOUD_ADMIN_USER='admin'
 PASSWORD_FILE="/root/start9/password.dat"
+NEXTCLOUD_ADMIN_PASSWORD=$(cat $PASSWORD_FILE)
 
 # User Config
 DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
@@ -52,6 +53,13 @@ data:
     qr: true
 EOP
 
+_term() { 
+  echo "Caught SIGTERM signal!"
+  kill -TERM "$nginx_process" 2>/dev/null
+  kill -TERM "$nextcloud_process" 2>/dev/null
+  kill -TERM "$crond_process" 2>/dev/null
+}
+
 # Start Postgres
 rm $PGDATA/postmaster.pid
 echo "Starting PostgreSQL db server..."
@@ -68,10 +76,8 @@ sed -i "s/'overwrite\.cli\.url' => \c/'overwrite\.cli\.url' => 'https\:\/\/$LAN_
 sed -i "/'default_locale' => .*/d" $FILE
 sed -i "/'default_phone_region' => .*/d" $FILE
 sed -i "/'updatechecker' => .*/d" $FILE
-sed -i "/'trusted_domains' => .*/d" $FILE
 sed -i "/);/d" $FILE
 echo "  'overwriteprotocol' => 'https',
-'trusted_domains' => '$NEXTCLOUD_TRUSTED_DOMAINS',
 'check_for_working_wellknown_setup' => true,
 'updatechecker' => false,
 'default_locale' => '$DEFAULT_LOCALE',
@@ -81,10 +87,17 @@ echo "  'overwriteprotocol' => 'https',
 # Start nginx web server
 echo "Starting nginx server..."
 nginx -g "daemon off;" &
+nginx_process=$!
 
 # Start Nextcloud
 echo "Starting Nextcloud frontend..."
-/entrypoint.sh php-fpm
+/entrypoint.sh php-fpm &
+nextcloud_process=$!
 busybox crond -f -l 0 -L /dev/stdout &
+crond_process=$!
 
 touch /usr/local/bin/running
+
+trap _term TERM
+
+wait $nginx_process $nextcloud_process $crond_process

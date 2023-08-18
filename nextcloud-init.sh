@@ -14,6 +14,7 @@ NEXTCLOUD_PATH="/var/www/html"
 FILE="/var/www/html/config/config.php"
 NEXTCLOUD_ADMIN_USER='admin'
 PASSWORD_FILE="/root/start9/password.dat"
+# NEXTCLOUD_INIT_LOCK=true
 
 # Set admin password
 NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
@@ -61,7 +62,7 @@ echo "Initializing Nextcloud for the first time..."
 
 while ! sudo -u www-data -E php /var/www/html/occ status | grep "installed: true"; do
 echo "Awaiting Nextcloud installation..."
-sleep 1
+sleep 10
 done
 
 # Install default apps
