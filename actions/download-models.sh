@@ -2,9 +2,6 @@
 
 set -e
 
-# Define the path to the Nextcloud installation
-NEXTCLOUD_DIR="/var/www/html"
-
 action_result_running="    {
     \"version\": \"0\",
     \"message\": \"Success!   The machine learning models have been downloaded successfully. \",
@@ -14,6 +11,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to download machine learning models for the Recognize app
-sudo -u www-data -E php $NEXTCLOUD_DIR/occ recognize:download-models > /dev/null 2>&1
+sudo -u www-data -E php /var/www/html/occ recognize:download-models > /dev/null 2>&1
 
 echo $action_result_running

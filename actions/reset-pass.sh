@@ -13,7 +13,7 @@ OC_PASS=$(cat /root/start9/password.dat)
 
 action_result_running="    {
     \"version\": \"0\",
-    \"message\": \"Admin Password has been reset to Default Password\",
+    \"message\": \"Admin Password has been reset to the default password.  You can find this under Properties.\",
     \"value\": null,
     \"copyable\": false,
     \"qr\": false

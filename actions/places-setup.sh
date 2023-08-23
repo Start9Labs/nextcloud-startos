@@ -1,9 +1,7 @@
+# ELIMINATE?
 #!/bin/bash 
 
 set -e
-
-# Define the path to the Nextcloud installation
-NEXTCLOUD_DIR="/var/www/html"
 
 action_result_running="    {
     \"version\": \"0\",

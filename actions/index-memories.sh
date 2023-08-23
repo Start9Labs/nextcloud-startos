@@ -1,10 +1,6 @@
-# Wipe this out - now in UI
 #!/bin/bash
 
 set -e
-
-# Define the path to the Nextcloud installation
-NEXTCLOUD_DIR="/var/www/html"
 
 action_result_running="    {
     \"version\": \"0\",
@@ -15,6 +11,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to index photos for the Memories app
-sudo -u www-data -E php $NEXTCLOUD_DIR/occ memories:index -f > /dev/null 2>&1
+sudo -u www-data -E php /var/www/html/occ memories:index > /dev/null 2>&1
 
 echo $action_result_running

@@ -7,9 +7,6 @@ LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 PGDATA="/var/lib/postgresql/15"
-POSTGRES_CONFIG="/etc/postgresql/15"
-NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"
 NEXTCLOUD_ADMIN_USER='admin'
 PASSWORD_FILE="/root/start9/password.dat"
@@ -72,16 +69,19 @@ while ! su - postgres -c "pg_isready"; do
 done
 
 # Modify config.php, add default locale settings from user config, and turn off UI update checker
-sed -i "s/'overwrite\.cli\.url' => \c/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
+sed -i "/'overwrite\.cli\.url' => .*/d" $FILE
+sed -i "/'overwriteprotocol' => .*/d" $FILE
+sed -i "/'check_for_working_wellknown_setup' => .*/d" $FILE
 sed -i "/'default_locale' => .*/d" $FILE
 sed -i "/'default_phone_region' => .*/d" $FILE
 sed -i "/'updatechecker' => .*/d" $FILE
 sed -i "/);/d" $FILE
-echo "  'overwriteprotocol' => 'https',
-'check_for_working_wellknown_setup' => true,
-'updatechecker' => false,
-'default_locale' => '$DEFAULT_LOCALE',
-'default_phone_region' => '$DEFAULT_PHONE_REGION',
+echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
+  'overwriteprotocol' => 'https',
+  'check_for_working_wellknown_setup' => true,
+  'updatechecker' => false,
+  'default_locale' => '$DEFAULT_LOCALE',
+  'default_phone_region' => '$DEFAULT_PHONE_REGION',
 );" >> $FILE
 
 # Start nginx web server
@@ -93,6 +93,8 @@ nginx_process=$!
 echo "Starting Nextcloud frontend..."
 /entrypoint.sh php-fpm &
 nextcloud_process=$!
+sleep 10
+echo "Starting background tasks..."
 busybox crond -f -l 0 -L /dev/stdout &
 crond_process=$!
 

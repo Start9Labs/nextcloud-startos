@@ -27,7 +27,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           true,
           { version: "25.0.3.3", type: "up" },
         ),
-        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
+        down: () => { throw new Error('Downgrades are prohibited in accordance with Nextcloud recommendations') },
       },
       "25.0.4.1": {
         up: compat.migrations.updateConfig(
@@ -37,8 +37,20 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           }),
           true,
           { version: "25.0.4.1", type: "up" },
+          ),
+          down: () => { throw new Error('Downgrades are prohibited in accordance with Nextcloud recommendations') },
+        },
+      "27.0.2": {
+        up: compat.migrations.updateConfig(
+          (config) => {
+            return config;
+          },
+          true,
+          { version: "27.0.2", type: "up" },
         ),
-        down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
+        down: () => {
+          throw new Error("Downgrades are prohibited in accordance with Nextcloud recommendations");
+        },
       },
     },
     "27.0.2",

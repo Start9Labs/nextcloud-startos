@@ -6,15 +6,13 @@ set -ea
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
+TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS"
+NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 PGDATA="/var/lib/postgresql/15"
 POSTGRES_CONFIG="/etc/postgresql/15"
-NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 NEXTCLOUD_PATH="/var/www/html"
-FILE="/var/www/html/config/config.php"
 NEXTCLOUD_ADMIN_USER='admin'
 PASSWORD_FILE="/root/start9/password.dat"
-# NEXTCLOUD_INIT_LOCK=true
 
 # Set admin password
 NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
@@ -66,8 +64,6 @@ sleep 10
 done
 
 # Install default apps
-# echo "Installing default apps..."
-# sudo -u www-data -E php /var/www/html/occ app:install calendar
-# sudo -u www-data -E php /var/www/html/occ app:install contacts
-# sudo -u www-data php /var/www/html/occ app:install contacts > /dev/null 2>&1
-# exit 0
+echo "Installing default apps..."
+sudo -u www-data -E php /var/www/html/occ app:install calendar
+sudo -u www-data -E php /var/www/html/occ app:install contacts
