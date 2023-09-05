@@ -55,11 +55,7 @@ RUN echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ADD ./nginx.conf /etc/nginx/http.d/default.conf
 ADD ./check-web.sh /usr/local/bin/check-web.sh
-ADD actions/reset-pass.sh /usr/local/bin/reset-pass.sh
-ADD actions/disable-maintenance-mode.sh /usr/local/bin/disable-maintenance-mode.sh
-ADD actions/index-memories.sh /usr/local/bin/index-memories.sh
-ADD actions/places-setup.sh /usr/local/bin/places-setup.sh
-ADD actions/download-models.sh /usr/local/bin/download-models.sh
+ADD actions/*.sh /usr/local/bin/
 ADD nextcloud-init.sh /usr/local/bin/nextcloud-init.sh
 ADD nextcloud-run.sh /usr/local/bin/nextcloud-run.sh
 RUN chmod a+x /usr/local/bin/*.sh

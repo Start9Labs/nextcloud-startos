@@ -7,10 +7,18 @@ LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
 PGDATA="/var/lib/postgresql/15"
+EXISTING_USER_PATH="/data/nextcloud/data/admin"
 FILE="/var/www/html/config/config.php"
-NEXTCLOUD_ADMIN_USER='admin'
 PASSWORD_FILE="/root/start9/password.dat"
+NEXTCLOUD_ADMIN_USER="admin"
 NEXTCLOUD_ADMIN_PASSWORD=$(cat $PASSWORD_FILE)
+
+# Determine if an admin user exists and create one as 'admin' if it does not
+# if ! [ -f $EXISTING_USER_PATH ]; then
+#   NEXTCLOUD_ADMIN_USER="embassy"
+# else
+  # NEXTCLOUD_ADMIN_USER="admin"
+# fi
 
 # User Config
 DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)

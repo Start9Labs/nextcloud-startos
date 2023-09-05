@@ -133,6 +133,14 @@ actions:
       inject: true
       args: []
       io-format: json
+    input-spec:
+      admin-user:
+        type: string
+        name: Nextcloud Admin User
+        description: "The username for your Nextcloud administrator account.  On older StartOS Nextcloud versions this was 'embassy' and on current versions it is 'admin.'  This can also be any custom user that you have given admin privileges to."
+        masked: false
+        placeholder: "admin"
+        nullable: false
   disable-maintenance-mode:
     name: "Disable Maintenance Mode"
     description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including NC app updates) or restart.  The typical solution is to BE PATIENT and give it plenty of opportunity to progress organically.  Resort to this action only if necessary."
@@ -144,6 +152,20 @@ actions:
       image: main
       system: false
       entrypoint: disable-maintenance-mode.sh
+      inject: true
+      args: []
+      io-format: json
+  downloader-deps:
+    name: "Install NCDownloader Dependencies"
+    description: "Download and install the necessary dependencies to run the NCDownloader application."
+    warning: ~
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: downloader-deps.sh
       inject: true
       args: []
       io-format: json

@@ -10,8 +10,7 @@ PGDATA="/var/lib/postgresql/15"
 POSTGRES_CONFIG="/etc/postgresql/15"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-FILE="/var/www/html/config/config.php"
-NEXTCLOUD_ADMIN_USER='admin'
+FILE="/var/www/html/config/config.php"  
 PASSWORD_FILE="/root/start9/password.dat"
 INITIALIZED_FILE=/root/initialized
 

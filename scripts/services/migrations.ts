@@ -42,8 +42,13 @@ export const migration: T.ExpectedExports.migration = compat.migrations
         },
       "27.0.2": {
         up: compat.migrations.updateConfig(
-          (config) => {
-            return config;
+          async (config, effects) => {
+          await effects.writeFile({
+            path: "/root/initialized",
+            toWrite: "",
+            volumeId: "main",
+          })
+          return config;
           },
           true,
           { version: "27.0.2", type: "up" },
