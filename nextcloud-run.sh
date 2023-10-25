@@ -6,7 +6,7 @@ set -ea
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
-PGDATA="/var/lib/postgresql/15"
+PGDATA="/var/lib/postgresql"
 EXISTING_USER_PATH="/data/nextcloud/data/admin"
 FILE="/var/www/html/config/config.php"
 PASSWORD_FILE="/root/start9/password.dat"

@@ -1,4 +1,4 @@
-FROM nextcloud:27.0.2-fpm-alpine
+FROM nextcloud:27.1.2-fpm-alpine
 
 # arm64 or amd64
 ARG PLATFORM

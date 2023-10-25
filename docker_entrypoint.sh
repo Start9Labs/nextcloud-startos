@@ -6,8 +6,8 @@ set -ea
 LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
 TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
 SERVICE_ADDRESS='nextcloud.embassy'
-PGDATA="/var/lib/postgresql/15"
-POSTGRES_CONFIG="/etc/postgresql/15"
+PGDATA="/var/lib/postgresql"
+POSTGRES_CONFIG="/etc/postgresql"
 NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
 FILE="/var/www/html/config/config.php"  

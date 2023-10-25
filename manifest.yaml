@@ -1,6 +1,6 @@
 id: nextcloud
 title: Nextcloud
-version: 27.0.2
+version: 27.1.2
 release-notes: |
   * Upstream changes:
     * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.0.2
@@ -27,8 +27,8 @@ main:
   mounts:
     main: /root
     nextcloud: /var/www/html
-    db: /var/lib/postgresql/15
-    dbconfig: /etc/postgresql/15
+    db: /var/lib/postgresql
+    dbconfig: /etc/postgresql
     cert: /mnt/cert
 health-checks:
   main:
@@ -95,8 +95,8 @@ backup:
       compat: /assets
       main: /root/data
       nextcloud: /var/www/html
-      db: /var/lib/postgresql/15
-      dbconfig: /etc/postgresql/15
+      db: /var/lib/postgresql
+      dbconfig: /etc/postgresql
   restore:
     type: docker
     image: compat
@@ -107,12 +107,12 @@ backup:
       compat: /assets
       main: /root/data
       nextcloud: /var/www/html
-      db: /var/lib/postgresql/15
-      dbconfig: /etc/postgresql/15
+      db: /var/lib/postgresql
+      dbconfig: /etc/postgresql
 migrations:
   from:
     "*":
-      type: script
+      type: docker
       args: ["from"]
   to:
     "*":

@@ -40,7 +40,7 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           ),
           down: () => { throw new Error('Downgrades are prohibited in accordance with Nextcloud recommendations') },
         },
-      "27.0.2": {
+      "27.1.2": {
         up: compat.migrations.updateConfig(
           async (config, effects) => {
           await effects.writeFile({
@@ -51,12 +51,12 @@ export const migration: T.ExpectedExports.migration = compat.migrations
           return config;
           },
           true,
-          { version: "27.0.2", type: "up" },
+          { version: "27.1.2", type: "up" },
         ),
         down: () => {
           throw new Error("Downgrades are prohibited in accordance with Nextcloud recommendations");
         },
       },
     },
-    "27.0.2",
+    "27.1.2",
   );
