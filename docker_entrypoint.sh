@@ -20,6 +20,7 @@ FILE="/var/www/html/config/config.php"
 
 DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
+WEBDAV_UPLOAD_LIMIT=$((1048576 * $(yq e '.davfs-upload-limit' /root/start9/config.yaml)))
 
 if [ -e "$FILE" ] ; then
   NEXTCLOUD_ADMIN_PASSWORD=$(cat /root/start9/password.dat)
@@ -82,7 +83,7 @@ if [ -e "$FILE" ] ; then
   sed -i "/'dbtype' => 'pgsql',/a\\ \ 'overwriteprotocol' => 'https'\," $FILE
 
   until [ -e "/etc/apache2/sites-enabled/000-default.conf" ]; do { sleep 5; } done
-  sed -i 's/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"\n        <\/IfModule>/' /etc/apache2/sites-enabled/000-default.conf
+  sed -i "s/\#ServerName www\.example\.com.*/ServerName nextcloud.embassy\n        LimitRequestBody $WEBDAV_UPLOAD_LIMIT\n        <IfModule mod_headers\.c>\n          Header always set Strict-Transport-Security \"max-age=15552000; includeSubDomains\"\n        <\/IfModule>/" /etc/apache2/sites-enabled/000-default.conf
   sed -i "s/'overwrite\.cli\.url' => .*/'overwrite\.cli\.url' => 'https\:\/\/$LAN_ADDRESS'\,/" $FILE
 
   # Add default locale and phone region from user config and turn off update checker from UI

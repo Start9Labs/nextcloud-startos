@@ -61,4 +61,14 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     },
     "default": "US",
   },
+  "davfs-upload-limit": {
+    "name": "WebDAV maximum upload file size",
+    "description": "Maximum upload file size for webdav access",
+    "type": "number",
+    "units": "MiB (0 for unlimited)",
+    "nullable": false,
+    "integral": true,
+    "range": "[0,2047]",
+    "default": 1024
+  }
 });
