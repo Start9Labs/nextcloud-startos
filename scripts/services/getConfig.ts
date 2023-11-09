@@ -61,4 +61,21 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     },
     "default": "US",
   },
+  "webdav": {
+    "type": "object",
+    "name": "WebDAV settings",
+    "description": "WebDAV configuration options.",
+    "spec": {
+      "max-upload-file-size-limit": {
+        "name": "Maximum upload file size",
+        "description": "Maximum upload file size for webdav access (set to 0 for an unlimited upload size)",
+        "type": "number",
+        "units": "MiB (0 for unlimited)",
+        "nullable": false,
+        "integral": true,
+        "range": "[0,2048]",
+        "default": 1024
+      }
+    }
+  }
 });
