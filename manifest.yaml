@@ -137,6 +137,35 @@ actions:
       inject: true
       args: []
       io-format: json
+    input-spec:
+      "admin-user": {
+        "type": "union",
+        "name": "Setup admin username",
+        "description": "Setup admin username",
+        "tag": {
+          "id": "reset-mode",
+          "name": "Reset mode",
+          "description": "Set reset mode",
+          "variant-names": {
+            "password": "Reset only password",
+            "admin": "Reset username and password",
+          },
+        },
+        "default": "password",
+        "variants": {
+          "password": {},
+          "admin": {
+            "new-admin-username": {
+              "type": "string",
+              "name": "Admin username",
+              "description": "This will actually recreate the admin so any and all of it's files uploaded to Nextcloud will also be deleted if you choose this option",
+              "masked": false,
+              "placeholder": "admin",
+              "nullable": false
+            }
+          }
+        }
+      }
   disable-maintenance-mode:
     name: "Disable Maintenance Mode"
     description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including NC app updates) or restart.  The typical solution is to BE PATIENT and give it plenty of opportunity to progress organically.  Resort to this action only if necessary."
