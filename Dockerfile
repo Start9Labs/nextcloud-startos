@@ -1,4 +1,4 @@
-FROM nextcloud:27.1.2-fpm-alpine
+FROM nextcloud:26.0.8-fpm-alpine
 
 # arm64 or amd64
 ARG PLATFORM
@@ -10,6 +10,7 @@ RUN apk add --no-cache \
     ffmpeg \
     htop \
     nginx \
+    postgresql13 \
     postgresql15 \
     postgresql15-client \
     su-exec \
@@ -58,4 +59,5 @@ ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/*.sh /usr/local/bin/
 ADD nextcloud-init.sh /usr/local/bin/nextcloud-init.sh
 ADD nextcloud-run.sh /usr/local/bin/nextcloud-run.sh
+ADD nextcloud.env /usr/local/bin/nextcloud.env
 RUN chmod a+x /usr/local/bin/*.sh

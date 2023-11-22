@@ -2,17 +2,7 @@
 
 set -ea
 
-# Environment Variables
-LAN_ADDRESS=$(yq e '.lan-address' /root/start9/config.yaml)
-TOR_ADDRESS=$(yq e '.tor-address' /root/start9/config.yaml)
-SERVICE_ADDRESS='nextcloud.embassy'
-TRUSTED_PROXIES="$TOR_ADDRESS $LAN_ADDRESS"
-NEXTCLOUD_TRUSTED_DOMAINS="$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS"
-PGDATA="/var/lib/postgresql"
-POSTGRES_CONFIG="/etc/postgresql"
-NEXTCLOUD_PATH="/var/www/html"
-NEXTCLOUD_ADMIN_USER='admin'
-PASSWORD_FILE="/root/start9/password.dat"
+source /usr/local/bin/nextcloud.env
 
 # Set admin password
 NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
@@ -21,31 +11,29 @@ echo "$NEXTCLOUD_ADMIN_PASSWORD" > "$PASSWORD_FILE"
 # Clean slate
 rm -rf $NEXTCLOUD_PATH/{*,.[^.]*}
 rm -rf $PGDATA/{*,.[^.]*}
-rm -rf $POSTGRES_CONFIG/{*,.[^.]*}
 
 # Initialize PostgreSQL
 echo 'Initializing PostgreSQL database server...'
-su - postgres -c "mkdir -p $PGDATA"
-chmod -R 3777 "$PGDATA"
-chown -R postgres:postgres "$PGDATA"
+sudo -u postgres mkdir -p $PGDATA
+chown -R postgres:postgres /var/lib/postgresql
 echo "Initializing PostgreSQL database..."
-su - postgres -c "pg_ctl initdb -D $PGDATA"
+sudo -u postgres pg_ctl initdb -D $PGDATA
 
 # Start PG server
 echo "Starting PostgreSQL db server..."
-su - postgres -c "pg_ctl start -D $PGDATA" &
+sudo -u postgres pg_ctl start -D $PGDATA
 
 # Wait until Postgres is ready
-while ! su - postgres -c "pg_isready"; do
+while ! sudo -u postgres pg_isready; do
   sleep 1
 done
 
 # Create db user & db, set password
 echo "Setting up database..."
-su - postgres -c "createuser --superuser $POSTGRES_USER"
-su - postgres -c "createdb $POSTGRES_DB"
-su - postgres -c "psql -c \"ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';\""
-su - postgres -c "psql -c \"grant all privileges on database $POSTGRES_DB to $POSTGRES_USER;\""
+sudo -u postgres createuser --superuser $POSTGRES_USER
+sudo -u postgres createdb $POSTGRES_DB
+sudo -u postgres psql -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
 
 # Configure .user.ini
 echo "Configuring Nextcloud frontend..."

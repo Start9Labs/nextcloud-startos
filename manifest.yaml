@@ -28,7 +28,7 @@ main:
     main: /root
     nextcloud: /var/www/html
     db: /var/lib/postgresql
-    dbconfig: /etc/postgresql
+    # dbconfig: /etc/postgresql
     cert: /mnt/cert
 health-checks:
   main:
@@ -57,8 +57,8 @@ volumes:
     type: data
   db:
     type: data
-  dbconfig:
-    type: data
+  # dbconfig:
+  #   type: data
   cert:
     type: certificate
     interface-id: main
@@ -96,7 +96,7 @@ backup:
       main: /root/data
       nextcloud: /var/www/html
       db: /var/lib/postgresql
-      dbconfig: /etc/postgresql
+      # dbconfig: /etc/postgresql
   restore:
     type: docker
     image: compat
@@ -108,11 +108,20 @@ backup:
       main: /root/data
       nextcloud: /var/www/html
       db: /var/lib/postgresql
-      dbconfig: /etc/postgresql
+      # dbconfig: /etc/postgresql
 migrations:
   from:
-    "*":
+    ">=25 && <26":
       type: docker
+      image: main
+      entrypoint: /usr/local/bin/migrate.sh
+      mounts:
+        main: /root
+        nextcloud: /var/www/html
+        db: /var/lib/postgresql
+        # dbconfig: /etc/postgresql
+    "*":
+      type: script
       args: ["from"]
   to:
     "*":
