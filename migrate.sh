@@ -14,8 +14,11 @@ touch $INITIALIZED_FILE
 chown -R postgres:postgres /var/lib/postgresql
 
 if [ -d /var/lib/postgresql/lib ]; then
-    sudo -u postgres mkdir -p /var/lib/postgresql/13
-    mv /var/lib/postgresql/lib /var/lib/postgresql/13/main
+    rm -rf /var/lib/postgresql/13
+    sudo -u postgres mkdir -p /var/lib/postgresql/13/main
+    sudo -u postgres /usr/libexec/postgresql13/pg_ctl initdb -D /var/lib/postgresql/13/main
+    rsync -a /var/lib/postgresql/lib/ /var/lib/postgresql/13/main/
+    rm -rf /var/lib/postgresql/lib
 fi
 
 if [ -d /var/lib/postgresql/13/main ]; then
@@ -28,8 +31,12 @@ if [ -d /var/lib/postgresql/13/main ]; then
         sleep 1
     done
 
-    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c -U nextcloud > /var/lib/postgresql/13.dump
+    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c --no-role-passwords -U nextcloud > /var/lib/postgresql/13.dump
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl stop -D /var/lib/postgresql/13/main
+
+    while [ -f /run/postgresql/.s.PGSQL.5432.lock ]; do
+        sleep 1
+    done   
 
     rm -rf /var/lib/postgresql/13 /etc/postgresql/13
 fi
@@ -41,7 +48,7 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     echo 'Initializing PostgreSQL database server...'
     sudo -u postgres mkdir -p $PGDATA
     echo "Initializing PostgreSQL database..."
-    sudo -u postgres pg_ctl initdb -D $PGDATA
+    sudo -u postgres pg_ctl init -D $PGDATA
 
     # Start PG server
     echo "Starting PostgreSQL db server..."
@@ -57,4 +64,4 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     rm /var/lib/postgresql/13.dump
 fi
 
-# TODO: @kn0wmad start nextcloud so it can upgrade to v26
+sudo -u www-data /var/www/html/occ maintenance:install

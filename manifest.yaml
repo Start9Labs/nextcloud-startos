@@ -1,9 +1,9 @@
 id: nextcloud
 title: Nextcloud
-version: 27.1.2
+version: 26.0.8
 release-notes: |
   * Upstream changes:
-    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.0.2
+    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 26.0.8
   * StartOS Wrapper changes:
     * Complete refactor using Alpine Linux, nginx, and postgres for performance and efficiency
 license: AGPL-3.0
@@ -28,7 +28,6 @@ main:
     main: /root
     nextcloud: /var/www/html
     db: /var/lib/postgresql
-    # dbconfig: /etc/postgresql
     cert: /mnt/cert
 health-checks:
   main:
@@ -57,8 +56,8 @@ volumes:
     type: data
   db:
     type: data
-  # dbconfig:
-  #   type: data
+  dbconfig:
+    type: data
   cert:
     type: certificate
     interface-id: main
@@ -96,7 +95,6 @@ backup:
       main: /root/data
       nextcloud: /var/www/html
       db: /var/lib/postgresql
-      # dbconfig: /etc/postgresql
   restore:
     type: docker
     image: compat
@@ -108,10 +106,9 @@ backup:
       main: /root/data
       nextcloud: /var/www/html
       db: /var/lib/postgresql
-      # dbconfig: /etc/postgresql
 migrations:
   from:
-    ">=25 && <26":
+    ">=25.0.0 <26.0.0":
       type: docker
       image: main
       entrypoint: /usr/local/bin/migrate.sh
@@ -119,7 +116,8 @@ migrations:
         main: /root
         nextcloud: /var/www/html
         db: /var/lib/postgresql
-        # dbconfig: /etc/postgresql
+        dbconfig: /etc/postgresql13
+      io-format: json
     "*":
       type: script
       args: ["from"]
