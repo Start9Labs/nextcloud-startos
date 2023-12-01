@@ -111,7 +111,9 @@ migrations:
     ">=25.0.0 <26.0.0":
       type: docker
       image: main
-      entrypoint: /usr/local/bin/migrate.sh
+      entrypoint: /bin/sh
+      args:
+        ["-c", '/usr/local/bin/migrate.sh >&2 && echo ''{"configured":true}''']
       mounts:
         main: /root
         nextcloud: /var/www/html

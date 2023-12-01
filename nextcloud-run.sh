@@ -59,15 +59,9 @@ _term() {
 }
 
 # Start Postgres
-rm $PGDATA/postmaster.pid
+rm -f $PGDATA/postmaster.pid
 echo "Starting PostgreSQL db server..."
 sudo -u postgres pg_ctl start -D $PGDATA
-
-# Wait until Postgres is ready
-echo "Waiting for Postgres to be ready..."
-while ! sudo -u postgres -c "pg_isready"; do
-  sleep 1
-done
 
 # Modify config.php, add default locale settings from user config, and turn off UI update checker
 sed -i "/'overwrite\.cli\.url' => .*/d" $CONFIG_FILE

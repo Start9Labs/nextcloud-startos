@@ -7,6 +7,8 @@ if ! [ -f /var/www/html/config/config.php ]; then
     exit 0
 fi
 
+chown -R www-data:www-data /var/www/html
+
 source /usr/local/bin/nextcloud.env
 
 touch $INITIALIZED_FILE
@@ -25,13 +27,7 @@ if [ -d /var/lib/postgresql/13/main ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl start -D /var/lib/postgresql/13/main
 
-    # Wait until Postgres is ready
-    echo "Waiting for Postgres to be ready..."
-    while ! sudo -u postgres /usr/libexec/postgresql13/pg_isready; do
-        sleep 1
-    done
-
-    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c --no-role-passwords -U nextcloud > /var/lib/postgresql/13.dump
+    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall --no-role-passwords > /var/lib/postgresql/13.dump
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl stop -D /var/lib/postgresql/13/main
 
     while [ -f /run/postgresql/.s.PGSQL.5432.lock ]; do
@@ -54,14 +50,29 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres pg_ctl start -D $PGDATA
 
-    # Wait until Postgres is ready
-    while ! sudo -u postgres pg_isready; do
-        sleep 1
-    done
+    cat /var/lib/postgresql/13.dump | sudo -u postgres psql
+    sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
+    sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER SUPERUSER;"
+    sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
+    sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
 
-    cat /var/lib/postgresql/13.dump | sudo -u postgres psql -U nextcloud
-    sudo -u postgres pg_ctl stop -D $PGDATA
     rm /var/lib/postgresql/13.dump
+else
+    sudo -u postgres pg_ctl start -D $PGDATA
 fi
 
-sudo -u www-data /var/www/html/occ maintenance:install
+/entrypoint.sh php-fpm &
+NCPID=$!
+
+while ! sudo -u www-data -E php /var/www/html/occ status | grep "versionstring: 26.0.8"; do
+    echo "Awaiting Nextcloud update..."
+    sleep 10
+done
+
+sudo -u www-data -E php /var/www/html/occ upgrade
+
+kill -TERM $NCPID
+sleep 60 &
+wait -n $NCPID $!
+
+sudo -u postgres pg_ctl stop -D $PGDATA

@@ -3,7 +3,7 @@
 set -ea
 
 # Environment Variables
-source /usr/bin/nextcloud.env
+source /usr/local/bin/nextcloud.env
 
 if ! [ -f $INITIALIZED_FILE ]; then
   echo "Performing initialization..."

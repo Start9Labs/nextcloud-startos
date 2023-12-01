@@ -23,11 +23,6 @@ sudo -u postgres pg_ctl initdb -D $PGDATA
 echo "Starting PostgreSQL db server..."
 sudo -u postgres pg_ctl start -D $PGDATA
 
-# Wait until Postgres is ready
-while ! sudo -u postgres pg_isready; do
-  sleep 1
-done
-
 # Create db user & db, set password
 echo "Setting up database..."
 sudo -u postgres createuser --superuser $POSTGRES_USER
@@ -45,13 +40,20 @@ echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
 # Start Nextcloud, which will install
 echo "Initializing Nextcloud for the first time..."
 /entrypoint.sh php-fpm &
+NCPID=$!
 
 while ! sudo -u www-data -E php /var/www/html/occ status | grep "installed: true"; do
-echo "Awaiting Nextcloud installation..."
-sleep 10
+  echo "Awaiting Nextcloud installation..."
+  sleep 10
 done
 
 # Install default apps
 echo "Installing default apps..."
 sudo -u www-data -E php /var/www/html/occ app:install calendar
 sudo -u www-data -E php /var/www/html/occ app:install contacts
+
+kill -TERM $NCPID
+sleep 60 &
+wait -n $NCPID $!
+
+sudo -u postgres pg_ctl stop -D $PGDATA
