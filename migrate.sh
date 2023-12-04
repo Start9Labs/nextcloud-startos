@@ -16,11 +16,21 @@ touch $INITIALIZED_FILE
 chown -R postgres:postgres /var/lib/postgresql
 
 if [ -d /var/lib/postgresql/lib ]; then
+    mkdir -p /var/lib/postgresql/lib.snapshot
+    while diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot; do # loop in case files change during copy
+        rm -rf /var/lib/postgresql/lib.snapshot
+        mkdir /var/lib/postgresql/lib.snapshot
+        rsync -a /var/lib/postgresql/lib/ /var/lib/postgresql/lib.snapshot/
+    done
+    mv /var/lib/postgresql/lib /var/lib/postgresql/lib.bak
+fi
+
+if [ -d /var/lib/postgresql/lib.snapshot ]; then
     rm -rf /var/lib/postgresql/13
     sudo -u postgres mkdir -p /var/lib/postgresql/13/main
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl initdb -D /var/lib/postgresql/13/main
-    rsync -a /var/lib/postgresql/lib/ /var/lib/postgresql/13/main/
-    rm -rf /var/lib/postgresql/lib
+    rsync -a /var/lib/postgresql/lib.snapshot/ /var/lib/postgresql/13/main/
+    rm -rf /var/lib/postgresql/lib.snapshot
 fi
 
 if [ -d /var/lib/postgresql/13/main ]; then
@@ -34,7 +44,7 @@ if [ -d /var/lib/postgresql/13/main ]; then
         sleep 1
     done   
 
-    rm -rf /var/lib/postgresql/13 /etc/postgresql/13
+    rm -rf /var/lib/postgresql/13
 fi
 
 if [ -f /var/lib/postgresql/13.dump ]; then
@@ -50,7 +60,7 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres pg_ctl start -D $PGDATA
 
-    cat /var/lib/postgresql/13.dump | sudo -u postgres psql
+    sudo -u postgres psql -f /var/lib/postgresql/13.dump
     sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
     sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER SUPERUSER;"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
@@ -76,3 +86,5 @@ sleep 60 &
 wait -n $NCPID $!
 
 sudo -u postgres pg_ctl stop -D $PGDATA
+
+rm -rf /var/lib/postgresql/lib.bak
