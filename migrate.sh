@@ -37,7 +37,7 @@ if [ -d /var/lib/postgresql/13/main ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl start -D /var/lib/postgresql/13/main
 
-    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c --if-exists --no-role-passwords | grep -Ev '^(CREATE|DROP) ROLE postgres;' > /var/lib/postgresql/13.dump
+    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c --if-exists --no-role-passwords | grep -Ev '^(CREATE|DROP) ROLE (IF EXISTS )?postgres;' > /var/lib/postgresql/13.dump
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl stop -D /var/lib/postgresql/13/main
 
     while [ -f /run/postgresql/.s.PGSQL.5432.lock ]; do
