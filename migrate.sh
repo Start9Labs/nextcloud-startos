@@ -33,6 +33,7 @@ fi
 
 if [ -d /var/lib/postgresql/13/main ]; then
     chown -R postgres:postgres /var/lib/postgresql
+    chmod -R 750 /var/lib/postgresql
     echo "Starting PostgreSQL db server..."
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl start -D /var/lib/postgresql/13/main
 
