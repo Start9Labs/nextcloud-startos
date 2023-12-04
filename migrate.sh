@@ -37,7 +37,7 @@ if [ -d /var/lib/postgresql/13/main ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl start -D /var/lib/postgresql/13/main
 
-    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c --no-role-passwords > /var/lib/postgresql/13.dump
+    sudo -u postgres /usr/libexec/postgresql13/pg_dumpall -c --if-exists --no-role-passwords | grep -Ev '^(CREATE|DROP) ROLE postgres;' > /var/lib/postgresql/13.dump
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl stop -D /var/lib/postgresql/13/main
 
     while [ -f /run/postgresql/.s.PGSQL.5432.lock ]; do
@@ -60,7 +60,7 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres pg_ctl start -D $PGDATA
 
-    sudo -u postgres psql -f /var/lib/postgresql/13.dump
+    sudo -u postgres psql -v ON_ERROR_STOP=1 -f /var/lib/postgresql/13.dump
     sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
     sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER SUPERUSER;"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
