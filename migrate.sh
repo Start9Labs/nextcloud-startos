@@ -13,8 +13,6 @@ source /usr/local/bin/nextcloud.env
 
 touch $INITIALIZED_FILE
 
-chown -R postgres:postgres /var/lib/postgresql
-
 if [ -d /var/lib/postgresql/lib ]; then
     mkdir -p /var/lib/postgresql/lib.snapshot
     while diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot; do # loop in case files change during copy
@@ -34,6 +32,7 @@ if [ -d /var/lib/postgresql/lib.snapshot ]; then
 fi
 
 if [ -d /var/lib/postgresql/13/main ]; then
+    chown -R postgres:postgres /var/lib/postgresql
     echo "Starting PostgreSQL db server..."
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl start -D /var/lib/postgresql/13/main
 
