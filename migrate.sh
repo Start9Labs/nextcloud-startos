@@ -8,6 +8,7 @@ if ! [ -f /var/www/html/config/config.php ]; then
 fi
 
 chown -R www-data:www-data /var/www/html
+chown -R postgres:postgres /var/lib/postgresql
 
 source /usr/local/bin/nextcloud.env
 
