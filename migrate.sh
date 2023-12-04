@@ -15,7 +15,7 @@ touch $INITIALIZED_FILE
 
 if [ -d /var/lib/postgresql/lib ]; then
     mkdir -p /var/lib/postgresql/lib.snapshot
-    while diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot; do # loop in case files change during copy
+    while ! diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot; do # loop in case files change during copy
         rm -rf /var/lib/postgresql/lib.snapshot
         sudo -u postgres mkdir /var/lib/postgresql/lib.snapshot
         rsync -a /var/lib/postgresql/lib/ /var/lib/postgresql/lib.snapshot/
