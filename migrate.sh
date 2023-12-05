@@ -38,7 +38,7 @@ if [ -d /var/lib/postgresql/13/main ]; then
     echo "Starting PostgreSQL db server..."
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl start -D /var/lib/postgresql/13/main
 
-    sudo -u postgres /usr/libexec/postgresql13/pg_dump -C $POSTGRES_DB > /var/lib/postgresql/13.dump
+    sudo -u postgres /usr/libexec/postgresql13/pg_dump --format=tar -C $POSTGRES_DB -f /var/lib/postgresql/13.dump
     sudo -u postgres /usr/libexec/postgresql13/pg_ctl stop -D /var/lib/postgresql/13/main
 
     while [ -f /run/postgresql/.s.PGSQL.5432.lock ]; do
@@ -62,7 +62,7 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     sudo -u postgres pg_ctl start -D $PGDATA
 
     sudo -u postgres createuser --superuser $POSTGRES_USER
-    sudo -u postgres pg_restore -e /var/lib/postgresql/13.dump
+    sudo -u postgres pg_restore -d postgres -e /var/lib/postgresql/13.dump
     sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
