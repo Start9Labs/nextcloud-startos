@@ -62,7 +62,8 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     sudo -u postgres pg_ctl start -D $PGDATA
 
     sudo -u postgres createuser --superuser $POSTGRES_USER
-    sudo -u postgres pg_restore -d postgres -e /var/lib/postgresql/13.dump
+    sudo -u postgres createdb $POSTGRES_DB
+    sudo -u postgres pg_restore -e -d $POSTGRES_DB /var/lib/postgresql/13.dump
     sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
