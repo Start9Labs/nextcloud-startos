@@ -81,11 +81,11 @@ while ! sudo -u www-data -E php /var/www/html/occ status | grep "versionstring: 
     sleep 10
 done
 
-sudo -u www-data -E php /var/www/html/occ upgrade
-
 kill -TERM $NCPID
 sleep 60 &
 wait -n $NCPID $!
+
+sudo -u www-data -E php /var/www/html/occ upgrade
 
 sudo -u postgres pg_ctl stop -D $PGDATA
 
