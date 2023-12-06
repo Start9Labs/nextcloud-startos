@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     busybox \
     ffmpeg \
     htop \
+    jq \
     nginx \
     postgresql13 \
     postgresql15 \
