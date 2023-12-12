@@ -12,6 +12,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to setup map for the Memories app
-yes | sudo -u www-data -E php /var/www/html/occ memories:places-setup > /dev/null 2>&1
+sudo -u www-data -E php /var/www/html/occ memories:places-setup > /dev/null 2>&1
 
 echo $action_result_running
