@@ -6,13 +6,6 @@ set -ea
 source /usr/local/bin/nextcloud.env
 NEXTCLOUD_ADMIN_PASSWORD=$(cat $PASSWORD_FILE)
 
-# Determine if an admin user exists and create one as 'admin' if it does not
-# if ! [ -f $EXISTING_USER_PATH ]; then
-#   NEXTCLOUD_ADMIN_USER="embassy"
-# else
-  # NEXTCLOUD_ADMIN_USER="admin"
-# fi
-
 # User Config
 DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)

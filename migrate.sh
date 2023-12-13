@@ -1,5 +1,7 @@
 #!/bin/sh
 
+VERSION=$(</dev/stdin)
+
 set -e
 
 if ! [ -f /var/www/html/config/config.php ]; then
@@ -86,6 +88,13 @@ sleep 60 &
 wait -n $NCPID $!
 
 sudo -u www-data -E php /var/www/html/occ upgrade
+
+if [ $VERSION != "25.0.5" ]; then
+cat > $STARTOS_CONFIG_FILE << EOF
+default-locale: en_US
+default-phone-region: US
+EOF
+fi
 
 sudo -u postgres pg_ctl stop -D $PGDATA
 
