@@ -88,6 +88,7 @@ sleep 60 &
 wait -n $NCPID $!
 
 sudo -u www-data -E php /var/www/html/occ upgrade
+sudo -u www-data -E php /var/www/html/occ db:add-missing-indices
 
 if [ $VERSION != "25.0.5" ]; then
 cat > $STARTOS_CONFIG_FILE << EOF

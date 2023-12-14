@@ -18,7 +18,7 @@ Please see our [Nextcloud Master Thread](https://community.start9.com/t/nextclou
 
 This is necessary even if you later plan to use Tor. It is also highly recommended that you perform initial sync over LAN for speed.
 
-1. Make sure you have first set up LAN access for your OS (https://start9.com/latest/user-manual/connecting/connecting-lan/lan-os/index).
+1. Make sure you have first [trusted your root CA on your device](https://docs.start9.com/latest/user-manual/trust-ca).
 1. Download the appropriate desktop client from https://nextcloud.com/install/#install-clients
     - On Linux, your distribution may include built-in Nextcloud account integration. For the best experience, we recommend trying these first.  You also may prefer to use your package manager (i.e. apt, pacman, rpm, etc) to get the client.
 1. Open the client and click "Log In"
@@ -37,7 +37,7 @@ If you would like to setup a remote connection for your desktop client, you may 
 
 1. Follow instructions for "Desktop Client (LAN)" (above).
 1. In the desktop client, click the account in the top left, then Settings. Click Network, then "Specify proxy manually as" and "SOCKS5 proxy." Enter "127.0.0.1" for the Host and "9050" for the port.
-1. Ensure you have the [Tor daemon running on your OS](https://start9.com/latest/user-manual/connecting/connecting-tor/tor-os/index).
+1. Ensure you have [set up tor on your device](https://docs.start9.com/latest/user-manual/connecting-tor).
 1. Back in the desktop client, click the account in the top left, then Add Account.
 1. On the following screen, click "Log in," then enter your Nextcloud Tor server address, which you can copy from your server's Nextcloud page -> Interfaces - Tor Address. This must start with *https://* (NOTE: You __will__ need to manually change this) and end with .onion. Click Next.
 1. This will launch your browser and prompt you to log in to your account. Log in and then grant access as we did for LAN.
@@ -45,7 +45,7 @@ If you would like to setup a remote connection for your desktop client, you may 
 
 ### Mobile Client (LAN)
 
-1. This will require your device to support .local addresses, and you will need to have completed [LAN setup for your device](https://start9.com/latest/user-manual/connecting/connecting-lan/lan-os/index). If your device does not support .local, skip to the Tor guide below.
+1. This will require your device to support .local addresses, and you will need to have first [trusted your root CA on your device](https://docs.start9.com/latest/user-manual/trust-ca). If your device does not support .local, skip to the Tor guide below.
 1. Download the Nextcloud App for your device from wherever you get your apps (App Store, F-Droid, Play Store, etc).
 1. As in the desktop client, we will first log in to our Nextcloud instance by scanning the QR code (or copy pasting) the LAN Address from the Nextcloud service page, under "Interfaces."
 1. You will be sent to the login screen, enter your credentials from the server UI's Nextcloud Service page -> Properties.
@@ -64,8 +64,7 @@ If you would like to setup a remote connection for your desktop client, you may 
 Congratulations! You now have Nextcloud setup across Desktop and Mobile with file sync!! You can add more devices if you wish.
 
 ### Mobile Client (Tor)
-
-1. You will need to have [Orbot running on your device](https://start9.com/latest/user-manual/connecting/connecting-tor/tor-os/index).
+1. You will need to have [set up tor on your device](https://docs.start9.com/latest/user-manual/connecting-tor).
 1. Download the Nextcloud App for your device from wherever you get your apps (App Store, F-Droid, Play Store, etc).
 1. For Android, make sure Orbot is running VPN mode and Nextcloud is added as a VPN app.
 1. Launch the Nextcloud app. Tap the account menu in the top right, then "Add account."
@@ -77,7 +76,6 @@ That's it! You may wish to set up some select folders for remote sync. Check you
 For more documentation on Nextcloud, visit the [Nextcloud Docs](https://docs.nextcloud.com/).
 
 ## Nextcloud Apps
-
 Nextcloud has its own app store with many offerings!
 
 It is important to realize that while these apps will generally work, not all of them have been tested by Start9 and there may be some limitations. It is a good idea to avoid experimental apps.

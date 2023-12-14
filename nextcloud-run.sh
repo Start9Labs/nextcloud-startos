@@ -63,14 +63,36 @@ sed -i "/'check_for_working_wellknown_setup' => .*/d" $CONFIG_FILE
 sed -i "/'default_locale' => .*/d" $CONFIG_FILE
 sed -i "/'default_phone_region' => .*/d" $CONFIG_FILE
 sed -i "/'updatechecker' => .*/d" $CONFIG_FILE
+sed -i "/'updater.server.url' => .*/d" $CONFIG_FILE
 sed -i "/);/d" $CONFIG_FILE
 echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
   'overwriteprotocol' => 'https',
   'check_for_working_wellknown_setup' => true,
   'updatechecker' => false,
+  'updater.server.url' => '$SERVICE_ADDRESS',
   'default_locale' => '$DEFAULT_LOCALE',
   'default_phone_region' => '$DEFAULT_PHONE_REGION',
 );" >> $CONFIG_FILE
+
+# Additional config for Memories app (if they do not exist yet) - see https://memories.gallery/file-types/
+if [ -z "$(grep "'preview_max_filesize_image'" "$CONFIG_FILE")" ]; then 
+  sed -i "/);/d" $CONFIG_FILE
+  echo "  'preview_max_memory' => 2048,
+  'preview_max_filesize_image' => 256,
+  'preview_max_x' => 2048,
+  'preview_max_y' => 2048,
+  'enabledPreviewProviders' =>
+    array (
+      'OC\\Preview\\Image',
+      'OC\\Preview\\HEIC',
+      'OC\\Preview\\TIFF',
+      'OC\\Preview\\Movie',
+      'OC\\Preview\\MKV',
+      'OC\\Preview\\MP4',
+      'OC\\Preview\\AVI',
+    ),
+  );" >> $CONFIG_FILE
+fi
 
 # Start nginx web server
 echo "Starting nginx server..."

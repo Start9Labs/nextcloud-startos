@@ -14,7 +14,7 @@ rm -rf $PGDATA/{*,.[^.]*}
 
 # Initialize PostgreSQL
 echo 'Initializing PostgreSQL database server...'
-sudo -u postgres mkdir -p $PGDATA
+mkdir -p $PGDATA
 chown -R postgres:postgres /var/lib/postgresql
 echo "Initializing PostgreSQL database..."
 sudo -u postgres pg_ctl initdb -D $PGDATA

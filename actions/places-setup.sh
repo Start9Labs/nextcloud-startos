@@ -1,4 +1,3 @@
-# ELIMINATE?
 #!/bin/bash 
 
 set -e
@@ -12,6 +11,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to setup map for the Memories app
-sudo -u www-data -E php /var/www/html/occ memories:places-setup > /dev/null 2>&1
+yes | sudo -u www-data -E php /var/www/html/occ memories:places-setup >&2
 
 echo $action_result_running

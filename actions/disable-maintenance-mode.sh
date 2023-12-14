@@ -14,6 +14,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to disable Maintenance Mode in case it gets hung
-sudo -u www-data -E php $NEXTCLOUD_DIR/occ maintenance:mode --off > /dev/null 2>&1
+sudo -u www-data -E php $NEXTCLOUD_DIR/occ maintenance:mode --off >&2
 
 echo $action_result_running

@@ -28,20 +28,3 @@ export const migration: T.ExpectedExports.migration = (
 
   return compat.migrations.fromMapping({}, current)(effects, version, ...args);
 };
-
-// return compat.migrations.fromMapping({
-//   "25.0.5": {
-//     up: compat.migrations.updateConfig(
-//       _ => ({
-//         "default-locale": "en_US",
-//         "default-phone-region": "US",
-//       }),
-//       true,
-//       { version: "25.0.5", type: "up" },
-//     ),
-//     down: () => { throw new Error('Downgrades are prohibited per Nextcloud development team recommendations') },
-//   },
-// },
-//   "26.0.8",
-// );
-// }

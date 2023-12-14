@@ -151,13 +151,13 @@ actions:
       admin-user:
         type: string
         name: Nextcloud Admin User
-        description: "The username for your Nextcloud administrator account.  On older StartOS Nextcloud versions this was 'embassy' and on current versions it is 'admin.'  This can also be any custom user that you have given admin privileges to."
+        description: "The username for your Nextcloud administrator account.  On older StartOS Nextcloud versions this was 'embassy' and on v26+, it is 'admin.'  This can also be any custom user that you have given admin privileges to."
         masked: false
         placeholder: "admin"
         nullable: false
   disable-maintenance-mode:
     name: "Disable Maintenance Mode"
-    description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including NC app updates) or restart.  The typical solution is to BE PATIENT and give it plenty of opportunity to progress organically.  Resort to this action only if necessary."
+    description: "Use this if your UI has gotten stuck in 'Maintenance Mode.'  Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart.  The typical solution is to BE PATIENT and allow the opportunity for organic progress.  Resort to this action only if necessary.  Being in maintenance mode for more than 15min likely constitutes 'being stuck.'"
     warning: ~
     allowed-statuses:
       - running
@@ -172,7 +172,7 @@ actions:
   downloader-deps:
     name: "Install NCDownloader Dependencies"
     description: "Download and install the necessary dependencies to run the NCDownloader application."
-    warning: ~
+    warning: "When downloading or torrenting with NCDownloader, your Nextcloud server makes clearnet connections which should not be considered private or anonymous.  Be safe, use protection."
     allowed-statuses:
       - running
     implementation:
@@ -186,7 +186,7 @@ actions:
   places-setup:
     name: "Setup Map for Memories"
     description: "This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application.  This mostly consists of downloading map data.  A re-index will be triggered at the end of this process.  You MUST install the Memories app before running this Action."
-    warning: "This is an intensive process that will require non-trivial system resources and time.  On a 2023 Server One, this may take up to an hour.  If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time.  This action will consume approximately 2-3 GB of disk space."
+    warning: "This is an intensive process that will require non-trivial system resources and time.  On a 2023 Server One, this may take up to an hour.  If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time.  This action will consume approximately 2-3 GB of disk space, and you can check progress by viewing the amount of geometries populated to the database under Admin Settings -> Memories -> Reverse Geotagging (complete set is ~561,000)."
     allowed-statuses:
       - running
     implementation:
@@ -199,7 +199,7 @@ actions:
       io-format: json
   index-memories:
     name: "Index Media for Memories"
-    description: "Indexes all media for the Memories media app and enables video support and previews.  Indexing is now done automatically by Memories when Nextcloud background tasks are triggered (every 5min by default), so you only need to use this if you want to force a re-index, or do not want to wait for the initial index.  You MUST install the Memories app before running this Action."
+    description: "Indexes all media for the Memories media app and enables video support and previews.  Indexing is now done automatically by Memories when Nextcloud background tasks are triggered (every 5min by default), so you only need to use this if you want to force a re-index, or do not want to wait for the initial index.  You MUST install the Memories app and select your media path (on the Memories welcome screen) before running this Action."
     warning: ~
     allowed-statuses:
       - running
