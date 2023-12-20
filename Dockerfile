@@ -18,7 +18,7 @@ RUN apk add --no-cache \
     sudo \
     vim \
     yq \
-    # libreoffice \ install as an action?
+    # libreoffice \ install as an action
 ;
 
 # Install additional app dependencies
