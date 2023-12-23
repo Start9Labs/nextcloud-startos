@@ -61,8 +61,6 @@ volumes:
     type: data
   db:
     type: data
-  dbconfig:
-    type: data
   cert:
     type: certificate
     interface-id: main
@@ -123,7 +121,6 @@ migrations:
         main: /root
         nextcloud: /var/www/html
         db: /var/lib/postgresql
-        dbconfig: /etc/postgresql13
       io-format: json
     "*":
       type: script
