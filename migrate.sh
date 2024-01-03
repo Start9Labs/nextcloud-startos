@@ -86,9 +86,11 @@ done
 kill -TERM $NCPID
 sleep 60 &
 wait -n $NCPID $!
+kill -KILL $NCPID || true
 
 sudo -u www-data -E php /var/www/html/occ upgrade
 sudo -u www-data -E php /var/www/html/occ db:add-missing-indices
+sudo -u www-data -E php /var/www/html/occ maintenance:mode --off
 
 if [ $VERSION != "25.0.5" ]; then
 cat > $STARTOS_CONFIG_FILE << EOF
