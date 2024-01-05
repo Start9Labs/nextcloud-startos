@@ -44,7 +44,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     "name": "Default Phone Region",
     "description": 'This sets the default region for phone numbers on your Nextcloud server.  It is required to allow inserting phone numbers in the user profiles starting without the country code (e.g. +49 for Germany).',
     "type": "enum",
-    "values": ["US", "GB", "CN", "ES", "MX", "IN", "RU", "JP", "DE", "FR", "PL"],
+    "values": ["US", "GB", "CN", "ES", "MX", "IN", "BR", "RU", "JP", "DE", "FR", "PL"],
     "value-names": {
       "US": "United States",
       "GB": "United Kingdom",
@@ -57,7 +57,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "JP": "Japan",
       "DE": "Germany",
       "FR": "France",
-      "PL": "Polish",
+      "PL": "Poland",
     },
     "default": "US",
   },

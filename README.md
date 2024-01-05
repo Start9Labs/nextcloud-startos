@@ -1,90 +1,74 @@
 # Wrapper for Nextcloud
-
-`Nextcloud` is a browser-based productivity platform. This .s9pk wrapper will allow you to run Nextcloud on your Embassy.
+`Nextcloud` is a browser-based productivity platform. This `.s9pk` wrapper will allow you to run Nextcloud on your Start9 server.
 
 ## Dependencies
-
 - [docker](https://docs.docker.com/get-docker)
 - [docker-buildx](https://docs.docker.com/buildx/working-with-buildx/)
 - [yq](https://mikefarah.gitbook.io/yq)
 - [toml](https://crates.io/crates/toml-cli)
-- [embassy-sdk](https://github.com/Start9Labs/embassy-os/tree/master/backend)
+- [start-sdk](https://github.com/Start9Labs/start-os/tree/master/core)
 - [make](https://www.gnu.org/software/make/)
 - [deno](https://deno.land/)
 
-## Build enviroment
-Prepare your EmbassyOS build enviroment. In this example we are using Ubuntu 20.04.
+## Build enviroment (Ubuntu example)
+Prepare your build enviroment
 
-1. Install docker
+1. Install build packages
+```
+sudo apt-get install -y build-essential openssl libssl-dev libc6-dev clang libclang-dev ca-certificates
+```
+2. Install docker
 ```
 curl -fsSL https://get.docker.com -o- | bash
 sudo usermod -aG docker "$USER"
 exec sudo su -l $USER
 ```
-2. Set buildx as the default builder
+3. Set buildx as the default builder
 ```
 docker buildx install
 docker buildx create --use
 ```
-3. Enable cross-arch emulated builds in docker
+4. Enable cross-arch emulated builds in docker
 ```
 docker run --privileged --rm linuxkit/binfmt:v0.8
 ```
-4. Install yq
+5. Install yq
 ```
 sudo snap install yq
-```
-5. Install essentials build packages
-```
-sudo apt-get install -y build-essential openssl libssl-dev libc6-dev clang libclang-dev ca-certificates
 ```
 6. Install Rust
 ```
 curl https://sh.rustup.rs -sSf | sh
-# Choose nr 1 (default install)
+# Choose 1 (default install)
 source $HOME/.cargo/env
 ```
 7. Install toml
 ```
 cargo install toml-cli
 ```
-8. Build and install embassy-sdk
+8. Build and install start-sdk
 ```
-cd ~/ && git clone https://github.com/Start9Labs/embassy-os.git
-cd embassy-os/backend/
-./install-sdk.sh
+git clone https://github.com/Start9Labs/start-os.git
+cd start-os
+make sdk
 ```
 
-## Cloning
-
-Clone the project locally. Note the submodule link to the original project(s). 
-
+## Build s9pk
+Clone the project locally:
 ```
-git clone https://github.com/Start9Labs/nextcloud-wrapper.git
-cd nextcloud-wrapper
-git submodule update --init --recursive
+git clone https://github.com/Start9Labs/nextcloud-startos.git
+cd nextcloud-startos
 ```
-## Building
 
-To build the project, run the following commands:
-
+To build, simply run:
 ```
 make
 ```
 
-## Installing (on Embassy)
+## Installing
+On StartOS, navigate to System -> Sideload a Service, and select the `nextcloud.s9pk`
 
-SSH into an Embassy device.
-`scp` the `.s9pk` to any directory from your local machine.
-Run the following command to install the package:
-
-```
-embassy-cli auth login
-#Enter your embassy password then run:
-embassy-cli package install /path/to/nextcloud.s9pk
-```
-## Verify Install
-
-Go to your Embassy Services page, select nextcloud and start the service.
-
-#Done
+Alternatively, you may use `start-cli`:
+1. [SSH](https://docs.start9.com/latest/user-manual/ssh) into your server
+2. `scp` the `nextcloud.s9pk` file to your server
+3. `start-cli package install nextcloud.s9pk`

@@ -2,9 +2,6 @@
 
 set -e
 
-# Define the path to the Nextcloud installation
-NEXTCLOUD_DIR="/var/www/html"
-
 action_result_running="    {
     \"version\": \"0\",
     \"message\": \"Success!  You can now use the Map inside your Memories application. \",
@@ -14,6 +11,6 @@ action_result_running="    {
 }"
 
 # Run the occ command to setup map for the Memories app
-yes | sudo -u www-data php /var/www/html/occ memories:places-setup > /dev/null 2>&1
+yes | sudo -u www-data -E php /var/www/html/occ memories:places-setup >&2
 
 echo $action_result_running
