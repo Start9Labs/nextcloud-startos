@@ -1,7 +1,7 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
 import { compat, types as T } from "../deps.ts";
 
-const current = "26.0.8";
+const current = "26.0.8.1";
 const minMajor = EmVer.parse(current).values[0] - 1;
 
 export const migration: T.ExpectedExports.migration = (
