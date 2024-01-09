@@ -13,7 +13,7 @@ export const migration: T.ExpectedExports.migration = (
   if (args[0] === "from" && emver.values[0] < minMajor) {
     let major = emver.values[0] + 1;
     let msg =
-      `Cannot update directly from ${version} to v26.0.8. Please visit the marketplace and install v${major++}`;
+      `Cannot update directly from ${version} to v26.0.8.1. Please visit the marketplace and install v${major++}`;
     while (major < minMajor) {
       msg += `, then v${major++}`;
     }
