@@ -78,19 +78,14 @@ fi
 /entrypoint.sh php-fpm &
 NCPID=$!
 
-while ! sudo -u www-data -E php /var/www/html/occ status | grep "versionstring: 26.0.8"; do
-    echo "Awaiting Nextcloud update..."
-    sleep 10
+while ! test -f /tmp/migration.complete; do
+  echo "Awaiting Nextcloud update and migration..."
+  sleep 30
 done
 
 kill -TERM $NCPID
-sleep 60 &
-wait -n $NCPID $!
-kill -KILL $NCPID || true
 
-sudo -u www-data -E php /var/www/html/occ upgrade
-sudo -u www-data -E php /var/www/html/occ db:add-missing-indices
-sudo -u www-data -E php /var/www/html/occ maintenance:mode --off
+# sudo -u www-data -E php /var/www/html/occ db:add-missing-indices
 
 if [ $VERSION != "25.0.5" ]; then
 cat > $STARTOS_CONFIG_FILE << EOF
