@@ -99,16 +99,22 @@ echo "Starting nginx server..."
 nginx -g "daemon off;" &
 nginx_process=$!
 
+if sudo -u www-data -E php /var/www/html/occ | grep "$NC_VERSION"; then
+  mkdir -p /root/migrations
+  touch /root/migrations/$NEXTCLOUD_VERSION.complete
+fi
+
 # Start Nextcloud
 echo "Starting Nextcloud frontend..."
 /entrypoint.sh php-fpm &
 nextcloud_process=$!
+
 sleep 10
 echo "Starting background tasks..."
 busybox crond -f -l 0 -L /dev/stdout &
 crond_process=$!
 
-touch /usr/local/bin/running
+echo $nextcloud_process > /run/nextcloud.pid
 
 trap _term TERM
 

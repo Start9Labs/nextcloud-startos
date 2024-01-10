@@ -1,7 +1,5 @@
 #!/bin/sh
 
-VERSION=$(</dev/stdin)
-
 set -e
 
 if ! [ -f /var/www/html/config/config.php ]; then
@@ -50,50 +48,28 @@ if [ -d /var/lib/postgresql/13/main ]; then
     rm -rf /var/lib/postgresql/13
 fi
 
-if [ -f /var/lib/postgresql/13.dump ]; then
-    test "$PGDATA" = /var/lib/postgresql/15/main
+test "$PGDATA" = /var/lib/postgresql/15/main
 
-    rm -rf /var/lib/postgresql/15
-    echo 'Initializing PostgreSQL database server...'
-    sudo -u postgres mkdir -p $PGDATA
-    echo "Initializing PostgreSQL database..."
-    sudo -u postgres pg_ctl initdb -D $PGDATA
+rm -rf /var/lib/postgresql/15
+echo 'Initializing PostgreSQL database server...'
+sudo -u postgres mkdir -p $PGDATA.tmp
+echo "Initializing PostgreSQL database..."
+sudo -u postgres pg_ctl initdb -D $PGDATA.tmp
 
-    # Start PG server
-    echo "Starting PostgreSQL db server..."
-    sudo -u postgres pg_ctl start -D $PGDATA
+# Start PG server
+echo "Starting PostgreSQL db server..."
+sudo -u postgres pg_ctl start -D $PGDATA.tmp
 
-    sudo -u postgres createuser --superuser $POSTGRES_USER
-    sudo -u postgres createdb $POSTGRES_DB
-    sudo -u postgres pg_restore -e -d $POSTGRES_DB /var/lib/postgresql/13.dump
-    sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
-    sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
-    sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
+sudo -u postgres createuser --superuser $POSTGRES_USER
+sudo -u postgres createdb $POSTGRES_DB
+sudo -u postgres pg_restore -e -d $POSTGRES_DB /var/lib/postgresql/13.dump
+sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
+sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
+sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
 
-    rm /var/lib/postgresql/13.dump
-else
-    sudo -u postgres pg_ctl start -D $PGDATA
-fi
-
-/entrypoint.sh php-fpm &
-NCPID=$!
-
-while ! test -f /tmp/migration.complete; do
-  echo "Awaiting Nextcloud update and migration..."
-  sleep 30
-done
-
-kill -TERM $NCPID
-
-# sudo -u www-data -E php /var/www/html/occ db:add-missing-indices
-
-if [ $VERSION != "25.0.5" ]; then
-cat > $STARTOS_CONFIG_FILE << EOF
-default-locale: en_US
-default-phone-region: US
-EOF
-fi
-
-sudo -u postgres pg_ctl stop -D $PGDATA
+sudo -u postgres pg_ctl stop -D $PGDATA.tmp
 
 rm -rf /var/lib/postgresql/lib.bak
+rm -f /var/lib/postgresql/13.dump
+
+mv $PGDATA.tmp $PGDATA

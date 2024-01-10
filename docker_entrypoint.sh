@@ -5,6 +5,10 @@ set -ea
 # Environment Variables
 source /usr/local/bin/nextcloud.env
 
+if ! [ -d $PGDATA ]; then
+  /usr/local/bin/migrate.sh
+fi
+
 if ! [ -f $INITIALIZED_FILE ]; then
   echo "Performing initialization..."
   /usr/local/bin/nextcloud-init.sh

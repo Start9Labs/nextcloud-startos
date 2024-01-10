@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
 
-touch /tmp/migration.complete
+mkdir -p /root/migrations
+touch /root/migrations/$NEXTCLOUD_VERSION.complete
