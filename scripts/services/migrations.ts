@@ -1,7 +1,7 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
 import { compat, types as T } from "../deps.ts";
 
-const current = "26.0.8";
+const current = "26.0.8.1";
 const minMajor = EmVer.parse(current).values[0] - 1;
 
 export const migration: T.ExpectedExports.migration = (
@@ -13,7 +13,7 @@ export const migration: T.ExpectedExports.migration = (
   if (args[0] === "from" && emver.values[0] < minMajor) {
     let major = emver.values[0] + 1;
     let msg =
-      `Cannot update directly from ${version} to v26.0.8. Please visit the marketplace and install v${major++}`;
+      `Cannot update directly from ${version} to v26.0.8.1. Please visit the marketplace and install v${major++}`;
     while (major < minMajor) {
       msg += `, then v${major++}`;
     }

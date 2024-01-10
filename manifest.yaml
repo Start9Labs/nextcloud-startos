@@ -1,6 +1,6 @@
 id: nextcloud
 title: Nextcloud
-version: 26.0.8
+version: 26.0.8.1
 release-notes: |
   * Upstream changes:
     * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 26.0.8
