@@ -2,9 +2,10 @@ import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mo
 import { compat, matches, types as T } from "../deps.ts";
 
 const current = "26.0.8.1";
-const minMajor = EmVer.parse(current).values[0] - 1;
+const currentMajor = EmVer.parse(current).values[0];
+const minMajor = currentMajor - 1;
 
-export const migration: T.ExpectedExports.migration = (
+export const migration: T.ExpectedExports.migration = async (
   effects: T.Effects,
   version: string,
   ...args: unknown[]
@@ -12,7 +13,7 @@ export const migration: T.ExpectedExports.migration = (
   const emver = EmVer.parse(version);
   if (args[0] === "from" && emver.values[0] < minMajor) {
     let major = emver.values[0] + 1;
-    let msg = `Cannot update directly from ${version} to v26.0.8.1. Please visit the marketplace and install v${major++}`;
+    let msg = `Cannot update directly from ${version} to v${current}. Please visit the marketplace and install v${major++} and allow it to run until all heath checks pass`;
     while (major < minMajor) {
       msg += `, then v${major++}`;
     }
@@ -23,6 +24,19 @@ export const migration: T.ExpectedExports.migration = (
   }
   if (args[0] === "to" && emver.lessThan(EmVer.parse(current))) {
     throw new Error("Per Nextcloud recommendations, downgrades are prohibited");
+  }
+
+  if (
+    emver.values[0] == minMajor &&
+    minMajor >= 26 &&
+    !(await effects.exists({
+      volumeId: "main",
+      path: `migrations/${minMajor}.complete`,
+    }))
+  ) {
+    throw new Error(
+      `The migration for v${minMajor} did not complete. Please start the service and wait for all health checks to pass before updating to v${currentMajor}.`
+    );
   }
 
   return compat.migrations.fromMapping(
