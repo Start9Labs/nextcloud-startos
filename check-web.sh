@@ -10,7 +10,7 @@ else
     elif ! [ -f "/root/migrations/$NEXTCLOUD_VERSION.complete" ]; then
         echo "Nextcloud is updating..." >&2
         exit 61
-    elif ! curl --silent --fail nextcloud.embassy/login &>/dev/null; then
+    elif ! curl --silent --fail -L http://nextcloud.embassy:8080/login &>/dev/null; then
         echo "Web interface is unreachable" >&2
         exit 1
     fi

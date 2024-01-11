@@ -99,7 +99,7 @@ echo "Starting nginx server..."
 nginx -g "daemon off;" &
 nginx_process=$!
 
-if sudo -u www-data -E php /var/www/html/occ | grep "$NC_VERSION"; then
+if sudo -u www-data -E php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
   mkdir -p /root/migrations
   touch /root/migrations/$NEXTCLOUD_VERSION.complete
   touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
