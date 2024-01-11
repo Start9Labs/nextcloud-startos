@@ -16,7 +16,7 @@ touch $INITIALIZED_FILE
 
 if [ -d /var/lib/postgresql/lib ]; then
     mkdir -p /var/lib/postgresql/lib.snapshot
-    while ! diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot; do # loop in case files change during copy
+    while ! diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot > /dev/null; do # loop in case files change during copy
         rm -rf /var/lib/postgresql/lib.snapshot
         sudo -u postgres mkdir /var/lib/postgresql/lib.snapshot
         rsync -a /var/lib/postgresql/lib/ /var/lib/postgresql/lib.snapshot/
@@ -48,28 +48,30 @@ if [ -d /var/lib/postgresql/13/main ]; then
     rm -rf /var/lib/postgresql/13
 fi
 
-test "$PGDATA" = /var/lib/postgresql/15/main
+if [ -f /var/lib/postgresql/13.dump ]; then
+    test "$PGDATA" = /var/lib/postgresql/15/main
 
-rm -rf /var/lib/postgresql/15
-echo 'Initializing PostgreSQL database server...'
-sudo -u postgres mkdir -p $PGDATA.tmp
-echo "Initializing PostgreSQL database..."
-sudo -u postgres pg_ctl initdb -D $PGDATA.tmp
+    rm -rf /var/lib/postgresql/15
+    echo 'Initializing PostgreSQL database server...'
+    sudo -u postgres mkdir -p $PGDATA.tmp
+    echo "Initializing PostgreSQL database..."
+    sudo -u postgres pg_ctl initdb -D $PGDATA.tmp
 
-# Start PG server
-echo "Starting PostgreSQL db server..."
-sudo -u postgres pg_ctl start -D $PGDATA.tmp
+    # Start PG server
+    echo "Starting PostgreSQL db server..."
+    sudo -u postgres pg_ctl start -D $PGDATA.tmp
 
-sudo -u postgres createuser --superuser $POSTGRES_USER
-sudo -u postgres createdb $POSTGRES_DB
-sudo -u postgres pg_restore -e -d $POSTGRES_DB /var/lib/postgresql/13.dump
-sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
-sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
-sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
+    sudo -u postgres createuser --superuser $POSTGRES_USER
+    sudo -u postgres createdb $POSTGRES_DB
+    sudo -u postgres pg_restore -e -d $POSTGRES_DB /var/lib/postgresql/13.dump
+    sudo -u postgres psql -d $POSTGRES_DB -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
+    sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
+    sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
 
-sudo -u postgres pg_ctl stop -D $PGDATA.tmp
+    sudo -u postgres pg_ctl stop -D $PGDATA.tmp
+
+    rm -f /var/lib/postgresql/13.dump
+fi
 
 rm -rf /var/lib/postgresql/lib.bak
-rm -f /var/lib/postgresql/13.dump
-
 mv $PGDATA.tmp $PGDATA
