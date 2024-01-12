@@ -1,7 +1,5 @@
 #!/bin/sh
 
-VERSION=$(</dev/stdin)
-
 set -e
 
 if ! [ -f /var/www/html/config/config.php ]; then
@@ -18,7 +16,7 @@ touch $INITIALIZED_FILE
 
 if [ -d /var/lib/postgresql/lib ]; then
     mkdir -p /var/lib/postgresql/lib.snapshot
-    while ! diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot; do # loop in case files change during copy
+    while ! diff -qr /var/lib/postgresql/lib /var/lib/postgresql/lib.snapshot > /dev/null; do # loop in case files change during copy
         rm -rf /var/lib/postgresql/lib.snapshot
         sudo -u postgres mkdir /var/lib/postgresql/lib.snapshot
         rsync -a /var/lib/postgresql/lib/ /var/lib/postgresql/lib.snapshot/
@@ -55,13 +53,13 @@ if [ -f /var/lib/postgresql/13.dump ]; then
 
     rm -rf /var/lib/postgresql/15
     echo 'Initializing PostgreSQL database server...'
-    sudo -u postgres mkdir -p $PGDATA
+    sudo -u postgres mkdir -p $PGDATA.tmp
     echo "Initializing PostgreSQL database..."
-    sudo -u postgres pg_ctl initdb -D $PGDATA
+    sudo -u postgres pg_ctl initdb -D $PGDATA.tmp
 
     # Start PG server
     echo "Starting PostgreSQL db server..."
-    sudo -u postgres pg_ctl start -D $PGDATA
+    sudo -u postgres pg_ctl start -D $PGDATA.tmp
 
     sudo -u postgres createuser --superuser $POSTGRES_USER
     sudo -u postgres createdb $POSTGRES_DB
@@ -70,30 +68,10 @@ if [ -f /var/lib/postgresql/13.dump ]; then
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
     sudo -u postgres psql -d $POSTGRES_DB -c "GRANT ALL PRIVILEGES ON SCHEMA public TO $POSTGRES_USER;"
 
-    rm /var/lib/postgresql/13.dump
-else
-    sudo -u postgres pg_ctl start -D $PGDATA
+    sudo -u postgres pg_ctl stop -D $PGDATA.tmp
+
+    rm -f /var/lib/postgresql/13.dump
 fi
-
-/entrypoint.sh php-fpm &
-NCPID=$!
-
-while ! test -f /tmp/migration.complete; do
-  echo "Awaiting Nextcloud update and migration..."
-  sleep 30
-done
-
-kill -TERM $NCPID
-
-# sudo -u www-data -E php /var/www/html/occ db:add-missing-indices
-
-if [ $VERSION != "25.0.5" ]; then
-cat > $STARTOS_CONFIG_FILE << EOF
-default-locale: en_US
-default-phone-region: US
-EOF
-fi
-
-sudo -u postgres pg_ctl stop -D $PGDATA
 
 rm -rf /var/lib/postgresql/lib.bak
+mv $PGDATA.tmp $PGDATA

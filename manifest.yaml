@@ -1,6 +1,6 @@
 id: nextcloud
 title: Nextcloud
-version: 26.0.8.1
+version: 26.0.8.2
 release-notes: |
   * Upstream changes:
     * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 26.0.8
@@ -111,17 +111,6 @@ backup:
       db: /var/lib/postgresql
 migrations:
   from:
-    ">=25.0.0 <26.0.0":
-      type: docker
-      image: main
-      entrypoint: /bin/sh
-      args:
-        ["-c", '/usr/local/bin/migrate.sh >&2 && echo ''{"configured":true}''']
-      mounts:
-        main: /root
-        nextcloud: /var/www/html
-        db: /var/lib/postgresql
-      io-format: json
     "*":
       type: script
       args: ["from"]
