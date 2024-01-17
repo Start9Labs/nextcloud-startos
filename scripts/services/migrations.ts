@@ -1,7 +1,7 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
 import { compat, matches, types as T } from "../deps.ts";
 
-const current = "26.0.8.2";
+const current = "27.1.5";
 const currentMajor = EmVer.parse(current).values[0];
 const minMajor = currentMajor - 1;
 
@@ -28,7 +28,7 @@ export const migration: T.ExpectedExports.migration = async (
 
   if (
     emver.values[0] == minMajor &&
-    minMajor >= 26 &&
+    minMajor >= 27 &&
     !(await effects.exists({
       volumeId: "main",
       path: `migrations/${minMajor}.complete`,
