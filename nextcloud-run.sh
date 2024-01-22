@@ -57,6 +57,9 @@ echo "Starting PostgreSQL db server..."
 sudo -u postgres pg_ctl start -D $PGDATA
 
 # Modify config.php, add default locale settings from user config, and turn off UI update checker
+sed -i "/'filelocking\.enabled' => .*/d" $CONFIG_FILE
+sed -i "/'memcache\.locking' => .*/d" $CONFIG_FILE
+sed -i "/^  'memcache\.local' => /a \  'filelocking.enabled' => true, \n  'memcache.locking' => '\\\\\\\OC\\\\\\\Memcache\\\\\\\APCu'," $CONFIG_FILE
 sed -i "/'overwrite\.cli\.url' => .*/d" $CONFIG_FILE
 sed -i "/'overwriteprotocol' => .*/d" $CONFIG_FILE
 sed -i "/'check_for_working_wellknown_setup' => .*/d" $CONFIG_FILE
