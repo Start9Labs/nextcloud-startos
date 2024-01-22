@@ -8,10 +8,10 @@ RUN apk add --no-cache \
     bash \
     busybox \
     ffmpeg \
+    fuse \
     htop \
     jq \
     nginx \
-    postgresql13 \
     postgresql15 \
     postgresql15-client \
     su-exec \
@@ -61,7 +61,6 @@ ADD actions/*.sh /usr/local/bin/
 ADD nextcloud-init.sh /usr/local/bin/nextcloud-init.sh
 ADD nextcloud-run.sh /usr/local/bin/nextcloud-run.sh
 ADD nextcloud.env /usr/local/bin/nextcloud.env
-ADD migrate.sh /usr/local/bin/migrate.sh
 ADD migration-completion.sh /docker-entrypoint-hooks.d/post-upgrade/migration-completion.sh
 RUN chmod a+x /usr/local/bin/*.sh
 RUN chmod a+x /docker-entrypoint-hooks.d/post-upgrade/*.sh

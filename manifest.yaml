@@ -5,7 +5,8 @@ release-notes: |
   * Upstream changes:
     * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.1.5
   * StartOS Wrapper changes:
-    * 
+    * Minor bugfixes
+    * Codebase clean-up
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker

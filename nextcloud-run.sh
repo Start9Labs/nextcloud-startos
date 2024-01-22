@@ -69,7 +69,6 @@ echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
   'overwriteprotocol' => 'https',
   'check_for_working_wellknown_setup' => true,
   'updatechecker' => false,
-  'updater.server.url' => '$SERVICE_ADDRESS',
   'default_locale' => '$DEFAULT_LOCALE',
   'default_phone_region' => '$DEFAULT_PHONE_REGION',
 );" >> $CONFIG_FILE

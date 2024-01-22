@@ -35,14 +35,14 @@ clean:
 scripts/embassy.js: $(TS_FILES)
 	deno bundle scripts/embassy.ts scripts/embassy.js
 
-docker-images/x86_64.tar: Dockerfile docker_entrypoint.sh nextcloud-init.sh nextcloud-run.sh migrate.sh nextcloud.env
+docker-images/x86_64.tar: Dockerfile docker_entrypoint.sh nextcloud-init.sh nextcloud-run.sh nextcloud.env
 ifeq ($(ARCH),aarch64)
 else
 	mkdir -p docker-images
 	docker buildx build --tag start9/$(PKG_ID)/main:$(PKG_VERSION) --platform=linux/amd64 --build-arg PLATFORM=amd64 -o type=docker,dest=docker-images/x86_64.tar .
 endif
 
-docker-images/aarch64.tar: Dockerfile docker_entrypoint.sh nextcloud-init.sh nextcloud-run.sh migrate.sh nextcloud.env
+docker-images/aarch64.tar: Dockerfile docker_entrypoint.sh nextcloud-init.sh nextcloud-run.sh nextcloud.env
 ifeq ($(ARCH),x86_64)
 else
 	mkdir -p docker-images
