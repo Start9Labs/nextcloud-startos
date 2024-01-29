@@ -9,6 +9,7 @@ NEXTCLOUD_ADMIN_PASSWORD=$(cat $PASSWORD_FILE)
 # User Config
 DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
+WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT=$(yq e '.webdav.max-upload-file-size-limit' /root/start9/config.yaml)
 
 # Properties Page
 cat <<EOP > /root/start9/stats.yaml
@@ -95,6 +96,9 @@ if [ -z "$(grep "'preview_max_filesize_image'" "$CONFIG_FILE")" ]; then
     ),
   );" >> $CONFIG_FILE
 fi
+
+# Set nginx client_max_body_size to user-selected config
+sed -i "s/client_max_body_size\ 1024M/client_max_body_size\ $([[ "$WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT" == "null" ]] && echo "0" || echo "${WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT}M")/g" /etc/nginx/http.d/default.conf
 
 # Start nginx web server
 echo "Starting nginx server..."
