@@ -122,6 +122,17 @@ echo "Starting Nextcloud frontend..."
 /entrypoint.sh php-fpm &
 nextcloud_process=$!
 
+# Configure .user.ini
+echo "Configuring Nextcloud frontend..."
+sed -i "/php_value upload_max_filesize .*/d" $PHP_USER_FILE
+sed -i "/php_value post_max_size .*/d" $PHP_USER_FILE
+sed -i "/php_value max_input_time .*/d" $PHP_USER_FILE
+sed -i "/php_value max_execution_time .*/d" $PHP_USER_FILE
+echo 'php_value upload_max_filesize 16G' >> $PHP_USER_FILE
+echo 'php_value post_max_size 16G' >> $PHP_USER_FILE
+echo 'php_value max_input_time 3600' >> $PHP_USER_FILE
+echo 'php_value max_execution_time 3600' >> $PHP_USER_FILE
+
 sleep 10
 echo "Starting background tasks..."
 busybox crond -f -l 0 -L /dev/stdout &
