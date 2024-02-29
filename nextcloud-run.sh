@@ -67,7 +67,6 @@ sed -i "/'check_for_working_wellknown_setup' => .*/d" $CONFIG_FILE
 sed -i "/'default_locale' => .*/d" $CONFIG_FILE
 sed -i "/'default_phone_region' => .*/d" $CONFIG_FILE
 sed -i "/'updatechecker' => .*/d" $CONFIG_FILE
-sed -i "/'updater.server.url' => .*/d" $CONFIG_FILE
 sed -i "/);/d" $CONFIG_FILE
 echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
   'overwriteprotocol' => 'https',
