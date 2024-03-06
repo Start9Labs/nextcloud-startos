@@ -73,7 +73,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
         "units": "MiB",
         "nullable": true,
         "integral": true,
-        "range": "(0,4096]",
+        "range": "(0,65536]",
         "default": 1024
       }
     }
