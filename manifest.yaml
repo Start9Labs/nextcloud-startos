@@ -1,9 +1,9 @@
 id: nextcloud
 title: Nextcloud
-version: 27.1.6
+version: 27.1.7
 release-notes: |
   * Upstream changes:
-    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.1.6
+    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.1.7
   * StartOS Wrapper changes:
     * Add WebDAV upload limit config option
     * Minor bugfixes
