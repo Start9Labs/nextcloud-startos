@@ -28,7 +28,7 @@ export const migration: T.ExpectedExports.migration = async (
 
   if (
     emver.values[0] == minMajor &&
-    minMajor >= 27 &&
+    minMajor >= 26 &&
     !(await effects.exists({
       volumeId: "main",
       path: `migrations/${minMajor}.complete`,
