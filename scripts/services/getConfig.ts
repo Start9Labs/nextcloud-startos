@@ -71,7 +71,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
         "description": "Maximum upload file size for WebDAV (set to 0 for an unlimited upload size).  You may want to raise this value if you are having issues with WebDAV uploads.  <b>Default: 1024</b>",
         "type": "number",
         "units": "MiB",
-        "nullable": true,
+        "nullable": false,
         "integral": true,
         "range": "(0,65536]",
         "default": 1024

@@ -1,5 +1,6 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
-import { compat, matches, types as T } from "../deps.ts";
+import { compat, matches, util, types as T } from "../deps.ts";
+import { getConfig } from "./getConfig.ts";
 
 const current = "27.1.7";
 const currentMajor = EmVer.parse(current).values[0];
@@ -29,7 +30,7 @@ export const migration: T.ExpectedExports.migration = async (
   if (
     emver.values[0] == minMajor &&
     minMajor >= 26 &&
-    !(await effects.exists({
+    !(await util.exists(effects, {
       volumeId: "main",
       path: `migrations/${minMajor}.complete`,
     }))
@@ -90,9 +91,10 @@ export const migration: T.ExpectedExports.migration = async (
       },
       "26.0.8.2": {
         up: compat.migrations.updateConfig(
-          (_) => ({
-            "webdav": "1024",
-          }),
+          (config) => {
+            config.webdav = {"max-upload-file-size-limit": 1024}
+            return config;
+          },
           true,
           { version: "26.0.8.2", type: "up" }
         ),
