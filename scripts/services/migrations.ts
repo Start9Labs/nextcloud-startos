@@ -1,7 +1,8 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
-import { compat, matches, types as T } from "../deps.ts";
+import { compat, matches, util, types as T } from "../deps.ts";
+import { getConfig } from "./getConfig.ts";
 
-const current = "26.0.8.2";
+const current = "27.1.7";
 const currentMajor = EmVer.parse(current).values[0];
 const minMajor = currentMajor - 1;
 
@@ -29,7 +30,7 @@ export const migration: T.ExpectedExports.migration = async (
   if (
     emver.values[0] == minMajor &&
     minMajor >= 26 &&
-    !(await effects.exists({
+    !(await util.exists(effects, {
       volumeId: "main",
       path: `migrations/${minMajor}.complete`,
     }))
@@ -81,6 +82,21 @@ export const migration: T.ExpectedExports.migration = async (
           }),
           true,
           { version: "25.0.4.1", type: "up" }
+        ),
+        down: () => {
+          throw new Error(
+            "Downgrades are prohibited per Nextcloud development team recommendations"
+          );
+        },
+      },
+      "27.1.7": {
+        up: compat.migrations.updateConfig(
+          (config) => {
+            config.webdav = {"max-upload-file-size-limit": 1024}
+            return config;
+          },
+          true,
+          { version: "27.1.7", type: "up" }
         ),
         down: () => {
           throw new Error(

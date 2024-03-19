@@ -1,4 +1,4 @@
-FROM nextcloud:26.0.8-fpm-alpine
+FROM nextcloud:27.1.7-fpm-alpine
 
 # arm64 or amd64
 ARG PLATFORM
@@ -8,30 +8,17 @@ RUN apk add --no-cache \
     bash \
     busybox \
     ffmpeg \
+    fuse \
     htop \
     jq \
     nginx \
-    postgresql13 \
     postgresql15 \
     postgresql15-client \
     su-exec \
     sudo \
     vim \
     yq \
-    # libreoffice \ install as an action
 ;
-
-# Install additional app dependencies
-# RUN apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing dlib
-
-# RUN wget https://github.com/goodspb/pdlib/archive/master.zip \
-#   && mkdir -p /usr/src/php/ext/ \
-#   && unzip -d /usr/src/php/ext/ master.zip \
-#   && rm master.zip
-# RUN docker-php-ext-install pdlib-master
-
-# RUN apk add --no-cache bzip2-dev
-# RUN docker-php-ext-install bz2
 
 # # Set environment variables
 ENV POSTGRES_DB nextcloud
@@ -61,7 +48,6 @@ ADD actions/*.sh /usr/local/bin/
 ADD nextcloud-init.sh /usr/local/bin/nextcloud-init.sh
 ADD nextcloud-run.sh /usr/local/bin/nextcloud-run.sh
 ADD nextcloud.env /usr/local/bin/nextcloud.env
-ADD migrate.sh /usr/local/bin/migrate.sh
 ADD migration-completion.sh /docker-entrypoint-hooks.d/post-upgrade/migration-completion.sh
 RUN chmod a+x /usr/local/bin/*.sh
 RUN chmod a+x /docker-entrypoint-hooks.d/post-upgrade/*.sh

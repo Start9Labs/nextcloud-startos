@@ -30,13 +30,6 @@ sudo -u postgres createdb $POSTGRES_DB
 sudo -u postgres psql -c "ALTER USER $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;"
 
-# Configure .user.ini
-echo "Configuring Nextcloud frontend..."
-echo 'php_value upload_max_filesize 16G' >> /var/www/html/.user.ini
-echo 'php_value post_max_size 16G' >> /var/www/html/.user.ini
-echo 'php_value max_input_time 3600' >> /var/www/html/.user.ini
-echo 'php_value max_execution_time 3600' >> /var/www/html/.user.ini
-
 # Start Nextcloud, which will install
 echo "Initializing Nextcloud for the first time..."
 /entrypoint.sh php-fpm &

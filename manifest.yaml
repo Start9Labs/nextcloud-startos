@@ -1,16 +1,13 @@
 id: nextcloud
 title: Nextcloud
-version: 26.0.8.2
+version: 27.1.7
 release-notes: |
   * Upstream changes:
-    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 26.0.8
+    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.1.7
   * StartOS Wrapper changes:
-    * Complete refactor using Alpine Linux, nginx, and updated postgres for performance and efficiency
-    * Completely refactored install, migration, and upgrade processes (fixes install race condition)
-    * New Action: Install NCDownloader Dependencies (enables NCDownlaoder app)
-      * See [NCDownloader github](https://github.com/shiningw/ncdownloader) for details
-    * Improve Action for Admin Password Reset
-    * Locales fixes
+    * Add WebDAV upload limit config option
+    * Minor bugfixes
+    * Codebase clean-up
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
