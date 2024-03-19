@@ -89,14 +89,14 @@ export const migration: T.ExpectedExports.migration = async (
           );
         },
       },
-      "26.0.8.2": {
+      "27.1.7": {
         up: compat.migrations.updateConfig(
           (config) => {
             config.webdav = {"max-upload-file-size-limit": 1024}
             return config;
           },
           true,
-          { version: "26.0.8.2", type: "up" }
+          { version: "27.1.7", type: "up" }
         ),
         down: () => {
           throw new Error(
