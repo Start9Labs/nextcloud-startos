@@ -77,5 +77,18 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
         "default": 1024
       }
     }
+  },
+  "extra-addresses": {
+    "type": "list",
+    "name": "Extra Addresses",
+    "description": "Additional URLs that proxy to the Nextcloud instance",
+    "subtype": "string",
+    "default": [],
+    "range": "[0,*)",
+    "spec": {
+      "placeholder": "e.g. websites/resume",
+      "pattern": "^([A-Za-z0-9-]{1,63}\\.)+[A-Za-z]{2,6}$",
+      "pattern-description": "Must be a valid fully qualified domain name",
+    }
   }
 });
