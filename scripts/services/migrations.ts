@@ -2,7 +2,7 @@ import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mo
 import { compat, matches, util, types as T } from "../deps.ts";
 import { getConfig } from "./getConfig.ts";
 
-const current = "27.1.7";
+const current = "28.0.14";
 const currentMajor = EmVer.parse(current).values[0];
 const minMajor = currentMajor - 1;
 
@@ -29,14 +29,14 @@ export const migration: T.ExpectedExports.migration = async (
 
   if (
     emver.values[0] == minMajor &&
-    minMajor >= 26 &&
+    minMajor >= 27 &&
     !(await util.exists(effects, {
       volumeId: "main",
       path: `migrations/${minMajor}.complete`,
     }))
   ) {
     throw new Error(
-      `The migration for v${minMajor} did not complete. Please start the service and wait for all health checks to pass before updating to v${currentMajor}.`
+      `The migration for v${minMajor} did not complete. Please start the service and wait for all health checks to pass before updating to v${currentMajor}.`,
     );
   }
 
@@ -66,11 +66,11 @@ export const migration: T.ExpectedExports.migration = async (
             return config;
           },
           true,
-          { version: "25.0.3.3", type: "up" }
+          { version: "25.0.3.3", type: "up" },
         ),
         down: () => {
           throw new Error(
-            "Downgrades are prohibited per Nextcloud development team recommendations"
+            "Downgrades are prohibited per Nextcloud development team recommendations",
           );
         },
       },
@@ -81,30 +81,44 @@ export const migration: T.ExpectedExports.migration = async (
             "default-phone-region": "US",
           }),
           true,
-          { version: "25.0.4.1", type: "up" }
+          { version: "25.0.4.1", type: "up" },
         ),
         down: () => {
           throw new Error(
-            "Downgrades are prohibited per Nextcloud development team recommendations"
+            "Downgrades are prohibited per Nextcloud development team recommendations",
           );
         },
       },
       "27.1.7": {
         up: compat.migrations.updateConfig(
           (config) => {
-            config.webdav = {"max-upload-file-size-limit": 1024}
+            config.webdav = { "max-upload-file-size-limit": 1024 };
             return config;
           },
           true,
-          { version: "27.1.7", type: "up" }
+          { version: "27.1.7", type: "up" },
         ),
         down: () => {
           throw new Error(
-            "Downgrades are prohibited per Nextcloud development team recommendations"
+            "Downgrades are prohibited per Nextcloud development team recommendations",
+          );
+        },
+      },
+      "28.0.14": {
+        up: compat.migrations.updateConfig(
+          (config) => {
+            return config;
+          },
+          true,
+          { version: "28.0.14", type: "up" },
+        ),
+        down: () => {
+          throw new Error(
+            "Downgrades are prohibited per Nextcloud development team recommendations",
           );
         },
       },
     },
-    current
+    current,
   )(effects, version, ...args);
 };
