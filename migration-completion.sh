@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-/var/www/html/occ db:add-missing-indices
+php /var/www/html/occ db:add-missing-indices
 
 mkdir -p /root/migrations
 touch /root/migrations/$NEXTCLOUD_VERSION.complete
