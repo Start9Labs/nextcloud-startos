@@ -3,6 +3,7 @@ title: Nextcloud
 version: 28.0.14
 release-notes: |
   * Update to v28 - See [full changelog](https://nextcloud.com/changelog/) for Version 28.0.14
+  * Package fixes and improvements
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
