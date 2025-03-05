@@ -11,40 +11,6 @@ DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT=$(yq e '.webdav.max-upload-file-size-limit' /root/start9/config.yaml)
 
-# Properties Page
-cat <<EOP > /root/start9/stats.yaml
-version: 2
-data:
-  Admin Username:
-    type: string
-    value: "$NEXTCLOUD_ADMIN_USER"
-    description: The admin username for Nextcloud
-    copyable: true
-    masked: false
-    qr: false
-  Admin Password:
-    type: string
-    value: "$NEXTCLOUD_ADMIN_PASSWORD"
-    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.
-    copyable: true
-    masked: true
-    qr: false
-  WebDAV Base LAN URL:
-    type: string
-    value: "$LAN_ADDRESS/remote.php/dav/"
-    description: Address for WebDAV syncing over LAN
-    copyable: true
-    masked: false
-    qr: true
-  WebDAV Base Tor URL:
-    type: string
-    value: "$TOR_ADDRESS/remote.php/dav/"
-    description: Address for WebDAV syncing over Tor
-    copyable: true
-    masked: false
-    qr: true
-EOP
-
 _term() { 
   echo "Caught SIGTERM signal!"
   kill -TERM "$nginx_process" 2>/dev/null
@@ -111,7 +77,7 @@ if sudo -u www-data -E php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
   touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
 fi
 
-NEXTCLOUD_ADMIN_USER=$(sudo -u www-data php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
+EXISTING_NEXTCLOUD_ADMIN_USER=$(sudo -u www-data php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
 
 # Properties Page
 cat <<EOP > /root/start9/stats.yaml
@@ -119,7 +85,7 @@ version: 2
 data:
   Admin Username:
     type: string
-    value: "$NEXTCLOUD_ADMIN_USER"
+    value: "$EXISTING_NEXTCLOUD_ADMIN_USER"
     description: The admin username for Nextcloud
     copyable: true
     masked: false
