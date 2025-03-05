@@ -111,6 +111,42 @@ if sudo -u www-data -E php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
   touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
 fi
 
+NEXTCLOUD_ADMIN_USER=$(sudo -u www-data php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
+
+# Properties Page
+cat <<EOP > /root/start9/stats.yaml
+version: 2
+data:
+  Admin Username:
+    type: string
+    value: "$NEXTCLOUD_ADMIN_USER"
+    description: The admin username for Nextcloud
+    copyable: true
+    masked: false
+    qr: false
+  Admin Password:
+    type: string
+    value: "$NEXTCLOUD_ADMIN_PASSWORD"
+    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.
+    copyable: true
+    masked: true
+    qr: false
+  WebDAV Base LAN URL:
+    type: string
+    value: "$LAN_ADDRESS/remote.php/dav/"
+    description: Address for WebDAV syncing over LAN
+    copyable: true
+    masked: false
+    qr: true
+  WebDAV Base Tor URL:
+    type: string
+    value: "$TOR_ADDRESS/remote.php/dav/"
+    description: Address for WebDAV syncing over Tor
+    copyable: true
+    masked: false
+    qr: true
+EOP
+
 chmod g+x /root
 chmod g+rwx /root/migrations
 chmod -R g+rw /root/migrations
