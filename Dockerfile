@@ -21,14 +21,14 @@ RUN apk add --no-cache \
 ;
 
 # # Set environment variables
-ENV POSTGRES_DB nextcloud
-ENV POSTGRES_USER nextcloud
-ENV POSTGRES_PASSWORD nextclouddbpassword
-ENV POSTGRES_HOST localhost
-ENV EXISTING_DB false
+ENV POSTGRES_DB=nextcloud
+ENV POSTGRES_USER=nextcloud
+ENV POSTGRES_PASSWORD=nextclouddbpassword
+ENV POSTGRES_HOST=localhost
+ENV EXISTING_DB=false
 
-ENV PHP_MEMORY_LIMIT 1024M
-ENV PHP_UPLOAD_LIMIT 20480M
+ENV PHP_MEMORY_LIMIT=1024M
+ENV PHP_UPLOAD_LIMIT=20480M
 
 # Create and own Postgres/PHP run dirs
 RUN mkdir -p /run/postgresql
