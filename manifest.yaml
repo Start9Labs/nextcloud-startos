@@ -1,13 +1,10 @@
 id: nextcloud
 title: Nextcloud
-version: 27.1.7
+version: 28.0.14
 release-notes: |
-  * Upstream changes:
-    * Update to latest upstream - See [full changelog](https://nextcloud.com/changelog/) for Version 27.1.7
-  * StartOS Wrapper changes:
-    * Add WebDAV upload limit config option
-    * Minor bugfixes
-    * Codebase clean-up
+  * Update to v28 - See [full changelog](https://nextcloud.com/changelog/) for Version 28.0.14
+  * Package fixes and improvements
+  * Add new config options
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
 upstream-repo: https://github.com/nextcloud/docker
@@ -68,7 +65,7 @@ interfaces:
     tor-config:
       port-mapping:
         80: "80"
-        443: "18443"
+        443: "443"
     lan-config:
       443:
         ssl: true

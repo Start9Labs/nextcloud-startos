@@ -11,40 +11,6 @@ DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
 DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
 WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT=$(yq e '.webdav.max-upload-file-size-limit' /root/start9/config.yaml)
 
-# Properties Page
-cat <<EOP > /root/start9/stats.yaml
-version: 2
-data:
-  Admin Username:
-    type: string
-    value: "$NEXTCLOUD_ADMIN_USER"
-    description: The admin username for Nextcloud
-    copyable: true
-    masked: false
-    qr: false
-  Admin Password:
-    type: string
-    value: "$NEXTCLOUD_ADMIN_PASSWORD"
-    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.
-    copyable: true
-    masked: true
-    qr: false
-  WebDAV Base LAN URL:
-    type: string
-    value: "$LAN_ADDRESS/remote.php/dav/"
-    description: Address for WebDAV syncing over LAN
-    copyable: true
-    masked: false
-    qr: true
-  WebDAV Base Tor URL:
-    type: string
-    value: "$TOR_ADDRESS/remote.php/dav/"
-    description: Address for WebDAV syncing over Tor
-    copyable: true
-    masked: false
-    qr: true
-EOP
-
 _term() { 
   echo "Caught SIGTERM signal!"
   kill -TERM "$nginx_process" 2>/dev/null
@@ -68,12 +34,16 @@ sed -i "/'default_locale' => .*/d" $CONFIG_FILE
 sed -i "/'default_phone_region' => .*/d" $CONFIG_FILE
 sed -i "/'updatechecker' => .*/d" $CONFIG_FILE
 sed -i "/);/d" $CONFIG_FILE
+sed -i "/'integrity\.check\.disabled' => .*/d" $CONFIG_FILE
+sed -i "/'maintenance_window_start' => .*/d" $CONFIG_FILE
 echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
   'overwriteprotocol' => 'https',
   'check_for_working_wellknown_setup' => true,
   'updatechecker' => false,
   'default_locale' => '$DEFAULT_LOCALE',
   'default_phone_region' => '$DEFAULT_PHONE_REGION',
+  'integrity.check.disabled' => 'true',
+  'maintenance_window_start' => '$MAINTENANCE_WINDOW_START',
 );" >> $CONFIG_FILE
 
 # Additional config for Memories app (if they do not exist yet) - see https://memories.gallery/file-types/
@@ -110,6 +80,42 @@ if sudo -u www-data -E php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
   touch /root/migrations/$NEXTCLOUD_VERSION.complete
   touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
 fi
+
+EXISTING_NEXTCLOUD_ADMIN_USER=$(sudo -u www-data php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
+
+# Properties Page
+cat <<EOP > /root/start9/stats.yaml
+version: 2
+data:
+  Admin Username:
+    type: string
+    value: "$EXISTING_NEXTCLOUD_ADMIN_USER"
+    description: The admin username for Nextcloud
+    copyable: true
+    masked: false
+    qr: false
+  Admin Password:
+    type: string
+    value: "$NEXTCLOUD_ADMIN_PASSWORD"
+    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.
+    copyable: true
+    masked: true
+    qr: false
+  WebDAV Base LAN URL:
+    type: string
+    value: "$LAN_ADDRESS/remote.php/dav/"
+    description: Address for WebDAV syncing over LAN
+    copyable: true
+    masked: false
+    qr: true
+  WebDAV Base Tor URL:
+    type: string
+    value: "$TOR_ADDRESS/remote.php/dav/"
+    description: Address for WebDAV syncing over Tor
+    copyable: true
+    masked: false
+    qr: true
+EOP
 
 chmod g+x /root
 chmod g+rwx /root/migrations
