@@ -108,6 +108,7 @@ export const migration: T.ExpectedExports.migration = async (
         up: compat.migrations.updateConfig(
           (config) => {
             config['extra-addresses'] = []
+            config['maintenance_window_start'] = 24
             return config;
           },
           true,

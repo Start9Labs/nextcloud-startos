@@ -90,5 +90,15 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
       "pattern": "^([A-Za-z0-9-]{1,63}\\.)+[A-Za-z]{2,6}$",
       "pattern-description": "Must be a valid fully qualified domain name",
     }
-  }
+  },
+  maintenance_window_start: {
+    type: "number",
+    name: "Maintenance Window Start",
+    description:
+      "UTC Start Time for non-time sensitive background jobs. Setting this to a low-useage time frees up resources during the rest of the day by only running these non-time sensitive jobs in the 4 hours following the specified start time. Set to 24 (default) if there is no preference for when these jobs are run, but beware that resource intensive jobs may then run unnecessarily during high usage periods. This may lead to slower performance and a lower quality user experience.",
+    default: 24,
+    integral: true,
+    range: "[0,24]",
+    nullable: false,
+  },
 });
