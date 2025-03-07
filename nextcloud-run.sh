@@ -34,12 +34,14 @@ sed -i "/'default_locale' => .*/d" $CONFIG_FILE
 sed -i "/'default_phone_region' => .*/d" $CONFIG_FILE
 sed -i "/'updatechecker' => .*/d" $CONFIG_FILE
 sed -i "/);/d" $CONFIG_FILE
+sed -i "/'integrity\.check\.disabled' => .*/d" $CONFIG_FILE
 echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
   'overwriteprotocol' => 'https',
   'check_for_working_wellknown_setup' => true,
   'updatechecker' => false,
   'default_locale' => '$DEFAULT_LOCALE',
   'default_phone_region' => '$DEFAULT_PHONE_REGION',
+  'integrity.check.disabled' => 'true',
 );" >> $CONFIG_FILE
 
 # Additional config for Memories app (if they do not exist yet) - see https://memories.gallery/file-types/
