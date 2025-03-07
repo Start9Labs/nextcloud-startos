@@ -65,7 +65,7 @@ interfaces:
     tor-config:
       port-mapping:
         80: "80"
-        443: "18443"
+        443: "443"
     lan-config:
       443:
         ssl: true
