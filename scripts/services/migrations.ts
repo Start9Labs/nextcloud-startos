@@ -2,7 +2,7 @@ import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mo
 import { compat, matches, util, types as T } from "../deps.ts";
 import { getConfig } from "./getConfig.ts";
 
-const current = "28.0.14";
+const current = "29.0.12";
 const currentMajor = EmVer.parse(current).values[0];
 const minMajor = currentMajor - 1;
 
@@ -104,7 +104,7 @@ export const migration: T.ExpectedExports.migration = async (
           );
         },
       },
-      "28.0.14": {
+      "28.0.1": {
         up: compat.migrations.updateConfig(
           (config) => {
             config['extra-addresses'] = []
