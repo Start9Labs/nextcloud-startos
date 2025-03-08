@@ -124,10 +124,10 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     type: "number",
     name: "Maintenance Window Start",
     description:
-      "UTC Start Time for non-time sensitive background jobs. Setting this to a low-useage time frees up resources during the rest of the day by only running these non-time sensitive jobs in the 4 hours following the specified start time. Set to 24 (default) if there is no preference for when these jobs are run, but beware that resource intensive jobs may then run unnecessarily during high usage periods. This may lead to slower performance and a lower quality user experience.",
-    default: 24,
+      "UTC Start Time for non-time sensitive background jobs. Setting this to a low-usage time frees up resources during the rest of the day by only running these non-time sensitive jobs in the 4 hours following the specified start time.  <b>Default: 1</b>",
+    default: 1,
     integral: true,
-    range: "[0,24]",
+    range: "[0,23]",
     nullable: false,
   },
 });
