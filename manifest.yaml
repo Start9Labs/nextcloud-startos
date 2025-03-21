@@ -1,12 +1,13 @@
 id: nextcloud
 title: Nextcloud
-version: 28.0.14
+version: 28.0.14.1
 release-notes: |
   * Update to v28 - See [full changelog](https://nextcloud.com/changelog/) for Version 28.0.14
   * Package fixes and improvements
   * Add new config options
+  * Disable non-default apps on update
 license: AGPL-3.0
-wrapper-repo: https://github.com/Start9Labs/nextcloud-wrapper
+wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker
 support-site: https://github.com/nextcloud/docker/issues
 marketing-site: https://nextcloud.com
