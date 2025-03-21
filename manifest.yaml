@@ -1,8 +1,8 @@
 id: nextcloud
 title: Nextcloud
-version: 28.0.14
+version: 29.0.14
 release-notes: |
-  * Update to v28 - See [full changelog](https://nextcloud.com/changelog/) for Version 28.0.14
+  * Update to v29 - See [full changelog](https://nextcloud.com/changelog/) for Version 29.0.14
   * Package fixes and improvements
   * Add new config options
 license: AGPL-3.0
