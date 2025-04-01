@@ -21,7 +21,7 @@ _term() {
 # Start Postgres
 rm -f $PGDATA/postmaster.pid
 echo "Starting PostgreSQL db server..."
-sudo -u postgres pg_ctl start -D $PGDATA
+su -c "/usr/lib/postgresql/15/bin/pg_ctl start -D $PGDATA" postgres
 
 # Modify config.php, add default locale settings from user config, and turn off UI update checker
 sed -i "/'filelocking\.enabled' => .*/d" $CONFIG_FILE
@@ -67,7 +67,7 @@ if [ -z "$(grep "'preview_max_filesize_image'" "$CONFIG_FILE")" ]; then
 fi
 
 # Set nginx client_max_body_size to user-selected config
-sed -i "s/client_max_body_size\ 1024M/client_max_body_size\ $([[ "$WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT" == "null" ]] && echo "0" || echo "${WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT}M")/g" /etc/nginx/http.d/default.conf
+sed -i "s/client_max_body_size\ 1024M/client_max_body_size\ $([[ "$WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT" == "null" ]] && echo "0" || echo "${WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT}M")/g" /etc/nginx/conf.d/default.conf
 
 # Start nginx web server
 echo "Starting nginx server..."
@@ -76,12 +76,12 @@ nginx_process=$!
 
 mkdir -p /root/migrations
 
-if sudo -u www-data -E php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
+if runuser -u www-data -- php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
   touch /root/migrations/$NEXTCLOUD_VERSION.complete
   touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
 fi
 
-EXISTING_NEXTCLOUD_ADMIN_USER=$(sudo -u www-data php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
+EXISTING_NEXTCLOUD_ADMIN_USER=$(runuser -u www-data -- php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
 
 # Properties Page
 cat <<EOP > /root/start9/stats.yaml
@@ -140,7 +140,7 @@ echo 'php_value max_execution_time 3600' >> $PHP_USER_FILE
 
 sleep 10
 echo "Starting background tasks..."
-busybox crond -f -l 0 -L /dev/stdout &
+cron -f -L 0 &
 crond_process=$!
 
 echo $nextcloud_process > /run/nextcloud.pid
