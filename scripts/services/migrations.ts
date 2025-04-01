@@ -139,8 +139,6 @@ export const migration: T.ExpectedExports.migration = async (
       "29.0.14": {
         up: compat.migrations.updateConfig(
           (config) => {
-            config['extra-addresses'] = []
-            config['maintenance_window_start'] = 24
             return config;
           },
           true,
