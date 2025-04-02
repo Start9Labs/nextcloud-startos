@@ -18,6 +18,12 @@ _term() {
   kill -TERM "$crond_process" 2>/dev/null
 }
 
+# Ensure postgresql is owned by postgres after alpine migration
+OWNER=$(stat -c "%U" /var/lib/postgresql)
+if [ "$OWNER" != 'postgres' ]; then
+  chown -R postgres:postgres /var/lib/postgresql
+fi
+
 # Start Postgres
 rm -f $PGDATA/postmaster.pid
 echo "Starting PostgreSQL db server..."
