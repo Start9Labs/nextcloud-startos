@@ -82,6 +82,12 @@ nginx_process=$!
 
 mkdir -p /root/migrations
 
+# Ensure /var/www/html is owned by www-data after alpine migration
+HTML_OWNER=$(stat -c "%U" /var/www/html)
+if [ "$HTML_OWNER" != 'www-data' ]; then
+  chown -R www-data:www-data /var/www/html
+fi
+
 if runuser -u www-data -- php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; then
   touch /root/migrations/$NEXTCLOUD_VERSION.complete
   touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
