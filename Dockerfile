@@ -4,22 +4,18 @@ FROM nextcloud:29.0.14-fpm
 ARG PLATFORM
 
 # Install base dependencies
-RUN apt update && apt install -y \
-    bash \
+RUN apt update && apt install -y --no-install-recommends \
     cron \
     ffmpeg \
     fuse \
-    htop \
     jq \
     nginx \
     postgresql \
-    sudo \
-    vim \
-;
+    sudo && \
+    curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq && \
+    apt clean && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
-    chmod +x /usr/local/bin/yq
-    
 # # Set environment variables
 ENV POSTGRES_DB=nextcloud
 ENV POSTGRES_USER=nextcloud
