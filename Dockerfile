@@ -15,11 +15,11 @@ RUN apt update && apt install -y \
     postgresql \
     sudo \
     vim \
-    wget \
 ;
 
-RUN wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM} && chmod +x /usr/local/bin/yq
-
+RUN curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq
+    
 # # Set environment variables
 ENV POSTGRES_DB=nextcloud
 ENV POSTGRES_USER=nextcloud
