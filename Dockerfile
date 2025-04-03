@@ -6,8 +6,6 @@ ARG PLATFORM
 # Install base dependencies
 RUN apt update && apt install -y --no-install-recommends \
     cron \
-    ffmpeg \
-    fuse \
     jq \
     nginx \
     postgresql \
