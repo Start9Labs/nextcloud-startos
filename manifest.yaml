@@ -3,6 +3,7 @@ title: Nextcloud
 version: 29.0.14
 release-notes: |
   * Update to v29 - See [full changelog](https://nextcloud.com/changelog/) for Version 29.0.14
+  * Improve post migration script to only disable unsupported apps
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker
