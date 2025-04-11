@@ -51,6 +51,8 @@ echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
   'integrity.check.disabled' => 'true',
   'maintenance_window_start' => '$MAINTENANCE_WINDOW_START',
 );" >> $CONFIG_FILE
+sed -i "s/0 => 'localhost'/0 => 'localhost:443'/g" $CONFIG_FILE
+sed -i "s/3 => 'nextcloud.embassy'/3 => 'nextcloud.embassy:443'/g" $CONFIG_FILE
 
 # Additional config for Memories app (if they do not exist yet) - see https://memories.gallery/file-types/
 if [ -z "$(grep "'preview_max_filesize_image'" "$CONFIG_FILE")" ]; then 
