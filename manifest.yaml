@@ -6,6 +6,7 @@ release-notes: |
   * Improve post migration script to only disable unsupported apps
   * Use debian base image instead of alpine
   * Add action to disable non-default apps
+  * Minor fixes and optimizations
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker
@@ -161,20 +162,6 @@ actions:
       image: main
       system: false
       entrypoint: disable-unstable-apps.sh
-      inject: true
-      args: []
-      io-format: json
-  downloader-deps:
-    name: "Install NCDownloader Dependencies"
-    description: "Download and install the necessary dependencies to run the NCDownloader application."
-    warning: "When downloading or torrenting with NCDownloader, your Nextcloud server makes clearnet connections which should not be considered private or anonymous.  Be safe, use protection."
-    allowed-statuses:
-      - running
-    implementation:
-      type: docker
-      image: main
-      system: false
-      entrypoint: downloader-deps.sh
       inject: true
       args: []
       io-format: json
