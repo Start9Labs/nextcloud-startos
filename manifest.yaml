@@ -5,6 +5,7 @@ release-notes: |
   * Update to v29 - See [full changelog](https://nextcloud.com/changelog/) for Version 29.0.14
   * Improve post migration script to only disable unsupported apps
   * Use debian base image instead of alpine
+  * Add action to disable non-default apps
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker
@@ -146,6 +147,20 @@ actions:
       image: main
       system: false
       entrypoint: disable-maintenance-mode.sh
+      inject: true
+      args: []
+      io-format: json
+  disable-unstable-apps:
+    name: "Disable Non-default Apps"
+    description: "Use this if unstable apps were installed resulting in the UI becoming inaccessible with an Internal Server Error: 'The server was unable to complete your request'."
+    warning: "Running this action will disable ALL non-default app(s). Stable apps will need to be individually re-enabled."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: disable-unstable-apps.sh
       inject: true
       args: []
       io-format: json
