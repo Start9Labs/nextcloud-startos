@@ -9,7 +9,7 @@ php /var/www/html/occ maintenance:repair --include-expensive
 
 # Disable apps that aren't enabled by default
 declare -A default_map
-default_apps=('activity' 'calendar' 'circles' 'cloud_federation_api' 'comments' 'contacts' 'contactsinteraction' 'dashboard' 'dav' 'federatedfilesharing' 'federation' 'files' 'files_downloadlimit' 'files_pdfviewer' 'files_reminders' 'files_rightclick' 'files_sharing' 'files_trashbin' 'files_versions' 'firstrunwizard' 'logreader' 'lookup_server_connector' 'nextcloud_announcements' 'notifications' 'oauth2' 'password_policy' 'photos' 'privacy' 'provisioning_api' 'recommendations' 'related_resources' 'serverinfo' 'settings' 'sharebymail' 'support' 'survey_client' 'systemtags' 'text' 'theming' 'twofactor_backupcodes' 'updatenotification' 'user_status' 'viewer' 'weather_status' 'workflowengine')
+default_apps=('activity' 'calendar' 'circles' 'cloud_federation_api' 'comments' 'contacts' 'contactsinteraction' 'dashboard' 'dav' 'federatedfilesharing' 'federation' 'files' 'files_downloadlimit' 'files_pdfviewer' 'files_reminders' 'files_sharing' 'files_trashbin' 'files_versions' 'firstrunwizard' 'logreader' 'lookup_server_connector' 'nextcloud_announcements' 'notifications' 'oauth2' 'password_policy' 'photos' 'privacy' 'provisioning_api' 'recommendations' 'related_resources' 'serverinfo' 'settings' 'sharebymail' 'support' 'survey_client' 'systemtags' 'text' 'theming' 'twofactor_backupcodes' 'updatenotification' 'user_status' 'viewer' 'weather_status' 'workflowengine')
 
 for app in "${default_apps[@]}"; do
   default_map["$app"]=1
