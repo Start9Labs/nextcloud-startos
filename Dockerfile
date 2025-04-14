@@ -1,24 +1,18 @@
-FROM nextcloud:28.0.14-fpm-alpine
+FROM nextcloud:29.0.14-fpm
 
 # arm64 or amd64
 ARG PLATFORM
 
 # Install base dependencies
-RUN apk add --no-cache \
-    bash \
-    busybox \
-    ffmpeg \
-    fuse \
-    htop \
+RUN apt update && apt install -y --no-install-recommends \
+    cron \
     jq \
     nginx \
-    postgresql15 \
-    postgresql15-client \
-    su-exec \
-    sudo \
-    vim \
-    yq \
-;
+    postgresql \
+    sudo && \
+    curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq && \
+    apt clean && rm -rf /var/lib/apt/lists/*
 
 # # Set environment variables
 ENV POSTGRES_DB=nextcloud
@@ -42,7 +36,7 @@ RUN echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/
 
 # Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-ADD ./nginx.conf /etc/nginx/http.d/default.conf
+ADD ./nginx.conf /etc/nginx/conf.d/default.conf
 ADD ./check-web.sh /usr/local/bin/check-web.sh
 ADD actions/*.sh /usr/local/bin/
 ADD nextcloud-init.sh /usr/local/bin/nextcloud-init.sh
