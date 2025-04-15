@@ -5,14 +5,17 @@ ARG PLATFORM
 
 # Install base dependencies
 RUN apt update && apt install -y --no-install-recommends \
-    cron \
-    jq \
-    nginx \
-    postgresql \
-    sudo && \
-    curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
-    chmod +x /usr/local/bin/yq && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+  aria2 \
+  cron \
+  jq \
+  nginx \
+  postgresql \
+  sudo && \
+  curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
+  chmod +x /usr/local/bin/yq && \
+  curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+  && chmod a+rx /usr/local/bin/yt-dlp && \
+  apt clean && rm -rf /var/lib/apt/lists/*
 
 # # Set environment variables
 ENV POSTGRES_DB=nextcloud

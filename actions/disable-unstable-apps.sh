@@ -1,13 +1,10 @@
-#!/bin/bash
+#!/bin/bash 
+
 set -e
 
-cp /usr/src/nextcloud/config/*.php /var/www/html/config/
+# Define the path to the Nextcloud installation
+NEXTCLOUD_DIR="/var/www/html"
 
-php /var/www/html/occ db:add-missing-indices
-
-php /var/www/html/occ maintenance:repair --include-expensive
-
-# Disable apps that aren't enabled by default
 declare -A default_map
 default_apps=('activity' 'calendar' 'circles' 'cloud_federation_api' 'comments' 'contacts' 'contactsinteraction' 'dashboard' 'dav' 'federatedfilesharing' 'federation' 'files' 'files_downloadlimit' 'files_pdfviewer' 'files_reminders' 'files_sharing' 'files_trashbin' 'files_versions' 'firstrunwizard' 'logreader' 'lookup_server_connector' 'nextcloud_announcements' 'notifications' 'oauth2' 'password_policy' 'photos' 'privacy' 'provisioning_api' 'recommendations' 'related_resources' 'serverinfo' 'settings' 'sharebymail' 'support' 'survey_client' 'systemtags' 'text' 'theming' 'twofactor_backupcodes' 'updatenotification' 'user_status' 'viewer' 'weather_status' 'workflowengine')
 
@@ -15,26 +12,24 @@ for app in "${default_apps[@]}"; do
   default_map["$app"]=1
 done
 
-enabled_apps=($(php /var/www/html/occ app:list | \
+enabled_apps=($(sudo -u www-data -E php $NEXTCLOUD_DIR/occ app:list | \
 awk '/^Enabled:/ {f=1; next} /^Disabled:/ {f=0} f && /^[[:space:]]+-/ {sub(/:$/, "", $2); print $2}'))
 
-declare -a disabled_map
+declare -a disabled_apps
 
-echo 'Disabling non-default apps'
 for enabled_app in "${enabled_apps[@]}"; do
   if [[ -z "${default_map[$enabled_app]}" ]]; then
-    echo "Disabling non-default app: $enabled_app"
-    disabled_map+=($enabled_app)
-    php /var/www/html/occ app:disable $enabled_app
+    disabled_apps+=($enabled_app)
+    sudo -u www-data -E php $NEXTCLOUD_DIR/occ app:disable $enabled_app >&2
   fi
 done
 
-echo 'Re-enabling non-default apps'
-for disabled_app in "${disabled_map[@]}"; do
-  echo "Re-enabling $disabled_app"
-  php /var/www/html/occ app:enable $disabled_app
-done
+action_result="    {
+    \"version\": \"0\",
+    \"message\": \"Success! All Non-default apps have been disabled. Your Nextcloud UI should now be accessible. Disabled Apps: ${disabled_apps[*]}\",
+    \"value\": null,
+    \"copyable\": false,
+    \"qr\": false
+}"
 
-mkdir -p /root/migrations
-touch /root/migrations/$NEXTCLOUD_VERSION.complete
-touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
+echo $action_result
