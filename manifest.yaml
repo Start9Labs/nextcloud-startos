@@ -1,6 +1,6 @@
 id: nextcloud
 title: Nextcloud
-version: 29.0.14
+version: 29.0.14.1
 release-notes: |
   * Update to v29 - See [full changelog](https://nextcloud.com/changelog/) for Version 29.0.14
   * Improve post migration script to only disable unsupported apps
