@@ -49,6 +49,9 @@ runuser -u www-data -- php /var/www/html/occ app:install contacts
 # Install missing indices
 runuser -u www-data -- php /var/www/html/occ db:add-missing-indices
 
+# Set background tasks to Cron
+runuser -u www-data -- php /var/www/html/occ background:Cron
+
 kill -TERM $NCPID
 sleep 60 &
 wait -n $NCPID $!
