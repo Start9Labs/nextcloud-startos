@@ -154,7 +154,7 @@ echo 'php_value max_execution_time 3600' >> $PHP_USER_FILE
 
 sleep 10
 echo "Starting background tasks..."
-cron -f -L 0 &
+cron -f -L 8 &
 crond_process=$!
 
 echo $nextcloud_process > /run/nextcloud.pid

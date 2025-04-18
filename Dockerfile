@@ -34,8 +34,9 @@ RUN chown postgres:postgres /run/postgresql
 RUN chown www-data:www-data /run/php
 
 # Setup Cron
-RUN mkdir -p /var/spool/cron/crontabs
-RUN echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/www-data
+RUN echo "*/5 * * * * www-data /usr/local/bin/php -f /var/www/html/cron.php" > /etc/cron.d/my-cron \
+  && chmod 0644 /etc/cron.d/my-cron \
+  && touch /var/log/cron.log
 
 # Import Entrypoint and Actions scripts and give permissions
 ADD ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
