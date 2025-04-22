@@ -1,6 +1,5 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
 import { compat, matches, util, types as T } from "../deps.ts";
-import { getConfig } from "./getConfig.ts";
 
 const current = "30.0.10";
 const currentMajor = EmVer.parse(current).values[0];
