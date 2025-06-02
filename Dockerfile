@@ -7,6 +7,7 @@ ARG PLATFORM
 RUN apt update && apt install -y --no-install-recommends \
   aria2 \
   cron \
+  ffmpeg \
   jq \
   nginx \
   postgresql \
