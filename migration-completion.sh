@@ -5,8 +5,6 @@ cp /usr/src/nextcloud/config/*.php /var/www/html/config/
 
 php /var/www/html/occ db:add-missing-indices
 
-php /var/www/html/occ maintenance:repair --include-expensive
-
 # Disable apps that aren't enabled by default
 declare -A default_map
 default_apps=('activity' 'calendar' 'circles' 'cloud_federation_api' 'comments' 'contacts' 'contactsinteraction' 'dashboard' 'dav' 'federatedfilesharing' 'federation' 'files' 'files_downloadlimit' 'files_pdfviewer' 'files_reminders' 'files_sharing' 'files_trashbin' 'files_versions' 'firstrunwizard' 'logreader' 'lookup_server_connector' 'nextcloud_announcements' 'notifications' 'oauth2' 'password_policy' 'photos' 'privacy' 'provisioning_api' 'recommendations' 'related_resources' 'serverinfo' 'settings' 'sharebymail' 'support' 'survey_client' 'systemtags' 'text' 'theming' 'twofactor_backupcodes' 'updatenotification' 'user_status' 'viewer' 'weather_status' 'workflowengine')
@@ -34,6 +32,15 @@ for disabled_app in "${disabled_map[@]}"; do
   echo "Re-enabling $disabled_app"
   php /var/www/html/occ app:enable $disabled_app
 done
+
+if [[ " ${enabled_apps[@]} " =~ [[:space:]]memories[[:space:]] ]]; then
+    echo "setting memories exif binary"
+    php /var/www/html/occ config:system:delete memories.exiftool
+    php /var/www/html/occ config:system:delete memories.vod.path
+fi
+
+php /var/www/html/occ maintenance:repair --include-expensive
+
 
 mkdir -p /root/migrations
 touch /root/migrations/$NEXTCLOUD_VERSION.complete
