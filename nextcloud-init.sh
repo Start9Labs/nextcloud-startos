@@ -49,6 +49,9 @@ runuser -u www-data -- php /var/www/html/occ app:install contacts
 # Install missing indices
 runuser -u www-data -- php /var/www/html/occ db:add-missing-indices
 
+# Perform any missing migrations
+runuser -u www-data -- php /var/www/html/occ maintenance:repair --include-expensive
+
 # Set background tasks to Cron
 runuser -u www-data -- php /var/www/html/occ background:cron
 
