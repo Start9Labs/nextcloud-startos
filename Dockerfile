@@ -1,4 +1,4 @@
-FROM nextcloud:29.0.14-fpm
+FROM nextcloud:30.0.11-fpm
 
 # arm64 or amd64
 ARG PLATFORM
@@ -7,6 +7,7 @@ ARG PLATFORM
 RUN apt update && apt install -y --no-install-recommends \
   aria2 \
   cron \
+  ffmpeg \
   jq \
   nginx \
   postgresql \
