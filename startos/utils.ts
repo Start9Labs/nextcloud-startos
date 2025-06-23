@@ -1,4 +1,8 @@
+import { Effects } from "@start9labs/start-sdk/base/lib/Effects"
+import { sdk } from "./sdk"
+
 export const uiPort = 80
+export const NEXTCLOUD_DIR = '/var/www/html'
 export const locales = {
   en_US: 'English (US)',
   en_GB: 'English (GB)',
@@ -32,6 +36,16 @@ export const storeDefaults = {
     locale: 'en_US' as keyof typeof locales,
     phoneRegion: 'US' as keyof typeof phoneRegion,
     maintenanceWindowStart: 24
+}
+
+export async function getPrimaryInterfaceUrls(
+  effects: Effects,
+): Promise<string[]> {
+  const httpInterface = await sdk.serviceInterface
+    .getOwn(effects, 'primary')
+    .const()
+
+  return httpInterface?.addressInfo?.urls || []
 }
 
 export function getNginxFile(maxBodySize: number) {

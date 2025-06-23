@@ -1,12 +1,13 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
 import { storeDefaults } from '../utils'
 
-const { object, number, literals } = matches
+const { object, number, literals, string } = matches
 
 const { locale, maxBodySize, phoneRegion, maintenanceWindowStart } =
   storeDefaults
 
 const shape = object({
+  url: string.optional(),
   maxBodySize: number.onMismatch(maxBodySize),
   locale: literals(
     'en_US',
@@ -42,7 +43,7 @@ const shape = object({
 export const storeJson = FileHelper.json(
   {
     volumeId: 'main',
-    subpath: '/store.json',
+    subpath: 'store.json',
   },
   shape,
 )

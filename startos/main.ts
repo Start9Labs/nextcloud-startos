@@ -12,7 +12,14 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   // Configure nginx
   const maxBodySize = await storeJson.read(s => s.maxBodySize).const(effects)
   await writeFile('/etc/nginx/conf.d/default.conf', getNginxFile(maxBodySize!))
+
+  // get interface details
+  const uiInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
+  if (!uiInterface) throw new Error('interfaces do not exist')
+  // @TODO check if need just domain or full urls
+  const urls = uiInterface?.addressInfo?.urls 
   
+  // @TODO setPrimaryUrl action
 
   /**
    * ======================== Daemons ========================
@@ -38,20 +45,15 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     exec: {
       command: ['/scripts/nextcloud-run.sh'],
       env: {
-        LAN_ADDRESS: '', // @TODO get lan
-        TOR_ADDRESS: '', // @TODO get tor
-        SERVICE_ADDRESS: 'nextcloud.startos',
-        MAINTENANCE_WINDOW_START: '', //@TODO get maintenance_window_start from config
+        MAINTENANCE_WINDOW_START: String(await storeJson.read(s => s.maintenanceWindowStart)),
         TRUSTED_PROXIES: '10.0.3.0/24',
-        NEXTCLOUD_TRUSTED_DOMAINS:
-          "$TOR_ADDRESS $LAN_ADDRESS $SERVICE_ADDRESS $(yq e '.extra-addresses[]' /root/start9/config.yaml | tr '\n' ' ')", //@TODO fix
+        NEXTCLOUD_TRUSTED_DOMAINS: urls?.join(' ')!,
         CONFIG_FILE: '/var/www/html/config/config.php',
         PGDATA: '/var/lib/postgresql/15/main',
         NEXTCLOUD_PATH: '/var/www/html',
         NEXTCLOUD_ADMIN_USER: 'admin',
-        PASSWORD_FILE: '/root/start9/password.dat', // @TODO copy from start9 in migration
+        PASSWORD_FILE: '/root/start9/password.dat',
         INITIALIZED_FILE: '/root/initialized',
-        STARTOS_CONFIG_FILE: '/root/start9/config.yaml',
         PHP_USER_FILE: '/var/www/html/.user.ini',
       },
     },

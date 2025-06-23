@@ -2,6 +2,7 @@ import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { storeJson } from '../../fileModels/store.json'
 import { readFile } from 'fs/promises'
 import { load } from 'js-yaml'
+import { locales, phoneRegion as phoneRegionType } from '../../utils'
 
 export const v_30_0_11_1 = VersionInfo.of({
   version: '30.0.11:1',
@@ -18,32 +19,8 @@ export const v_30_0_11_1 = VersionInfo.of({
           'max-upload-file-size-limit': number
         }
         maintenance_window_start: number
-        'default-phone-region':
-          | 'US'
-          | 'GB'
-          | 'CN'
-          | 'ES'
-          | 'MX'
-          | 'IN'
-          | 'BR'
-          | 'RU'
-          | 'JP'
-          | 'DE'
-          | 'FR'
-          | 'PL'
-        'default-locale':
-          | 'en_US'
-          | 'en_GB'
-          | 'zh'
-          | 'es'
-          | 'es_419'
-          | 'hi'
-          | 'pt'
-          | 'ru'
-          | 'ja'
-          | 'de'
-          | 'fr'
-          | 'pl'
+        'default-phone-region': keyof typeof phoneRegionType
+        'default-locale': keyof typeof locales
       }
       await storeJson.write(effects, { maxBodySize: webdav['max-upload-file-size-limit'], phoneRegion, locale, maintenanceWindowStart: maintenance_window_start })
     },
