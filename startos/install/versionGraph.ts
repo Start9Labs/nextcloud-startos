@@ -2,7 +2,7 @@ import { VersionGraph } from '@start9labs/start-sdk'
 import { current, other } from './versions'
 import { sdk } from '../sdk'
 import { storeJson } from '../fileModels/store.json'
-import { NEXTCLOUD_PATH, PGDATA, storeDefaults } from '../utils'
+import { NEXTCLOUD_DIR, PGDATA, storeDefaults } from '../utils'
 
 export const versionGraph = VersionGraph.of({
   current,
@@ -17,7 +17,7 @@ export const versionGraph = VersionGraph.of({
       (subc) =>
         subc.execFail([
           `PGDATA=${PGDATA}`,
-          `NEXTCLOUD_PATH=${NEXTCLOUD_PATH}`,
+          `NEXTCLOUD_PATH=${NEXTCLOUD_DIR}`,
           'nextcloud-init.sh',
         ]),
     )

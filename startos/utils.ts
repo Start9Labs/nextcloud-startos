@@ -4,7 +4,6 @@ import { sdk } from "./sdk"
 export const uiPort = 80
 export const NEXTCLOUD_DIR = '/var/www/html'
 export const PGDATA = '/var/lib/postgresql/15/main'
-export const NEXTCLOUD_PATH = '/var/www/html'
 export const locales = {
   en_US: 'English (US)',
   en_GB: 'English (GB)',

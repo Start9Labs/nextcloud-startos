@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises'
 import { storeJson } from './fileModels/store.json'
 import { sdk } from './sdk'
-import { getNginxFile, uiPort, PGDATA, NEXTCLOUD_PATH } from './utils'
+import { getNginxFile, uiPort, PGDATA, NEXTCLOUD_DIR as NEXTCLOUD_PATH } from './utils'
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
