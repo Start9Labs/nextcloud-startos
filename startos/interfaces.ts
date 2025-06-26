@@ -18,7 +18,20 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     query: {},
   })
 
-  const uiReceipt = await uiMultiOrigin.export([ui])
+  // webdav
+  const webdav = sdk.createInterface(effects, {
+    name: 'WebDAV',
+    id: 'webdav',
+    description: 'Addresses for WebDAV syncing',
+    type: 'api',
+    masked: false,
+    schemeOverride: null,
+    username: null,
+    path: '/remote.php/dav/',
+    query: {},
+  })
+
+  const uiReceipt = await uiMultiOrigin.export([ui, webdav])
 
   return [uiReceipt]
 })

@@ -2,16 +2,14 @@
 
 set -ea
 
-source /usr/local/bin/nextcloud.env
-
+# @TODO confirm user can create initial account - then remove this
 # Set admin password
-NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
-echo "$NEXTCLOUD_ADMIN_PASSWORD" > "$PASSWORD_FILE"
+# NEXTCLOUD_ADMIN_PASSWORD=$(cat /dev/urandom | base64 | head -c 24)
+# echo "$NEXTCLOUD_ADMIN_PASSWORD" > "$PASSWORD_FILE"
 
 # Clean slate
 rm -rf $NEXTCLOUD_PATH/{*,.[^.]*}
 rm -rf $PGDATA/{*,.[^.]*}
-
 
 # Initialize PostgreSQL
 echo 'Initializing PostgreSQL database server...'

@@ -14,7 +14,7 @@ export const inputSpec = InputSpec.of({
   }),
 })
 
-export const setUserPassword = sdk.Action.withInput(
+export const resetPassword = sdk.Action.withInput(
   // id
   'reset-password',
 

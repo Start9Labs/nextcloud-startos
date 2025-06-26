@@ -2,14 +2,11 @@
 
 set -ea
 
-# Environment Variables
-source /usr/local/bin/nextcloud.env
-NEXTCLOUD_ADMIN_PASSWORD=$(cat $PASSWORD_FILE)
-
 # User Config
-DEFAULT_LOCALE=$(yq e '.default-locale' /root/start9/config.yaml)
-DEFAULT_PHONE_REGION=$(yq e '.default-phone-region' /root/start9/config.yaml)
-WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT=$(yq e '.webdav.max-upload-file-size-limit' /root/start9/config.yaml)
+DEFAULT_LOCALE=$(jq e '.default-locale' /root/store.json)
+DEFAULT_PHONE_REGION=$(jq e '.default-phone-region' /root/store.json)
+WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT=$(jq e '.webdav.max-upload-file-size-limit' /root/store.json)
+PRIMARY_URL=$(jq e '.url' /root/store.json)
 
 _term() { 
   echo "Caught SIGTERM signal!"
@@ -42,7 +39,7 @@ sed -i "/'updatechecker' => .*/d" $CONFIG_FILE
 sed -i "/);/d" $CONFIG_FILE
 sed -i "/'integrity\.check\.disabled' => .*/d" $CONFIG_FILE
 sed -i "/'maintenance_window_start' => .*/d" $CONFIG_FILE
-echo "  'overwrite.cli.url' => 'https://$LAN_ADDRESS',
+echo "  'overwrite.cli.url' => '$PRIMARY_URL',
   'overwriteprotocol' => 'https',
   'check_for_working_wellknown_setup' => true,
   'updatechecker' => false,
@@ -74,9 +71,6 @@ if [ -z "$(grep "'preview_max_filesize_image'" "$CONFIG_FILE")" ]; then
   );" >> $CONFIG_FILE
 fi
 
-# Set nginx client_max_body_size to user-selected config
-sed -i "s/client_max_body_size\ 1024M/client_max_body_size\ $([[ "$WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT" == "null" ]] && echo "0" || echo "${WEBDAV_MAX_UPLOAD_FILE_SIZE_LIMIT}M")/g" /etc/nginx/conf.d/default.conf
-
 # Start nginx web server
 echo "Starting nginx server..."
 nginx -g "daemon off;" &
@@ -96,41 +90,6 @@ if runuser -u www-data -- php /var/www/html/occ | grep "$NEXTCLOUD_VERSION"; the
 fi
 
 EXISTING_NEXTCLOUD_ADMIN_USER=$(runuser -u www-data -- php /var/www/html/occ user:list | grep -q "embassy" && echo "embassy" || echo "admin")
-
-# @TODO create action to view webdav addresses
-# Properties Page
-cat <<EOP > /root/start9/stats.yaml
-version: 2
-data:
-  Admin Username:
-    type: string
-    value: "$EXISTING_NEXTCLOUD_ADMIN_USER"
-    description: The admin username for Nextcloud
-    copyable: true
-    masked: false
-    qr: false
-  Admin Password:
-    type: string
-    value: "$NEXTCLOUD_ADMIN_PASSWORD"
-    description: The default admin password for Nextcloud. If this password is changed inside the Nextcloud service, the change will not be reflected here. You will no longer be able to login with the default password. To reset to the default password, use the "Reset Password" Action.
-    copyable: true
-    masked: true
-    qr: false
-  WebDAV Base LAN URL:
-    type: string
-    value: "$LAN_ADDRESS/remote.php/dav/"
-    description: Address for WebDAV syncing over LAN
-    copyable: true
-    masked: false
-    qr: true
-  WebDAV Base Tor URL:
-    type: string
-    value: "$TOR_ADDRESS/remote.php/dav/"
-    description: Address for WebDAV syncing over Tor
-    copyable: true
-    masked: false
-    qr: true
-EOP
 
 chmod g+x /root
 chmod g+rwx /root/migrations
