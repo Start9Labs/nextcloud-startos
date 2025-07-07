@@ -15,11 +15,12 @@ export const versionGraph = VersionGraph.of({
       sdk.Mounts.of().mountAssets({ subpath: null, mountpoint: '/scripts' }),
       'nextcloud-init',
       (subc) =>
-        subc.execFail([
-          `PGDATA=${PGDATA}`,
-          `NEXTCLOUD_PATH=${NEXTCLOUD_DIR}`,
-          'nextcloud-init.sh',
-        ]),
+        subc.execFail(['sh', 'nextcloud-init.sh'], {
+          env: {
+            PGDATA,
+            NEXTCLOUD_PATH: NEXTCLOUD_DIR,
+          },
+        }),
     )
   },
 })

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# @TODO convert to ts
+
 cp /usr/src/nextcloud/config/*.php /var/www/html/config/
 
 php /var/www/html/occ db:add-missing-indices

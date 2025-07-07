@@ -1,16 +1,17 @@
 import { sdk } from '../sdk'
 import { NEXTCLOUD_DIR } from '../utils'
 
-export const disableMaintenanceMode = sdk.Action.withoutInput(
+export const downloadModels = sdk.Action.withoutInput(
   // id
-  'disable-maintenance-mode',
+  'download-models',
 
   // metadata
   async ({ effects }) => ({
-    name: 'Disable Maintenance Mode',
+    name: 'Download Machine Learning Models for Recognize',
     description:
-      'Use this if your UI has gotten stuck in "Maintenance Mode". Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart. The typical solution is to BE PATIENT and allow the opportunity for organic progress.  Resort to this action only if necessary. Being in maintenance mode for more than 15min likely constitutes "being stuck."',
-    warning: null,
+      'This downloads the machine learning models required for identifying objects and faces with the Recognize app.  You MUST install the Recognize app in your Nextcloud instance before running this action.',
+    warning:
+      'This process can take up to 15 minutes on a 2023 Server One.  It will consume approximately 1-2 GB of disk space.',
     allowedStatuses: 'only-running',
     group: 'CLI Tools',
     visibility: 'enabled',
@@ -36,8 +37,7 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
           '-E',
           'php',
           `${NEXTCLOUD_DIR}/occ`,
-          'maintenance:mode',
-          '--off',
+          'recognize:download-models',
         ])
       },
     )
@@ -45,7 +45,7 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
     return {
       version: '1',
       title: 'Success',
-      message: `Maintenance Mode has been disabled. You may need to wait 1-2min and refresh your UI page`,
+      message: 'The machine learning models have been downloaded successfully.',
       result: {
         type: 'single',
         value: '',

@@ -46,7 +46,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   return sdk.Daemons.of(effects, started).addDaemon('nextcloud', {
     subcontainer: nextcloudSub,
     exec: {
-      command: ['/scripts/nextcloud-run.sh'],
+      command: ['sh', '/scripts/nextcloud-run.sh'],
       env: {
         MAINTENANCE_WINDOW_START: String(
           await storeJson.read((s) => s.maintenanceWindowStart),
@@ -60,6 +60,13 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         PASSWORD_FILE: '/root/start9/password.dat',
         INITIALIZED_FILE: '/root/initialized',
         PHP_USER_FILE: '/var/www/html/.user.ini',
+        POSTGRES_DB: 'nextcloud',
+        POSTGRES_USER: 'nextcloud',
+        POSTGRES_PASSWORD: 'nextclouddbpassword',
+        POSTGRES_HOST: 'localhost',
+        EXISTING_DB: 'false',
+        PHP_MEMORY_LIMIT: '1024M',
+        PHP_UPLOAD_LIMIT: '20480M',
       },
     },
     ready: {

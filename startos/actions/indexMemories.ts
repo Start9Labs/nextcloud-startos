@@ -1,15 +1,15 @@
 import { sdk } from '../sdk'
 import { NEXTCLOUD_DIR } from '../utils'
 
-export const disableMaintenanceMode = sdk.Action.withoutInput(
+export const indexMemories = sdk.Action.withoutInput(
   // id
-  'disable-maintenance-mode',
+  'index-memories',
 
   // metadata
   async ({ effects }) => ({
-    name: 'Disable Maintenance Mode',
+    name: 'Index Media for Memories',
     description:
-      'Use this if your UI has gotten stuck in "Maintenance Mode". Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart. The typical solution is to BE PATIENT and allow the opportunity for organic progress.  Resort to this action only if necessary. Being in maintenance mode for more than 15min likely constitutes "being stuck."',
+      'Indexes all media for the Memories media app and enables video support and previews. Indexing is now done automatically by Memories when Nextcloud background tasks are triggered (every 5min by default), so you only need to use this if you want to force a re-index, or do not want to wait for the initial index. You MUST install the Memories app and select your media path (on the Memories welcome screen) before running this Action.',
     warning: null,
     allowedStatuses: 'only-running',
     group: 'CLI Tools',
@@ -36,8 +36,7 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
           '-E',
           'php',
           `${NEXTCLOUD_DIR}/occ`,
-          'maintenance:mode',
-          '--off',
+          'memories:index',
         ])
       },
     )
@@ -45,7 +44,8 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
     return {
       version: '1',
       title: 'Success',
-      message: `Maintenance Mode has been disabled. You may need to wait 1-2min and refresh your UI page`,
+      message:
+        'Photos have been indexed for the Memories application. You may need to restart your Nextcloud service if changes do not take effect right away.',
       result: {
         type: 'single',
         value: '',
