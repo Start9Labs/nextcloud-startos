@@ -7,6 +7,7 @@ import {
   postgresMount,
   getPostgresSub,
   POSTGRES_PATH,
+  POSTGRES_MOUNTPOINT,
 } from './utils'
 import { configPhp } from './fileModels/config.php'
 
@@ -61,9 +62,10 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           'su',
           '-c',
           `${POSTGRES_PATH}/16/bin/pg_ctl`,
-          '-D',
-          POSTGRES_PATH,
           'start',
+          '-D',
+          POSTGRES_MOUNTPOINT,
+          'postgres',
         ],
       },
       ready: {

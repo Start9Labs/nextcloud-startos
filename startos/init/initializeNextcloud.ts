@@ -6,6 +6,7 @@ import {
   getRandomPassword,
   NEXTCLOUD_ENV,
   NEXTCLOUD_PATH,
+  POSTGRES_MOUNTPOINT,
   POSTGRES_PATH,
   postgresMount,
   uiPort,
@@ -37,6 +38,21 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
       },
       requires: [],
     })
+    .addOneshot('init-postgres', {
+      subcontainer: postgresSub,
+      exec: {
+        command: [
+          'su',
+          '-c',
+          `${POSTGRES_PATH}/16/bin/pg_ctl`,
+          'initdb',
+          '-D',
+          POSTGRES_MOUNTPOINT,
+          'postgres',
+        ],
+      },
+      requires: ['chown-postgres'],
+    })
     .addDaemon('postgres', {
       subcontainer: await sdk.SubContainer.of(
         effects,
@@ -49,9 +65,10 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
           'su',
           '-c',
           `${POSTGRES_PATH}/16/bin/pg_ctl`,
-          '-D',
-          POSTGRES_PATH,
           'start',
+          '-D',
+          POSTGRES_MOUNTPOINT,
+          'postgres',
         ],
       },
       ready: {
@@ -88,7 +105,7 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
           )
         },
       },
-      requires: ['chown-postgres'],
+      requires: ['init-postgres'],
     })
     .addDaemon('nextcloud', {
       subcontainer: nextcloudSub,

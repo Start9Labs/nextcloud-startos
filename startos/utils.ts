@@ -4,6 +4,7 @@ import { T, utils } from '@start9labs/start-sdk'
 export const uiPort = 80 as const
 export const NEXTCLOUD_PATH = '/var/www/html' as const
 export const POSTGRES_PATH = '/var/lib/postgresql' as const
+export const POSTGRES_MOUNTPOINT = `${POSTGRES_PATH}/data` as const
 
 export const nextcloudMount = sdk.Mounts.of().mountVolume({
   volumeId: 'nextcloud',
@@ -14,7 +15,7 @@ export const nextcloudMount = sdk.Mounts.of().mountVolume({
 
 export const postgresMount = sdk.Mounts.of().mountVolume({
   volumeId: 'db',
-  mountpoint: `${POSTGRES_PATH}/data`,
+  mountpoint: POSTGRES_MOUNTPOINT,
   readonly: false,
   subpath: null,
 })
