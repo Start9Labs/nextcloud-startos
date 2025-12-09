@@ -1,9 +1,5 @@
-import { utils } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
-import { NEXTCLOUD_PATH } from '../utils'
 import { storeJson } from '../fileModels/store.json'
-
-const { InputSpec, Value } = sdk
 
 export const getAdminCredentials = sdk.Action.withoutInput(
   // id

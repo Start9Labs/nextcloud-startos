@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
 
 export const indexPlaces = sdk.Action.withoutInput(
   // id
@@ -22,19 +22,13 @@ export const indexPlaces = sdk.Action.withoutInput(
     await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
-      sdk.Mounts.of().mountVolume({
-        volumeId: 'main',
-        subpath: null,
-        mountpoint: '/root',
-        readonly: false,
-      }),
-      'maintenance-mode',
+      nextcloudMount,
+      'index-places-sub',
       async (sub) => {
         await sub.execFail([
           'sudo',
           '-u',
           'www-data',
-          '-E',
           'php',
           `${NEXTCLOUD_PATH}/occ`,
           'memories:places-setup',

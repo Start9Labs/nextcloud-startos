@@ -5,12 +5,12 @@ import { disableUnstableApps } from './disableUnstableApps'
 import { downloadModels } from './downloadModels'
 import { indexMemories } from './indexMemories'
 import { indexPlaces } from './indexPlaces'
-import { resetPassword } from './resetPassword'
+import { resetAdmin } from './resetAdmin'
 import { setConfig } from './setConfig'
 
 export const actions = sdk.Actions.of()
   .addAction(setConfig)
-  .addAction(resetPassword)
+  .addAction(resetAdmin)
   .addAction(disableMaintenanceMode)
   .addAction(disableUnstableApps)
   .addAction(downloadModels)

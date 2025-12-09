@@ -1,17 +1,36 @@
-import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 import { sdk } from './sdk'
+import { T, utils } from '@start9labs/start-sdk'
 
-export const uiPort = 80
-export const NEXTCLOUD_PATH = '/var/www/html'
+export const uiPort = 80 as const
+export const NEXTCLOUD_PATH = '/var/www/html' as const
+export const POSTGRES_PATH = '/var/lib/postgresql' as const
 
-export const mainMounts = sdk.Mounts.of().mountVolume({
+export const nextcloudMount = sdk.Mounts.of().mountVolume({
   volumeId: 'nextcloud',
   mountpoint: NEXTCLOUD_PATH,
   readonly: false,
   subpath: null,
 })
 
-// export const PGDATA = '/var/lib/postgresql/15/main'
+export const postgresMount = sdk.Mounts.of().mountVolume({
+  volumeId: 'db',
+  mountpoint: `${POSTGRES_PATH}/data`,
+  readonly: false,
+  subpath: null,
+})
+
+export const NEXTCLOUD_ENV = {
+  CONFIG_FILE: `${NEXTCLOUD_PATH}/config/config.php`,
+  NEXTCLOUD_PATH,
+  POSTGRES_DB: 'nextcloud',
+  POSTGRES_USER: 'nextcloud',
+  POSTGRES_PASSWORD: getRandomPassword(),
+  POSTGRES_HOST: 'localhost',
+  PHP_USER_FILE: `${NEXTCLOUD_PATH}/.user.ini`,
+  PHP_MEMORY_LIMIT: '1024M',
+  PHP_UPLOAD_LIMIT: '20480M',
+}
+
 export const locales = {
   en_US: 'English (US)',
   en_GB: 'English (GB)',
@@ -25,8 +44,9 @@ export const locales = {
   de: 'German',
   fr: 'French',
   pl: 'Polish',
-}
-export const phoneRegion = {
+} as const
+
+export const phoneRegions = {
   US: 'United States',
   GB: 'United Kingdom',
   CN: 'China',
@@ -39,22 +59,35 @@ export const phoneRegion = {
   DE: 'Germany',
   FR: 'France',
   PL: 'Poland',
-}
-export const storeDefaults = {
-  maxBodySize: 1024,
-  locale: 'en_US' as keyof typeof locales,
-  phoneRegion: 'US' as keyof typeof phoneRegion,
-  maintenanceWindowStart: 24,
+} as const
+
+export const configDefaults = {
+  default_local: 'en_US',
+  default_phone_region: 'US',
+  maintenance_window_start: 24,
+} as const
+
+export function getNextcloudSub(effects: T.Effects) {
+  return sdk.SubContainer.of(
+    effects,
+    { imageId: 'nextcloud' },
+    nextcloudMount,
+    'nextcloud-sub',
+  )
 }
 
-export async function getPrimaryInterfaceUrls(
-  effects: Effects,
-): Promise<string[]> {
-  const httpInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
-
-  return httpInterface?.addressInfo?.urls || []
+export function getPostgresSub(effects: T.Effects) {
+  return sdk.SubContainer.of(
+    effects,
+    { imageId: 'postgres' },
+    postgresMount,
+    'postgres-sub',
+  )
 }
 
-export function getHttpOnionUrl(urls: string[]): string {
-  return urls.find((u) => u.startsWith('http:') && u.includes('.onion')) || ''
+export function getRandomPassword() {
+  return utils.getDefaultString({
+    charset: 'a-z,A-Z,0-9',
+    len: 24,
+  })
 }

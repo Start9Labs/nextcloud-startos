@@ -1,9 +1,9 @@
 import { sdk } from '../sdk'
-import { NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
 
 export const disableMaintenanceMode = sdk.Action.withoutInput(
   // id
-  'disable-maintenance-mode',
+  'disable-maintenance',
 
   // metadata
   async ({ effects }) => ({
@@ -21,19 +21,13 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
     await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
-      sdk.Mounts.of().mountVolume({
-        volumeId: 'main',
-        subpath: null,
-        mountpoint: '/root',
-        readonly: false,
-      }),
-      'maintenance-mode',
+      nextcloudMount,
+      'disable-maintenance-sub',
       async (sub) => {
         await sub.execFail([
           'sudo',
           '-u',
           'www-data',
-          '-E',
           'php',
           `${NEXTCLOUD_PATH}/occ`,
           'maintenance:mode',
@@ -45,7 +39,7 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
     return {
       version: '1',
       title: 'Success',
-      message: `Maintenance Mode has been disabled. You may need to wait 1-2min and refresh your UI page`,
+      message: `Maintenance Mode has been disabled. You may need to wait 1-2 minutes and refresh the browser`,
       result: {
         type: 'single',
         value: '',

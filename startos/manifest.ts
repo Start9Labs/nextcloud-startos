@@ -16,6 +16,11 @@ export const manifest = setupManifest({
   },
   volumes: ['main', 'nextcloud', 'db'],
   images: {
+    postgres: {
+      source: {
+        dockerTag: 'postgres:16',
+      },
+    },
     nextcloud: {
       source: {
         dockerTag: 'nextcloud:32.0.2-apache',

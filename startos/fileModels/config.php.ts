@@ -1,10 +1,21 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
+import { configDefaults, locales, phoneRegions } from '../utils'
 
-const { object, number, literals, string, array } = matches
+const { object, string, natural, array, literals } = matches
+
+const { default_local, default_phone_region, maintenance_window_start } =
+  configDefaults
 
 const shape = object({
   trusted_proxies: array(string),
   trusted_domains: array(string),
+  default_locale: literals(Object.keys(locales).join(', ')).onMismatch(
+    default_local,
+  ),
+  default_phone_region: literals(
+    Object.keys(phoneRegions).join(', '),
+  ).onMismatch(default_phone_region),
+  maintenance_window_start: natural.onMismatch(maintenance_window_start),
 })
 
 function toSingleQuotedLiteral(str: string) {

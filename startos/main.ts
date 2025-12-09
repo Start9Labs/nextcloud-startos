@@ -1,8 +1,13 @@
-import { chmod, writeFile } from 'fs/promises'
-import { storeJson } from './fileModels/store.json'
 import { sdk } from './sdk'
-import { uiPort, NEXTCLOUD_PATH as NEXTCLOUD_PATH, mainMounts } from './utils'
-import { FileHelper } from '@start9labs/start-sdk'
+import {
+  uiPort,
+  NEXTCLOUD_PATH,
+  NEXTCLOUD_ENV,
+  getNextcloudSub,
+  postgresMount,
+  getPostgresSub,
+  POSTGRES_PATH,
+} from './utils'
 import { configPhp } from './fileModels/config.php'
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
@@ -23,35 +28,86 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     ],
   })
 
-  let subcontainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'nextcloud' },
-    mainMounts,
-    'nextcloud-sub',
-  )
+  const nextcloudSub = await getNextcloudSub(effects)
+  const postgresSub = await getPostgresSub(effects)
 
   /**
    * ======================== Daemons ========================
    */
   return sdk.Daemons.of(effects, started)
-    .addOneshot('chown', {
-      subcontainer,
-      exec: { command: ['chown', '-R', 'www-data:www-data', '/var/www/html'] },
+    .addOneshot('chown-nextcloud', {
+      subcontainer: nextcloudSub,
+      exec: {
+        command: ['chown', '-R', 'www-data:www-data', NEXTCLOUD_PATH],
+      },
       requires: [],
     })
+    .addOneshot('chown-postgres', {
+      subcontainer: postgresSub,
+      exec: {
+        command: ['chown', '-R', 'postgres:postgres', POSTGRES_PATH],
+      },
+      requires: [],
+    })
+    .addDaemon('postgres', {
+      subcontainer: await sdk.SubContainer.of(
+        effects,
+        { imageId: 'postgres' },
+        postgresMount,
+        'postgres-sub',
+      ),
+      exec: {
+        command: [
+          'su',
+          '-c',
+          `${POSTGRES_PATH}/16/bin/pg_ctl`,
+          '-D',
+          POSTGRES_PATH,
+          'start',
+        ],
+      },
+      ready: {
+        display: null,
+        fn: async () => {
+          return sdk.SubContainer.withTemp(
+            effects,
+            { imageId: 'postgres' },
+            postgresMount,
+            'postgres-ready',
+            async (sub) => {
+              const status = await sub.execFail([
+                'su',
+                '-c',
+                `${POSTGRES_PATH}/16/bin/pg_isready`,
+                '-h',
+                'localhost',
+              ])
+              if (status.stderr) {
+                console.error(
+                  'Error running postgres: ',
+                  status.stderr.toString(),
+                )
+                return {
+                  result: 'loading',
+                  message: 'Waiting for PostgreSQL to be ready',
+                }
+              }
+              return {
+                result: 'success',
+                message: 'Postgres is ready',
+              }
+            },
+          )
+        },
+      },
+      requires: ['chown-postgres'],
+    })
     .addDaemon('nextcloud', {
-      subcontainer,
+      subcontainer: nextcloudSub,
       exec: {
         command: sdk.useEntrypoint(),
         runAsInit: true,
-        env: {
-          CONFIG_FILE: '/var/www/html/config/config.php',
-          NEXTCLOUD_PATH,
-          SQLITE_DATABASE: 'nextcloud',
-          PHP_USER_FILE: '/var/www/html/.user.ini',
-          PHP_MEMORY_LIMIT: '1024M',
-          PHP_UPLOAD_LIMIT: '20480M',
-        },
+        env: NEXTCLOUD_ENV,
       },
       ready: {
         display: 'Web Interface',
@@ -61,6 +117,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             errorMessage: 'The web interface is not ready',
           }),
       },
-      requires: ['chown'],
+      requires: ['chown-nextcloud', 'postgres'],
     })
 })

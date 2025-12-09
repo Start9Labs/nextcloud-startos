@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
 
 export const disableUnstableApps = sdk.Action.withoutInput(
   // id
@@ -23,13 +23,8 @@ export const disableUnstableApps = sdk.Action.withoutInput(
     await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
-      sdk.Mounts.of().mountVolume({
-        volumeId: 'main',
-        subpath: null,
-        mountpoint: '/root',
-        readonly: false,
-      }),
-      'disable-apps',
+      nextcloudMount,
+      'disable-apps-sub',
       async (sub) => {
         const defaultApps = [
           'activity',
@@ -81,7 +76,7 @@ export const disableUnstableApps = sdk.Action.withoutInput(
         const enabledAppsRes = await sub.execFail([
           'sh',
           '-c',
-          'sudo -u www-data -E php $NEXTCLOUD_DIR/occ app:list | awk "/^Enabled:/ {f=1; next} /^Disabled:/ {f=0} f && /^[[:space:]]+-/ {sub(/:$/, \"\", $2); print $2}"',
+          'sudo -u www-data php $NEXTCLOUD_DIR/occ app:list | awk "/^Enabled:/ {f=1; next} /^Disabled:/ {f=0} f && /^[[:space:]]+-/ {sub(/:$/, \"\", $2); print $2}"',
         ])
 
         if (enabledAppsRes.stdout)
@@ -101,7 +96,6 @@ export const disableUnstableApps = sdk.Action.withoutInput(
                 'sudo',
                 '-u',
                 'www-data',
-                '-E',
                 'php',
                 `${NEXTCLOUD_PATH}/occ`,
                 'app:disable',
@@ -116,7 +110,7 @@ export const disableUnstableApps = sdk.Action.withoutInput(
     return {
       version: '1',
       title: 'Success',
-      message: `All Non-default apps have been disabled. Your Nextcloud UI should now be accessible. Disabled Apps: ${disabledApps.join(', ')}`,
+      message: `All non-default apps have been disabled. Your Nextcloud UI should now be accessible. Disabled Apps: ${disabledApps.join(', ')}`,
       result: {
         type: 'single',
         value: '',
