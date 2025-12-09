@@ -13,6 +13,8 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.15.3",
     "@vercel/ncc": "^0.38.3",
+    "peggy": "^5.0.6",
+    "peggy-ts": "github:hudlow/peggy-ts",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3"
   },

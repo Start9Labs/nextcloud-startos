@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { NEXTCLOUD_DIR } from '../utils'
+import { NEXTCLOUD_PATH } from '../utils'
 
 export const indexPlaces = sdk.Action.withoutInput(
   // id
@@ -36,7 +36,7 @@ export const indexPlaces = sdk.Action.withoutInput(
           'www-data',
           '-E',
           'php',
-          `${NEXTCLOUD_DIR}/occ`,
+          `${NEXTCLOUD_PATH}/occ`,
           'memories:places-setup',
         ])
       },

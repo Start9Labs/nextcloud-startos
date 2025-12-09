@@ -1,6 +1,6 @@
 import { utils } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
-import { NEXTCLOUD_DIR } from '../utils'
+import { NEXTCLOUD_PATH } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -10,7 +10,7 @@ export const inputSpec = InputSpec.of({
   user: Value.text({
     name: 'Username',
     default: 'admin',
-    required: true
+    required: true,
   }),
 })
 
@@ -61,7 +61,7 @@ export const resetPassword = sdk.Action.withInput(
           'www-data',
           '-E',
           'php',
-          `${NEXTCLOUD_DIR}/occ`,
+          `${NEXTCLOUD_PATH}/occ`,
           'user:resetpassword',
           input.user,
         ])

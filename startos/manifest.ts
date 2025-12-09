@@ -7,7 +7,8 @@ export const manifest = setupManifest({
   wrapperRepo: 'https://github.com/Start9Labs/nextcloud-startos',
   upstreamRepo: 'https://github.com/nextcloud/docker',
   supportSite: 'https://github.com/nextcloud/docker/issues',
-  marketingSite: 'https://nextcloud.com',
+  marketingSite: 'https://nextcloud.com/',
+  docsUrl: 'https://docs.nextcloud.com/',
   donationUrl: null,
   description: {
     short: 'A safe home for all your data',
@@ -17,7 +18,7 @@ export const manifest = setupManifest({
   images: {
     nextcloud: {
       source: {
-        dockerBuild: {},
+        dockerTag: 'nextcloud:32.0.2-apache',
       },
     },
   },

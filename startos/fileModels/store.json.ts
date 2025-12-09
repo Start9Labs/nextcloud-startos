@@ -7,8 +7,9 @@ const { locale, maxBodySize, phoneRegion, maintenanceWindowStart } =
   storeDefaults
 
 const shape = object({
-  url: string.optional(),
-  maxBodySize: number.onMismatch(maxBodySize),
+  adminPassword: string.optional().onMismatch(undefined),
+  // url: string.optional().onMismatch(undefined),
+  // maxBodySize: number.onMismatch(maxBodySize),
   locale: literals(
     'en_US',
     'en_GB',
@@ -47,4 +48,3 @@ export const storeJson = FileHelper.json(
   },
   shape,
 )
-
