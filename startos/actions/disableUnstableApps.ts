@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount } from '../utils'
 
 export const disableUnstableApps = sdk.Action.withoutInput(
   // id
@@ -73,34 +73,25 @@ export const disableUnstableApps = sdk.Action.withoutInput(
           'workflowengine',
         ]
 
-        const enabledAppsRes = await sub.execFail([
-          'sh',
-          '-c',
-          'sudo -u www-data php $NEXTCLOUD_DIR/occ app:list | awk "/^Enabled:/ {f=1; next} /^Disabled:/ {f=0} f && /^[[:space:]]+-/ {sub(/:$/, \"\", $2); print $2}"',
-        ])
+        const res = await sub.execFail(
+          ['php', 'occ', 'app:list', '--enabled', '--output=json'],
+          { user: 'www-data' },
+        )
 
-        if (enabledAppsRes.stdout)
-          throw new Error(
-            `Error fetching enabled apps: ${enabledAppsRes.stdout}`,
-          )
+        const enabledApps = (JSON.parse(res.stdout as string) as string[]).map(
+          (a) => a.split(':')[0].trim(),
+        )
 
         // @TODO remove me after testing
-        console.log('***Enabled apps res: ', enabledAppsRes.stdout)
-        const enabledApps = enabledAppsRes.stdout.split(',')
+        console.log('***Enabled apps: ', enabledApps)
 
         await Promise.all(
           enabledApps.map((app) => {
             if (!defaultApps.includes(app)) {
               disabledApps.push(app)
-              return sub.execFail([
-                'sudo',
-                '-u',
-                'www-data',
-                'php',
-                `${NEXTCLOUD_PATH}/occ`,
-                'app:disable',
-                app,
-              ])
+              return sub.execFail(['php', 'occ', 'app:disable', app], {
+                user: 'www-data',
+              })
             }
           }),
         )

@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount } from '../utils'
 
 export const indexMemories = sdk.Action.withoutInput(
   // id
@@ -24,14 +24,9 @@ export const indexMemories = sdk.Action.withoutInput(
       nextcloudMount,
       'index-memories-sub',
       async (sub) => {
-        await sub.execFail([
-          'sudo',
-          '-u',
-          'www-data',
-          'php',
-          `${NEXTCLOUD_PATH}/occ`,
-          'memories:index',
-        ])
+        await sub.execFail(['php', 'occ', 'memories:index'], {
+          user: 'www-data',
+        })
       },
     )
 

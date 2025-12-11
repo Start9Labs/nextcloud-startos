@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount } from '../utils'
 
 export const indexPlaces = sdk.Action.withoutInput(
   // id
@@ -25,14 +25,9 @@ export const indexPlaces = sdk.Action.withoutInput(
       nextcloudMount,
       'index-places-sub',
       async (sub) => {
-        await sub.execFail([
-          'sudo',
-          '-u',
-          'www-data',
-          'php',
-          `${NEXTCLOUD_PATH}/occ`,
-          'memories:places-setup',
-        ])
+        await sub.execFail(['php', 'occ', 'memories:places-setup'], {
+          user: 'www-data',
+        })
       },
     )
 

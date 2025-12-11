@@ -7,6 +7,7 @@ export const v_32_0_2_0_alpha_0 = VersionInfo.of({
   releaseNotes: 'Updated for StartOS v0.4.0',
   migrations: {
     up: async ({ effects }) => {
+      // @TODO migrate from 0351, including postgres update
       await storeJson.write(effects, {})
     },
     down: IMPOSSIBLE,

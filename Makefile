@@ -88,5 +88,6 @@ clean:
 	@echo "Cleaning up build artifacts..."
 	@rm -rf $(PACKAGE_ID).s9pk $(PACKAGE_ID)_x86_64.s9pk $(PACKAGE_ID)_aarch64.s9pk javascript node_modules
 
+# custom recipe for NextCloud
 startos/fileModels/php-parser.js: startos/fileModels/php.pegjs node_modules
 	npx peggy startos/fileModels/php.pegjs -o ./startos/fileModels/php-parser.js

@@ -1,41 +1,28 @@
 import { sdk } from '../sdk'
-import { getRandomPassword, nextcloudMount, NEXTCLOUD_PATH } from '../utils'
+import { getRandomPassword, nextcloudMount } from '../utils'
 
 const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
   user: Value.dynamicSelect(async ({ effects }) => {
-    const result = await sdk.SubContainer.withTemp(
+    const res = await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
       nextcloudMount,
       'list-admin-users',
-      async (subc) => {
-        const execResult = await subc.execFail([
-          'sudo',
-          '-u',
-          'www-data',
-          'php',
-          `${NEXTCLOUD_PATH}/occ`,
-          'group:list-users',
-          'admin',
-        ])
-        return execResult
-      },
+      async (subc) =>
+        subc.execFail(
+          ['php', 'occ', 'user:list', '--limit=1000', '--output=json'],
+          { user: 'www-data' },
+        ),
     )
 
-    const admins = (result.stdout as string).trim().split('\n')
+    const admins = JSON.parse(res.stdout as string) as Record<string, string>
 
     return {
       name: 'Admin User',
       default: admins[0],
-      values: admins.reduce(
-        (obj, name) => ({
-          ...obj,
-          [name]: name,
-        }),
-        {},
-      ),
+      values: admins,
     }
   }),
 })
@@ -62,31 +49,24 @@ export const resetAdmin = sdk.Action.withInput(
 
   // the execution function
   async ({ effects, input }) => {
-    const password = getRandomPassword()
+    const OC_PASS = getRandomPassword()
 
     await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
-      sdk.Mounts.of().mountVolume({
-        volumeId: 'main',
-        subpath: null,
-        mountpoint: '/root',
-        readonly: false,
-      }),
+      nextcloudMount,
       'set-password-occ',
-      async (sub) => {
-        await sub.execFail([
-          'sudo',
-          '-u',
-          'www-data',
-          `OC_PASS="${password}"`,
-          'php',
-          `${NEXTCLOUD_PATH}/occ`,
-          'user:resetpassword',
-          '--password-from-env',
-          input.user,
-        ])
-      },
+      async (sub) =>
+        sub.execFail(
+          [
+            'php',
+            'occ',
+            'user:resetpassword',
+            '--password-from-env',
+            input.user,
+          ],
+          { user: 'www-data', env: { OC_PASS } },
+        ),
     )
 
     return {
@@ -109,7 +89,7 @@ export const resetAdmin = sdk.Action.withInput(
             type: 'single',
             name: 'Password',
             description: null,
-            value: password,
+            value: OC_PASS,
             masked: true,
             copyable: true,
             qr: false,

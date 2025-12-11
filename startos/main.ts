@@ -1,13 +1,10 @@
 import { sdk } from './sdk'
 import {
   uiPort,
-  NEXTCLOUD_PATH,
   NEXTCLOUD_ENV,
   getNextcloudSub,
-  postgresMount,
   getPostgresSub,
-  POSTGRES_PATH,
-  POSTGRES_MOUNTPOINT,
+  getBaseDaemons,
 } from './utils'
 import { configPhp } from './fileModels/config.php'
 
@@ -35,80 +32,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
    * ======================== Daemons ========================
    */
-  return sdk.Daemons.of(effects, started)
-    .addOneshot('chown-nextcloud', {
-      subcontainer: nextcloudSub,
-      exec: {
-        command: ['chown', '-R', 'www-data:www-data', NEXTCLOUD_PATH],
-      },
-      requires: [],
-    })
-    .addOneshot('chown-postgres', {
-      subcontainer: postgresSub,
-      exec: {
-        command: ['chown', '-R', 'postgres:postgres', POSTGRES_PATH],
-      },
-      requires: [],
-    })
-    .addDaemon('postgres', {
-      subcontainer: await sdk.SubContainer.of(
-        effects,
-        { imageId: 'postgres' },
-        postgresMount,
-        'postgres-sub',
-      ),
-      exec: {
-        command: [
-          'su',
-          '-c',
-          `${POSTGRES_PATH}/16/bin/pg_ctl`,
-          'start',
-          '-D',
-          POSTGRES_MOUNTPOINT,
-          'postgres',
-        ],
-      },
-      ready: {
-        display: null,
-        fn: async () => {
-          return sdk.SubContainer.withTemp(
-            effects,
-            { imageId: 'postgres' },
-            postgresMount,
-            'postgres-ready',
-            async (sub) => {
-              const status = await sub.execFail([
-                'su',
-                '-c',
-                `${POSTGRES_PATH}/16/bin/pg_isready`,
-                '-h',
-                'localhost',
-              ])
-              if (status.stderr) {
-                console.error(
-                  'Error running postgres: ',
-                  status.stderr.toString(),
-                )
-                return {
-                  result: 'loading',
-                  message: 'Waiting for PostgreSQL to be ready',
-                }
-              }
-              return {
-                result: 'success',
-                message: 'Postgres is ready',
-              }
-            },
-          )
-        },
-      },
-      requires: ['chown-postgres'],
-    })
-    .addDaemon('nextcloud', {
+  return getBaseDaemons(effects, postgresSub, nextcloudSub, started).addDaemon(
+    'nextcloud',
+    {
       subcontainer: nextcloudSub,
       exec: {
         command: sdk.useEntrypoint(),
-        runAsInit: true,
         env: NEXTCLOUD_ENV,
       },
       ready: {
@@ -120,5 +49,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           }),
       },
       requires: ['chown-nextcloud', 'postgres'],
-    })
+    },
+  )
 })

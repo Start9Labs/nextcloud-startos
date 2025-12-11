@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount } from '../utils'
 
 export const downloadModels = sdk.Action.withoutInput(
   // id
@@ -25,14 +25,9 @@ export const downloadModels = sdk.Action.withoutInput(
       nextcloudMount,
       'download-models-sub',
       async (sub) => {
-        await sub.execFail([
-          'sudo',
-          '-u',
-          'www-data',
-          'php',
-          `${NEXTCLOUD_PATH}/occ`,
-          'recognize:download-models',
-        ])
+        await sub.execFail(['php', 'occ', 'recognize:download-models'], {
+          user: 'www-data',
+        })
       },
     )
 

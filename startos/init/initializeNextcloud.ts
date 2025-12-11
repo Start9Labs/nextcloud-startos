@@ -1,15 +1,12 @@
 import { getAdminCredentials } from '../actions/getAdminCredentials'
 import { sdk } from '../sdk'
 import {
+  getBaseDaemons,
   getNextcloudSub,
   getPostgresSub,
   getRandomPassword,
   NEXTCLOUD_ENV,
   NEXTCLOUD_PATH,
-  POSTGRES_MOUNTPOINT,
-  POSTGRES_PATH,
-  postgresMount,
-  uiPort,
 } from '../utils'
 import { storeJson } from '../fileModels/store.json'
 
@@ -23,90 +20,7 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
   const nextcloudSub = await getNextcloudSub(effects)
   const postgresSub = await getPostgresSub(effects)
 
-  await sdk.Daemons.of(effects, async () => null)
-    .addOneshot('chown-nextcloud', {
-      subcontainer: nextcloudSub,
-      exec: {
-        command: ['chown', '-R', 'www-data:www-data', NEXTCLOUD_PATH],
-      },
-      requires: [],
-    })
-    .addOneshot('chown-postgres', {
-      subcontainer: postgresSub,
-      exec: {
-        command: ['chown', '-R', 'postgres:postgres', POSTGRES_PATH],
-      },
-      requires: [],
-    })
-    .addOneshot('init-postgres', {
-      subcontainer: postgresSub,
-      exec: {
-        command: [
-          'su',
-          '-c',
-          `${POSTGRES_PATH}/16/bin/pg_ctl`,
-          'initdb',
-          '-D',
-          POSTGRES_MOUNTPOINT,
-          'postgres',
-        ],
-      },
-      requires: ['chown-postgres'],
-    })
-    .addDaemon('postgres', {
-      subcontainer: await sdk.SubContainer.of(
-        effects,
-        { imageId: 'postgres' },
-        postgresMount,
-        'postgres-sub',
-      ),
-      exec: {
-        command: [
-          'su',
-          '-c',
-          `${POSTGRES_PATH}/16/bin/pg_ctl`,
-          'start',
-          '-D',
-          POSTGRES_MOUNTPOINT,
-          'postgres',
-        ],
-      },
-      ready: {
-        display: null,
-        fn: async () => {
-          return sdk.SubContainer.withTemp(
-            effects,
-            { imageId: 'postgres' },
-            postgresMount,
-            'postgres-ready',
-            async (sub) => {
-              const status = await sub.execFail([
-                'su',
-                '-c',
-                `${POSTGRES_PATH}/16/bin/pg_isready`,
-                '-h',
-                'localhost',
-              ])
-              if (status.stderr) {
-                console.error(
-                  'Error running postgres: ',
-                  status.stderr.toString(),
-                )
-                return {
-                  result: 'loading',
-                  message: 'Waiting for PostgreSQL to be ready',
-                }
-              }
-              return {
-                result: 'success',
-                message: 'Postgres is ready',
-              }
-            },
-          )
-        },
-      },
-      requires: ['init-postgres'],
-    })
+  await getBaseDaemons(effects, postgresSub, nextcloudSub, async () => null)
     .addDaemon('nextcloud', {
       subcontainer: nextcloudSub,
       exec: {
@@ -119,41 +33,25 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
       },
       ready: {
         display: null,
-        fn: () =>
-          sdk.healthCheck.checkPortListening(effects, uiPort, {
-            successMessage: '',
-            errorMessage: '',
-          }),
-      },
-      requires: ['chown-nextcloud', 'postgres'],
-    })
-    .addHealthCheck('installed', {
-      ready: {
-        display: null,
         fn: async () => {
-          const status = await nextcloudSub.execFail([
-            'runuser',
-            '-u',
-            'www-data',
-            '--',
-            'php',
-            `${NEXTCLOUD_PATH}/occ`,
-            'status',
-          ])
+          const status = await nextcloudSub.execFail(['php', 'occ', 'status'], {
+            user: 'www-data',
+          })
+
           if (status.stdout.includes('installed: true')) {
             return {
-              message: null,
               result: 'success',
+              message: null,
             }
           } else {
             return {
-              message: null,
               result: 'failure',
+              message: null,
             }
           }
         },
       },
-      requires: ['nextcloud'],
+      requires: ['chown-nextcloud', 'postgres'],
     })
     .runUntilSuccess(600_000)
 

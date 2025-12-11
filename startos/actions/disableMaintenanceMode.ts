@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { nextcloudMount, NEXTCLOUD_PATH } from '../utils'
+import { nextcloudMount } from '../utils'
 
 export const disableMaintenanceMode = sdk.Action.withoutInput(
   // id
@@ -24,15 +24,9 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
       nextcloudMount,
       'disable-maintenance-sub',
       async (sub) => {
-        await sub.execFail([
-          'sudo',
-          '-u',
-          'www-data',
-          'php',
-          `${NEXTCLOUD_PATH}/occ`,
-          'maintenance:mode',
-          '--off',
-        ])
+        await sub.execFail(['php', 'occ', 'maintenance:mode', '--off'], {
+          user: 'www-data',
+        })
       },
     )
 

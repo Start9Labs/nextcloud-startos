@@ -16,6 +16,7 @@ const shape = object({
     Object.keys(phoneRegions).join(', '),
   ).onMismatch(default_phone_region),
   maintenance_window_start: natural.onMismatch(maintenance_window_start),
+  overwrite_protocol: literals('https').onMismatch('https'),
 })
 
 function toSingleQuotedLiteral(str: string) {

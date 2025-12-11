@@ -18,7 +18,7 @@ export const manifest = setupManifest({
   images: {
     postgres: {
       source: {
-        dockerTag: 'postgres:16',
+        dockerTag: 'postgres:17-alpine',
       },
     },
     nextcloud: {
@@ -27,7 +27,6 @@ export const manifest = setupManifest({
       },
     },
   },
-  hardwareRequirements: {},
   alerts: {
     install: null,
     update: null,
