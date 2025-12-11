@@ -28,11 +28,8 @@ export const disableUnstableApps = sdk.Action.withoutInput(
       async (sub) => {
         const defaultApps = [
           'activity',
-          'calendar',
-          'circles',
           'cloud_federation_api',
           'comments',
-          'contacts',
           'contactsinteraction',
           'dashboard',
           'dav',
@@ -54,6 +51,7 @@ export const disableUnstableApps = sdk.Action.withoutInput(
           'password_policy',
           'photos',
           'privacy',
+          'profile',
           'provisioning_api',
           'recommendations',
           'related_resources',
@@ -78,15 +76,12 @@ export const disableUnstableApps = sdk.Action.withoutInput(
           { user: 'www-data' },
         )
 
-        const enabledApps = (JSON.parse(res.stdout as string) as string[]).map(
-          (a) => a.split(':')[0].trim(),
-        )
-
-        // @TODO remove me after testing
-        console.log('***Enabled apps: ', enabledApps)
+        const parsed = JSON.parse(res.stdout as string) as {
+          enabled: Record<string, string>
+        }
 
         await Promise.all(
-          enabledApps.map((app) => {
+          Object.keys(parsed.enabled).map((app) => {
             if (!defaultApps.includes(app)) {
               disabledApps.push(app)
               return sub.execFail(['php', 'occ', 'app:disable', app], {
@@ -101,14 +96,8 @@ export const disableUnstableApps = sdk.Action.withoutInput(
     return {
       version: '1',
       title: 'Success',
-      message: `All non-default apps have been disabled. Your Nextcloud UI should now be accessible. Disabled Apps: ${disabledApps.join(', ')}`,
-      result: {
-        type: 'single',
-        value: '',
-        masked: false,
-        copyable: false,
-        qr: false,
-      },
+      message: `The following apps have been disabled: <ul>${disabledApps.map((app) => `<li>${app}</li>`)}</ul>`,
+      result: null,
     }
   },
 )
