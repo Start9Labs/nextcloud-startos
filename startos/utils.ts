@@ -15,7 +15,7 @@ export const nextcloudMount = sdk.Mounts.of().mountVolume({
 export const POSTGRES_ENV = {
   POSTGRES_DB: 'nextcloud',
   POSTGRES_USER: 'nextcloud',
-  POSTGRES_PASSWORD: 'password',
+  POSTGRES_PASSWORD: getRandomPassword(),
   PGDATA: `${POSTGRES_PATH}/17/docker`,
 }
 

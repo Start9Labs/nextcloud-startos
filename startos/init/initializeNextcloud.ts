@@ -6,7 +6,6 @@ import {
   getPostgresSub,
   getRandomPassword,
   NEXTCLOUD_ENV,
-  NEXTCLOUD_PATH,
 } from '../utils'
 import { storeJson } from '../fileModels/store.json'
 

@@ -23,7 +23,7 @@ export const manifest = setupManifest({
     },
     nextcloud: {
       source: {
-        dockerTag: 'nextcloud:32.0.2-apache',
+        dockerTag: 'nextcloud:31.0.12-apache',
       },
     },
   },
