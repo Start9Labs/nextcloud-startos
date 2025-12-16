@@ -19,7 +19,7 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
   const nextcloudSub = await getNextcloudSub(effects)
   const postgresSub = await getPostgresSub(effects)
 
-  await getBaseDaemons(effects, postgresSub, nextcloudSub, async () => null)
+  await getBaseDaemons(effects, postgresSub, nextcloudSub)
     .addDaemon('nextcloud', {
       subcontainer: nextcloudSub,
       exec: {

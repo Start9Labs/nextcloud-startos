@@ -89,9 +89,8 @@ export function getBaseDaemons(
   effects: T.Effects,
   postgresSub: Awaited<ReturnType<typeof getPostgresSub>>,
   nextcloudSub: Awaited<ReturnType<typeof getNextcloudSub>>,
-  started: (onTerm: () => PromiseLike<void>) => PromiseLike<null>,
 ) {
-  return sdk.Daemons.of(effects, started)
+  return sdk.Daemons.of(effects)
     .addOneshot('chown-nextcloud', {
       subcontainer: nextcloudSub,
       exec: {

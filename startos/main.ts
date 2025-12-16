@@ -8,7 +8,7 @@ import {
 } from './utils'
 import { configPhp } from './fileModels/config.php'
 
-export const main = sdk.setupMain(async ({ effects, started }) => {
+export const main = sdk.setupMain(async ({ effects }) => {
   /**
    * ======================== Setup ========================
    */
@@ -32,7 +32,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
    * ======================== Daemons ========================
    */
-  return getBaseDaemons(effects, postgresSub, nextcloudSub, started).addDaemon(
+  return getBaseDaemons(effects, postgresSub, nextcloudSub).addDaemon(
     'nextcloud',
     {
       subcontainer: nextcloudSub,
