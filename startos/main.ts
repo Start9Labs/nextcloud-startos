@@ -17,7 +17,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // get interface details
   const uiInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
   if (!uiInterface) throw new Error('interfaces do not exist')
-  const hostnames = uiInterface?.addressInfo?.filter({}, 'hostname-info')
+  const hostnames = uiInterface?.addressInfo?.format('hostname-info')
   await configPhp.merge(effects, {
     trusted_proxies: ['10.0.3.0/24'],
     trusted_domains: [
