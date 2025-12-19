@@ -24,12 +24,12 @@ jobs:
         env:
           S9DEVKEY: ${{ secrets.S9DEVKEY }}
         run: |
-          start-cli init-key
-          if [[ -n "$S9DEVKEY" ]]; then
+          if [ -n "$S9DEVKEY" ]; then
             echo "Using developer key from secrets to sign the package."
             printf '%s' "$S9DEVKEY" > ~/.startos/developer.key.pem
           else
             echo "Using newly generated developer key to sign the package."
+            start-cli init-key
           fi
           RUST_LOG=debug RUST_BACKTRACE=1 make
           sleep 2
