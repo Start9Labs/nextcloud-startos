@@ -8,7 +8,7 @@ import {
 } from './utils'
 import { configPhp } from './fileModels/config.php'
 
-export const main = sdk.setupMain(async ({ effects, started }) => {
+export const main = sdk.setupMain(async ({ effects }) => {
   /**
    * ======================== Setup ========================
    */
@@ -17,7 +17,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   // get interface details
   const uiInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
   if (!uiInterface) throw new Error('interfaces do not exist')
-  const hostnames = uiInterface?.addressInfo?.filter({}, 'hostname-info')
+  const hostnames = uiInterface?.addressInfo?.format('hostname-info')
   await configPhp.merge(effects, {
     trusted_proxies: ['10.0.3.0/24'],
     trusted_domains: [
@@ -32,7 +32,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
    * ======================== Daemons ========================
    */
-  return getBaseDaemons(effects, postgresSub, nextcloudSub, started).addDaemon(
+  return getBaseDaemons(effects, postgresSub, nextcloudSub).addDaemon(
     'nextcloud',
     {
       subcontainer: nextcloudSub,
