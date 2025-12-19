@@ -26,6 +26,7 @@ jobs:
         run: |
           if [ -n "$S9DEVKEY" ]; then
             echo "Using developer key from secrets to sign the package."
+            mkdir -p ~/.startos
             printf '%s' "$S9DEVKEY" > ~/.startos/developer.key.pem
           else
             echo "Using newly generated developer key to sign the package."
@@ -75,9 +76,9 @@ jobs:
           S9REGISTRY: ${{ secrets.S9REGISTRY }}
         run: |
           if [[ -z "$S9DEVKEY" || -z "$S9REGISTRY" ]]; then
-          echo "Publish skipped: One or both of S9DEVKEY and S9REGISTRY secrets are not set."
+            echo "Publish skipped: One or both of S9DEVKEY and S9REGISTRY secrets are not set."
           else
-          echo "Publishing package to registry..."
-          start-cli --registry https://$S9REGISTRY registry package add ${{ env.package_id }}.s9pk ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.package_id }}.s9pk
+            echo "Publishing package to registry..."
+            start-cli --registry https://$S9REGISTRY registry package add ${{ env.package_id }}.s9pk ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.package_id }}.s9pk
           fi
         shell: bash
