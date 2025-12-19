@@ -1,7 +1,7 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
 import { configDefaults, locales, phoneRegions } from '../utils'
 
-const { object, string, natural, array, literals } = matches
+const { object, string, natural, array, literals, nill } = matches
 
 const { default_local, default_phone_region, maintenance_window_start } =
   configDefaults
@@ -16,7 +16,7 @@ const shape = object({
     Object.keys(phoneRegions).join(', '),
   ).onMismatch(default_phone_region),
   maintenance_window_start: natural.onMismatch(maintenance_window_start),
-  overwrite_protocol: literals('https').onMismatch('https'),
+  overwrite_protocol: nill.onMismatch(undefined),
 })
 
 function toSingleQuotedLiteral(str: string) {
