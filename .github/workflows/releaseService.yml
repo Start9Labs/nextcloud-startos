@@ -79,6 +79,10 @@ jobs:
             echo "Publish skipped: One or both of S9DEVKEY and S9REGISTRY secrets are not set."
           else
             echo "Publishing package to registry..."
+
+            echo "PubKey:"
+            start-cli pubkey
+
             start-cli --registry https://$S9REGISTRY registry package add ${{ env.package_id }}.s9pk ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.package_id }}.s9pk
           fi
         shell: bash
