@@ -7,7 +7,6 @@ import { indexMemories } from './indexMemories'
 import { indexPlaces } from './indexPlaces'
 import { resetAdmin } from './resetAdmin'
 import { setConfig } from './setConfig'
-import { chmodAll } from './chmodAll'
 
 export const actions = sdk.Actions.of()
   .addAction(setConfig)
@@ -18,4 +17,3 @@ export const actions = sdk.Actions.of()
   .addAction(indexMemories)
   .addAction(indexPlaces)
   .addAction(getAdminCredentials)
-  .addAction(chmodAll)

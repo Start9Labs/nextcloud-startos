@@ -16,7 +16,6 @@ const shape = object({
     Object.keys(phoneRegions).join(', '),
   ).onMismatch(default_phone_region),
   maintenance_window_start: natural.onMismatch(maintenance_window_start),
-  'localstorage.umask': literal(0o22).onMismatch(0o22),
   overwrite_protocol: nill.onMismatch(undefined),
 })
 
