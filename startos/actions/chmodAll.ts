@@ -4,6 +4,7 @@ import {
   getNextcloudSub,
   getPostgresSub,
   NEXTCLOUD_PATH,
+  nextcloudMount,
 } from '../utils'
 
 export const chmodAll = sdk.Action.withoutInput(
@@ -22,45 +23,41 @@ export const chmodAll = sdk.Action.withoutInput(
 
   // the execution function
   async ({ effects }) => {
-    const nextcloudSub = await getNextcloudSub(effects)
+    await sdk.SubContainer.withTemp(
+      effects,
+      { imageId: 'nextcloud', sharedRun: true },
+      nextcloudMount,
+      'chmod',
+      async (sub) => {
+        const dataPath = `${NEXTCLOUD_PATH}/data`
 
-    getBaseDaemons(effects, await getPostgresSub(effects), nextcloudSub)
-      .addOneshot('chmod', {
-        subcontainer: nextcloudSub,
-        exec: {
-          fn: async () => {
-            const dataPath = `${NEXTCLOUD_PATH}/data`
+        await sub.execFail([
+          'find',
+          dataPath,
+          '-type',
+          'f',
+          '-exec',
+          'chmod',
+          '644',
+          '{}',
+          ';',
+        ])
 
-            await nextcloudSub.execFail([
-              'find',
-              dataPath,
-              '-type',
-              'f',
-              '-exec',
-              'chmod',
-              '644',
-              '{}',
-              ';',
-            ])
+        await sub.execFail([
+          'find',
+          dataPath,
+          '-type',
+          'd',
+          '-exec',
+          'chmod',
+          '755',
+          '{}',
+          ';',
+        ])
 
-            await nextcloudSub.execFail([
-              'find',
-              dataPath,
-              '-type',
-              'd',
-              '-exec',
-              'chmod',
-              '755',
-              '{}',
-              ';',
-            ])
-
-            return null
-          },
-        },
-        requires: ['postgres'],
-      })
-      .runUntilSuccess(60000)
+        return null
+      },
+    )
 
     return {
       version: '1',
