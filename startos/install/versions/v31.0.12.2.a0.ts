@@ -9,7 +9,7 @@ export const v_31_0_12_2_a0 = VersionInfo.of({
     //   // @TODO migrate from 0351, including postgres update and chmod
     //   await storeJson.write(effects, {})
     // },
-    up: async () => {},
+    up: IMPOSSIBLE,
     down: IMPOSSIBLE,
   },
 })
