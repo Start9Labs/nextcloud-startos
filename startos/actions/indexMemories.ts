@@ -35,13 +35,7 @@ export const indexMemories = sdk.Action.withoutInput(
       title: 'Success',
       message:
         'Photos have been indexed for the Memories application. You may need to restart your Nextcloud service if changes do not take effect right away.',
-      result: {
-        type: 'single',
-        value: '',
-        masked: false,
-        copyable: false,
-        qr: false,
-      },
+      result: null,
     }
   },
 )

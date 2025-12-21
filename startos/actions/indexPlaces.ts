@@ -35,13 +35,7 @@ export const indexPlaces = sdk.Action.withoutInput(
       version: '1',
       title: 'Success',
       message: `You can now use the Map inside your Memories application.`,
-      result: {
-        type: 'single',
-        value: '',
-        masked: false,
-        copyable: false,
-        qr: false,
-      },
+      result: null,
     }
   },
 )

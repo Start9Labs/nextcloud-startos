@@ -1,7 +1,7 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
 import { configDefaults, locales, phoneRegions } from '../utils'
 
-const { object, string, natural, array, literals, nill } = matches
+const { object, string, natural, array, literals, literal, nill } = matches
 
 const { default_local, default_phone_region, maintenance_window_start } =
   configDefaults
@@ -16,6 +16,7 @@ const shape = object({
     Object.keys(phoneRegions).join(', '),
   ).onMismatch(default_phone_region),
   maintenance_window_start: natural.onMismatch(maintenance_window_start),
+  'localstorage.umask': literal(0o22).onMismatch(0o22),
   overwrite_protocol: nill.onMismatch(undefined),
 })
 

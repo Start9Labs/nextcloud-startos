@@ -34,13 +34,7 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
       version: '1',
       title: 'Success',
       message: `Maintenance Mode has been disabled. You may need to wait 1-2 minutes and refresh the browser`,
-      result: {
-        type: 'single',
-        value: '',
-        masked: false,
-        copyable: false,
-        qr: false,
-      },
+      result: null,
     }
   },
 )

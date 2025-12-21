@@ -50,7 +50,7 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
           }
         },
       },
-      requires: ['chown-nextcloud', 'postgres'],
+      requires: ['chown', 'postgres'],
     })
     .runUntilSuccess(600_000)
 

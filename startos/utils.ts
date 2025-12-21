@@ -91,7 +91,7 @@ export function getBaseDaemons(
   nextcloudSub: Awaited<ReturnType<typeof getNextcloudSub>>,
 ) {
   return sdk.Daemons.of(effects)
-    .addOneshot('chown-nextcloud', {
+    .addOneshot('chown', {
       subcontainer: nextcloudSub,
       exec: {
         command: ['chown', '-R', 'www-data:www-data', NEXTCLOUD_PATH],

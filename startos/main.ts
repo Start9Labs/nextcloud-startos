@@ -48,7 +48,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             errorMessage: 'The web interface is not ready',
           }),
       },
-      requires: ['chown-nextcloud', 'postgres'],
+      requires: ['chown', 'postgres'],
     },
   )
 })

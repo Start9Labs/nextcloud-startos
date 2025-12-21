@@ -35,13 +35,7 @@ export const downloadModels = sdk.Action.withoutInput(
       version: '1',
       title: 'Success',
       message: 'The machine learning models have been downloaded successfully.',
-      result: {
-        type: 'single',
-        value: '',
-        masked: false,
-        copyable: false,
-        qr: false,
-      },
+      result: null,
     }
   },
 )
