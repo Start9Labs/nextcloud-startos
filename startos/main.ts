@@ -1,4 +1,5 @@
 import { sdk } from './sdk'
+import { i18n } from './i18n'
 import {
   uiPort,
   NEXTCLOUD_ENV,
@@ -12,7 +13,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   /**
    * ======================== Setup ========================
    */
-  console.info('Starting Nextcloud...')
+  console.info(i18n('Starting Nextcloud...'))
 
   // get interface details
   const uiInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
@@ -41,11 +42,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
         env: NEXTCLOUD_ENV,
       },
       ready: {
-        display: 'Web Interface',
+        display: i18n('Web Interface'),
         fn: () =>
           sdk.healthCheck.checkPortListening(effects, uiPort, {
-            successMessage: 'The web interface is ready',
-            errorMessage: 'The web interface is not ready',
+            successMessage: i18n('The web interface is ready'),
+            errorMessage: i18n('The web interface is not ready'),
           }),
       },
       requires: ['chown', 'postgres'],

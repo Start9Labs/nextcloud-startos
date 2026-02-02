@@ -1,4 +1,5 @@
 import { setupManifest } from '@start9labs/start-sdk'
+import { short, long } from './i18n'
 
 export const manifest = setupManifest({
   id: 'nextcloud',
@@ -10,21 +11,20 @@ export const manifest = setupManifest({
   marketingSite: 'https://nextcloud.com/',
   docsUrl: 'https://docs.nextcloud.com/',
   donationUrl: null,
-  description: {
-    short: 'A safe home for all your data',
-    long: 'Access & share your files, calendars, contacts, mail & more from any device, on your terms.',
-  },
+  description: { short, long },
   volumes: ['main', 'nextcloud', 'db'],
   images: {
     postgres: {
       source: {
         dockerTag: 'postgres:17-alpine',
       },
+      arch: ['x86_64', 'aarch64'],
     },
     nextcloud: {
       source: {
         dockerTag: 'nextcloud:31.0.12-apache',
       },
+      arch: ['x86_64', 'aarch64'],
     },
   },
   alerts: {

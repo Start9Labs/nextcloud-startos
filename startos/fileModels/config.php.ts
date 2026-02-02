@@ -1,4 +1,5 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
+import { sdk } from '../sdk'
 import { configDefaults, locales, phoneRegions } from '../utils'
 
 const { object, string, natural, array, literals, literal, nill } = matches
@@ -74,10 +75,7 @@ function toPhpString(value: unknown, indent = 0): string {
 }
 
 export const configPhp = FileHelper.raw<typeof shape._TYPE>(
-  {
-    volumeId: 'nextcloud',
-    subpath: 'config/config.php',
-  },
+  { base: sdk.volumes.nextcloud, subpath: './config/config.php' },
   (dataIn) => {
     return '<?php\n$CONFIG = ' + toPhpString(dataIn) + ';'
   },
