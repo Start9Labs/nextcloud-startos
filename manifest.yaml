@@ -1,8 +1,9 @@
 id: nextcloud
 title: Nextcloud
-version: 30.0.11
+version: 31.0.13
 release-notes: |
-  * Update to v30.0.11 - See [full changelog](https://nextcloud.com/changelog/) for Version 30.0.11
+  * Update to v31.0.13 - See [full changelog](https://nextcloud.com/changelog/)
+  * PostgreSQL upgraded from 15 to 17
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker

@@ -7,7 +7,7 @@ php /var/www/html/occ db:add-missing-indices
 
 # Disable apps that aren't enabled by default
 declare -A default_map
-default_apps=('activity' 'calendar' 'circles' 'cloud_federation_api' 'comments' 'contacts' 'contactsinteraction' 'dashboard' 'dav' 'federatedfilesharing' 'federation' 'files' 'files_downloadlimit' 'files_pdfviewer' 'files_reminders' 'files_sharing' 'files_trashbin' 'files_versions' 'firstrunwizard' 'logreader' 'lookup_server_connector' 'nextcloud_announcements' 'notifications' 'oauth2' 'password_policy' 'photos' 'privacy' 'provisioning_api' 'recommendations' 'related_resources' 'serverinfo' 'settings' 'sharebymail' 'support' 'survey_client' 'systemtags' 'text' 'theming' 'twofactor_backupcodes' 'updatenotification' 'user_status' 'viewer' 'weather_status' 'workflowengine')
+default_apps=('activity' 'admin_audit' 'app_api' 'bruteforcesettings' 'calendar' 'circles' 'cloud_federation_api' 'comments' 'contacts' 'contactsinteraction' 'dashboard' 'dav' 'encryption' 'federatedfilesharing' 'federation' 'files' 'files_downloadlimit' 'files_external' 'files_pdfviewer' 'files_reminders' 'files_sharing' 'files_trashbin' 'files_versions' 'firstrunwizard' 'logreader' 'lookup_server_connector' 'nextcloud_announcements' 'notifications' 'oauth2' 'password_policy' 'photos' 'privacy' 'profile' 'provisioning_api' 'recommendations' 'related_resources' 'serverinfo' 'settings' 'sharebymail' 'support' 'survey_client' 'suspicious_login' 'systemtags' 'text' 'theming' 'twofactor_backupcodes' 'twofactor_nextcloud_notification' 'twofactor_totp' 'updatenotification' 'user_ldap' 'user_status' 'viewer' 'weather_status' 'webhook_listeners' 'workflowengine')
 
 for app in "${default_apps[@]}"; do
   default_map["$app"]=1

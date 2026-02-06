@@ -24,10 +24,49 @@ if [ "$OWNER" != 'postgres' ]; then
   chown -R postgres:postgres /var/lib/postgresql
 fi
 
+# PG 15 -> 17 upgrade (only when old PG 15 data exists and PG 17 data doesn't)
+if [ -f "$PGDATA_OLD/PG_VERSION" ] && [ ! -f "$PGDATA/PG_VERSION" ]; then
+    echo "=== PostgreSQL upgrade from 15 to 17 ==="
+    chown -R postgres:postgres /var/lib/postgresql
+
+    # Clean up any incomplete prior attempt
+    if [ -d "$PGDATA" ]; then
+        rm -rf "$PGDATA"
+    fi
+
+    # Initialize new PG 17 cluster
+    mkdir -p "$PGDATA"
+    chown postgres:postgres "$PGDATA"
+    su -c "$PG_BIN/initdb -D $PGDATA" postgres
+
+    # Run pg_upgrade (copy mode — old data preserved as fallback)
+    cd /var/lib/postgresql
+    su -c "$PG_BIN/pg_upgrade \
+        --old-datadir=$PGDATA_OLD \
+        --new-datadir=$PGDATA \
+        --old-bindir=$PG_BIN_OLD \
+        --new-bindir=$PG_BIN" postgres
+
+    # Temporarily start PG 17 for post-upgrade analyze
+    su -c "$PG_BIN/pg_ctl start -D $PGDATA -w" postgres
+    if [ -f /var/lib/postgresql/analyze_new_cluster.sh ]; then
+        su -c "cd /var/lib/postgresql && ./analyze_new_cluster.sh" postgres
+    fi
+    su -c "$PG_BIN/pg_ctl stop -D $PGDATA -w" postgres
+
+    # Clean up old PG 15 data and pg_upgrade artifacts
+    rm -rf "$PGDATA_OLD"
+    rm -f /var/lib/postgresql/analyze_new_cluster.sh
+    rm -f /var/lib/postgresql/delete_old_cluster.sh
+    rm -f /var/lib/postgresql/pg_upgrade_internal.log
+
+    echo "=== PostgreSQL upgrade complete ==="
+fi
+
 # Start Postgres
 rm -f $PGDATA/postmaster.pid
 echo "Starting PostgreSQL db server..."
-su -c "/usr/lib/postgresql/15/bin/pg_ctl start -D $PGDATA" postgres
+su -c "$PG_BIN/pg_ctl start -D $PGDATA" postgres
 
 # Modify config.php, add default locale settings from user config, and turn off UI update checker
 sed -i "/'filelocking\.enabled' => .*/d" $CONFIG_FILE
