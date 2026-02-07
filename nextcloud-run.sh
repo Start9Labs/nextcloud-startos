@@ -18,6 +18,13 @@ _term() {
   kill -TERM "$crond_process" 2>/dev/null
 }
 
+# Clean up old PG 15 data from a previous successful migration
+if [ -f "$PG_UPGRADE_MARKER" ] && [ -d "$PGDATA_OLD" ]; then
+    echo "Removing old PostgreSQL 15 data..."
+    rm -rf "$PGDATA_OLD"
+    rm -f "$PG_UPGRADE_MARKER"
+fi
+
 # Ensure postgresql is owned by postgres after alpine migration
 OWNER=$(stat -c "%U" /var/lib/postgresql)
 if [ "$OWNER" != 'postgres' ]; then

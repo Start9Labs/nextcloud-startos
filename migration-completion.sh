@@ -43,12 +43,6 @@ fi
 
 php /var/www/html/occ maintenance:repair --include-expensive
 
-# Clean up old PG 15 data now that Nextcloud upgrade succeeded
-if [ -d "$PGDATA_OLD" ]; then
-    echo "Removing old PostgreSQL 15 data..."
-    rm -rf "$PGDATA_OLD"
-fi
-
 mkdir -p /root/migrations
 touch /root/migrations/$NEXTCLOUD_VERSION.complete
 touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
