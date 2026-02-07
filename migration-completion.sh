@@ -1,9 +1,11 @@
 #!/bin/bash
 set -e
 
+source /usr/local/bin/nextcloud.env
+
 cp /usr/src/nextcloud/config/*.php /var/www/html/config/
 
-php /var/www/html/occ db:add-missing-indices
+runuser -u www-data -- php /var/www/html/occ db:add-missing-indices
 
 # Disable apps that aren't enabled by default
 declare -A default_map
@@ -13,7 +15,7 @@ for app in "${default_apps[@]}"; do
   default_map["$app"]=1
 done
 
-enabled_apps=($(php /var/www/html/occ app:list | \
+enabled_apps=($(runuser -u www-data -- php /var/www/html/occ app:list | \
 awk '/^Enabled:/ {f=1; next} /^Disabled:/ {f=0} f && /^[[:space:]]+-/ {sub(/:$/, "", $2); print $2}'))
 
 declare -a disabled_map
@@ -23,25 +25,34 @@ for enabled_app in "${enabled_apps[@]}"; do
   if [[ -z "${default_map[$enabled_app]}" ]]; then
     echo "Disabling non-default app: $enabled_app"
     disabled_map+=($enabled_app)
-    php /var/www/html/occ app:disable $enabled_app
+    runuser -u www-data -- php /var/www/html/occ app:disable $enabled_app
   fi
 done
 
 echo 'Re-enabling non-default apps'
 for disabled_app in "${disabled_map[@]}"; do
   echo "Re-enabling $disabled_app"
-  php /var/www/html/occ app:enable $disabled_app
+  runuser -u www-data -- php /var/www/html/occ app:enable $disabled_app
 done
 
 if [[ " ${enabled_apps[@]} " =~ [[:space:]]memories[[:space:]] ]]; then
     echo "setting memories exif binary"
-    php /var/www/html/occ config:system:delete memories.exiftool
-    php /var/www/html/occ config:system:delete memories.vod.path
+    runuser -u www-data -- php /var/www/html/occ config:system:delete memories.exiftool
+    runuser -u www-data -- php /var/www/html/occ config:system:delete memories.vod.path
 fi
 
-php /var/www/html/occ maintenance:repair --include-expensive
+runuser -u www-data -- php /var/www/html/occ maintenance:repair --include-expensive
 
+# Clean up old PG 15 data now that Nextcloud upgrade succeeded
+if [ -d "$PGDATA_OLD" ]; then
+    echo "Removing old PostgreSQL 15 data..."
+    rm -rf "$PGDATA_OLD"
+fi
 
 mkdir -p /root/migrations
 touch /root/migrations/$NEXTCLOUD_VERSION.complete
 touch /root/migrations/$(echo "$NEXTCLOUD_VERSION" | sed 's/\..*//g').complete
+
+# Ensure main volume is accessible to www-data (required for StartOS 0.4.0)
+chown -R root:www-data /root
+chmod -R g+rwX /root

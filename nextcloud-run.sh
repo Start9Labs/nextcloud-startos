@@ -24,23 +24,23 @@ if [ "$OWNER" != 'postgres' ]; then
   chown -R postgres:postgres /var/lib/postgresql
 fi
 
-# PG 15 -> 17 upgrade (only when old PG 15 data exists and PG 17 data doesn't)
-if [ -f "$PGDATA_OLD/PG_VERSION" ] && [ ! -f "$PGDATA/PG_VERSION" ]; then
+# PG 15 -> 17 upgrade (only when old PG 15 data exists and upgrade hasn't completed)
+if [ -f "$PGDATA_OLD/PG_VERSION" ] && [ ! -f "$PG_UPGRADE_MARKER" ]; then
     echo "=== PostgreSQL upgrade from 15 to 17 ==="
     chown -R postgres:postgres /var/lib/postgresql
 
-    # Clean up any incomplete prior attempt
+    # Clean up any incomplete prior attempt (e.g. initdb succeeded but pg_upgrade failed)
     if [ -d "$PGDATA" ]; then
+        echo "Cleaning up incomplete prior upgrade attempt..."
         rm -rf "$PGDATA"
     fi
 
-    # Initialize new PG 17 cluster
+    # Initialize new PG 17 cluster with explicit locale to match old cluster
     mkdir -p "$PGDATA"
     chown postgres:postgres "$PGDATA"
-    su -c "$PG_BIN/initdb -D $PGDATA" postgres
+    su -c "$PG_BIN/initdb -D $PGDATA --encoding=UTF-8 --locale=C" postgres
 
     # Run pg_upgrade (copy mode — old data preserved as fallback)
-    cd /var/lib/postgresql
     su -c "$PG_BIN/pg_upgrade \
         --old-datadir=$PGDATA_OLD \
         --new-datadir=$PGDATA \
@@ -54,8 +54,8 @@ if [ -f "$PGDATA_OLD/PG_VERSION" ] && [ ! -f "$PGDATA/PG_VERSION" ]; then
     fi
     su -c "$PG_BIN/pg_ctl stop -D $PGDATA -w" postgres
 
-    # Clean up old PG 15 data and pg_upgrade artifacts
-    rm -rf "$PGDATA_OLD"
+    # Mark upgrade successful — old data kept until Nextcloud upgrade completes
+    touch "$PG_UPGRADE_MARKER"
     rm -f /var/lib/postgresql/analyze_new_cluster.sh
     rm -f /var/lib/postgresql/delete_old_cluster.sh
     rm -f /var/lib/postgresql/pg_upgrade_internal.log
@@ -66,7 +66,7 @@ fi
 # Start Postgres
 rm -f $PGDATA/postmaster.pid
 echo "Starting PostgreSQL db server..."
-su -c "$PG_BIN/pg_ctl start -D $PGDATA" postgres
+su -c "$PG_BIN/pg_ctl start -D $PGDATA -w" postgres
 
 # Modify config.php, add default locale settings from user config, and turn off UI update checker
 sed -i "/'filelocking\.enabled' => .*/d" $CONFIG_FILE
@@ -170,10 +170,9 @@ data:
     qr: true
 EOP
 
-chmod g+x /root
-chmod g+rwx /root/migrations
-chmod -R g+rw /root/migrations
+# Ensure main volume is accessible to www-data (required for StartOS 0.4.0)
 chown -R root:www-data /root
+chmod -R g+rwX /root
 
 # Start Nextcloud
 echo "Starting Nextcloud frontend..."
