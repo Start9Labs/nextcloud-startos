@@ -41,6 +41,7 @@ if [ -f "$PGDATA_OLD/PG_VERSION" ] && [ ! -f "$PG_UPGRADE_MARKER" ]; then
     su -c "$PG_BIN/initdb -D $PGDATA --encoding=UTF-8 --locale=C" postgres
 
     # Run pg_upgrade (copy mode — old data preserved as fallback)
+    cd /var/lib/postgresql
     su -c "$PG_BIN/pg_upgrade \
         --old-datadir=$PGDATA_OLD \
         --new-datadir=$PGDATA \
