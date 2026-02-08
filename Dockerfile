@@ -1,7 +1,12 @@
-FROM nextcloud:30.0.11-fpm
+FROM nextcloud:31.0.13-fpm
 
 # arm64 or amd64
 ARG PLATFORM
+
+# Add PGDG repo for PostgreSQL 15 (needed for pg_upgrade from PG 15 to 17)
+RUN apt update && apt install -y --no-install-recommends curl ca-certificates gnupg && \
+  curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg && \
+  echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
 # Install base dependencies
 RUN apt update && apt install -y --no-install-recommends \
@@ -10,7 +15,7 @@ RUN apt update && apt install -y --no-install-recommends \
   ffmpeg \
   jq \
   nginx \
-  postgresql \
+  postgresql-17 postgresql-15 \
   sudo && \
   curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${PLATFORM}" -o /usr/local/bin/yq && \
   chmod +x /usr/local/bin/yq && \

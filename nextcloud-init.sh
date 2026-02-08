@@ -18,11 +18,11 @@ echo 'Initializing PostgreSQL database server...'
 mkdir -p $PGDATA
 chown -R postgres:postgres /var/lib/postgresql
 echo "Initializing PostgreSQL database..."
-su -c "/usr/lib/postgresql/15/bin/pg_ctl initdb -D $PGDATA" postgres
+su -c "$PG_BIN/pg_ctl initdb -D $PGDATA" postgres
 
 # Start PG server
 echo "Starting PostgreSQL db server..."
-su -c "/usr/lib/postgresql/15/bin/pg_ctl start -D $PGDATA" postgres
+su -c "$PG_BIN/pg_ctl start -D $PGDATA" postgres
 
 # Create db user & db, set password
 echo "Setting up database..."
@@ -59,4 +59,4 @@ kill -TERM $NCPID
 sleep 60 &
 wait -n $NCPID $!
 
-su -c "/usr/lib/postgresql/15/bin/pg_ctl stop -D $PGDATA" postgres
+su -c "$PG_BIN/pg_ctl stop -D $PGDATA" postgres
