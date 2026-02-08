@@ -1,6 +1,6 @@
 id: nextcloud
 title: Nextcloud
-version: 31.0.13
+version: 31.0.13.1
 release-notes: |
   * Update to v31.0.13 - See [full changelog](https://nextcloud.com/changelog/)
   * PostgreSQL upgraded from 15 to 17
