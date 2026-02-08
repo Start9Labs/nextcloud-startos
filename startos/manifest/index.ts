@@ -1,0 +1,39 @@
+import { setupManifest } from '@start9labs/start-sdk'
+import { short, long } from './i18n'
+
+export const manifest = setupManifest({
+  id: 'nextcloud',
+  title: 'Nextcloud',
+  license: 'gpl',
+  wrapperRepo: 'https://github.com/Start9Labs/nextcloud-startos',
+  upstreamRepo: 'https://github.com/nextcloud/docker',
+  supportSite: 'https://github.com/nextcloud/docker/issues',
+  marketingSite: 'https://nextcloud.com/',
+  docsUrl: 'https://docs.nextcloud.com/',
+  donationUrl: null,
+  description: { short, long },
+  volumes: ['main', 'nextcloud', 'db'],
+  images: {
+    postgres: {
+      source: {
+        dockerTag: 'postgres:17-alpine',
+      },
+      arch: ['x86_64', 'aarch64'],
+    },
+    nextcloud: {
+      source: {
+        dockerTag: 'nextcloud:31.0.12-apache',
+      },
+      arch: ['x86_64', 'aarch64'],
+    },
+  },
+  alerts: {
+    install: null,
+    update: null,
+    uninstall: null,
+    restore: null,
+    start: null,
+    stop: null,
+  },
+  dependencies: {},
+})
