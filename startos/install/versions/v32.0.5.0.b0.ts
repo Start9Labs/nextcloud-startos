@@ -1,7 +1,7 @@
 import { VersionInfo, T, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { i18n } from '../../i18n'
 import { sdk } from '../../sdk'
-import { readFile, rm } from 'fs/promises'
+import { readFile, rm, stat } from 'fs/promises'
 import { configPhp } from '../../fileModels/config.php'
 import { storeJson } from '../../fileModels/store.json'
 import {
@@ -168,6 +168,40 @@ export const v32_0_5_0_b0 = VersionInfo.of({
         await migrateNextcloud(effects)
         await rm(configYamlPath)
       }
+
+      // Previous 0.4.0 beta: relocate PGDATA (17/docker → data)
+      const OLD_PGDATA_HOST = '/media/startos/volumes/db/17/docker'
+      const oldPgdataExists = await stat(OLD_PGDATA_HOST).then(
+        () => true,
+        () => false,
+      )
+      if (oldPgdataExists) {
+        const pgMounts = sdk.Mounts.of().mountVolume({
+          volumeId: 'db',
+          mountpoint: POSTGRES_PATH,
+          readonly: false,
+          subpath: null,
+        })
+        await sdk.SubContainer.withTemp(
+          effects,
+          { imageId: 'postgres' },
+          pgMounts,
+          'pg-relocate',
+          async (sub) => {
+            await sub.execFail(
+              ['mv', `${POSTGRES_PATH}/17/docker`, PGDATA],
+              { user: 'root' },
+            )
+            await sub.execFail(
+              ['rm', '-rf', `${POSTGRES_PATH}/17`],
+              { user: 'root' },
+            )
+          },
+        )
+      }
+
+      // Merge config.php to apply new schema defaults (memcache, redis, etc.)
+      await configPhp.merge(effects, {})
     },
     down: IMPOSSIBLE,
   },
