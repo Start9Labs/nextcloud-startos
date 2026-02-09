@@ -143,8 +143,8 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v32_0_5_0 = VersionInfo.of({
-  version: '32.0.5:0',
+export const v32_0_5_0_b0 = VersionInfo.of({
+  version: '32.0.5:0-beta.0',
   releaseNotes: {
     en_US: `- Updated to Nextcloud 32.0.5\n- Migrated from StartOS 0.3.x architecture to 0.4.0\n- Note: Ensure you've upgraded to Nextcloud 31 on StartOS 0.3.5x before upgrading to this version`,
     es_ES: `- Actualizado a Nextcloud 32.0.5\n- Migrado de la arquitectura StartOS 0.3.x a 0.4.0\n- Nota: Asegúrese de haber actualizado a Nextcloud 31 en StartOS 0.3.5x antes de actualizar a esta versión`,
