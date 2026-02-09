@@ -1,11 +1,14 @@
 import { getAdminCredentials } from '../actions/getAdminCredentials'
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
   getBaseDaemons,
   getNextcloudSub,
   getPostgresSub,
+  getValkeySub,
+  getNextcloudEnv,
+  getPostgresEnv,
   getRandomPassword,
-  NEXTCLOUD_ENV,
 } from '../utils'
 import { storeJson } from '../fileModels/store.json'
 
@@ -13,19 +16,28 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
   if (kind !== 'install') return
 
   const adminPassword = getRandomPassword()
+  const postgresPassword = getRandomPassword()
 
   await storeJson.write(effects, { adminPassword })
 
   const nextcloudSub = await getNextcloudSub(effects)
-  const postgresSub = await getPostgresSub(effects)
+  const valkeySub = await getValkeySub(effects)
+  const postgresEnv = getPostgresEnv()
 
-  await getBaseDaemons(effects, postgresSub, nextcloudSub)
+  await getBaseDaemons(
+    effects,
+    await getPostgresSub(effects),
+    nextcloudSub,
+    valkeySub,
+    { ...postgresEnv, POSTGRES_PASSWORD: postgresPassword },
+  )
     .addDaemon('nextcloud', {
       subcontainer: nextcloudSub,
       exec: {
         command: sdk.useEntrypoint(),
         env: {
-          ...NEXTCLOUD_ENV,
+          ...getNextcloudEnv(postgresEnv),
+          POSTGRES_PASSWORD: postgresPassword,
           NEXTCLOUD_ADMIN_USER: 'admin',
           NEXTCLOUD_ADMIN_PASSWORD: adminPassword,
         },
@@ -50,12 +62,13 @@ export const initializeNextcloud = sdk.setupOnInit(async (effects, kind) => {
           }
         },
       },
-      requires: ['chown', 'postgres'],
+      requires: ['chown', 'postgres', 'valkey'],
     })
     .runUntilSuccess(600_000)
 
   await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-    reason:
+    reason: i18n(
       'Set the admin password so you can administer your Nextcloud instance',
+    ),
   })
 })

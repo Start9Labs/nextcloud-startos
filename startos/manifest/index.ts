@@ -22,7 +22,13 @@ export const manifest = setupManifest({
     },
     nextcloud: {
       source: {
-        dockerTag: 'nextcloud:31.0.12-apache',
+        dockerTag: 'nextcloud:32.0.5-apache',
+      },
+      arch: ['x86_64', 'aarch64'],
+    },
+    valkey: {
+      source: {
+        dockerTag: 'valkey/valkey:9-alpine',
       },
       arch: ['x86_64', 'aarch64'],
     },

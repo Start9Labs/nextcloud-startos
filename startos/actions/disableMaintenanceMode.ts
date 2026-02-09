@@ -1,3 +1,4 @@
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { nextcloudMount } from '../utils'
 
@@ -7,9 +8,10 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Disable Maintenance Mode',
-    description:
-      'Use this if your UI has gotten stuck in "Maintenance Mode". Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart. The typical solution is to BE PATIENT and allow the opportunity for organic progress.  Resort to this action only if necessary. Being in maintenance mode for more than 15min likely constitutes "being stuck."',
+    name: i18n('Disable Maintenance Mode'),
+    description: i18n(
+      'Use this if your UI has gotten stuck in "Maintenance Mode". Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart. The typical solution is to BE PATIENT and allow the opportunity for organic progress. Resort to this action only if necessary. Being in maintenance mode for more than 15min likely constitutes "being stuck."',
+    ),
     warning: null,
     allowedStatuses: 'only-running',
     group: 'CLI Tools',
@@ -32,8 +34,10 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
 
     return {
       version: '1',
-      title: 'Success',
-      message: `Maintenance Mode has been disabled. You may need to wait 1-2 minutes and refresh the browser`,
+      title: i18n('Success'),
+      message: i18n(
+        'Maintenance Mode has been disabled. You may need to wait 1-2 minutes and refresh the browser',
+      ),
       result: null,
     }
   },

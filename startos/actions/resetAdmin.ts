@@ -1,3 +1,4 @@
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { getRandomPassword, nextcloudMount } from '../utils'
 
@@ -20,7 +21,7 @@ export const inputSpec = InputSpec.of({
     const admins = JSON.parse(res.stdout as string) as Record<string, string>
 
     return {
-      name: 'Admin User',
+      name: i18n('Admin User'),
       default: admins[0],
       values: admins,
     }
@@ -33,8 +34,8 @@ export const resetAdmin = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Reset Admin Password',
-    description: 'Generate a new password for an admin user',
+    name: i18n('Reset Admin Password'),
+    description: i18n('Generate a new password for an admin user'),
     warning: null,
     allowedStatuses: 'only-running',
     group: null,
@@ -71,14 +72,14 @@ export const resetAdmin = sdk.Action.withInput(
 
     return {
       version: '1',
-      title: 'Success',
-      message: 'Your admin user password has been reset',
+      title: i18n('Success'),
+      message: i18n('Your admin user password has been reset'),
       result: {
         type: 'group',
         value: [
           {
             type: 'single',
-            name: 'Username',
+            name: i18n('Username'),
             description: null,
             value: input.user,
             masked: false,
@@ -87,7 +88,7 @@ export const resetAdmin = sdk.Action.withInput(
           },
           {
             type: 'single',
-            name: 'Password',
+            name: i18n('Password'),
             description: null,
             value: OC_PASS,
             masked: true,

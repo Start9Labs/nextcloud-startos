@@ -4,11 +4,24 @@ import { configDefaults, locales, phoneRegions } from '../utils'
 
 const { object, string, natural, array, literals, literal, nill } = matches
 
-const { default_local, default_phone_region, maintenance_window_start } =
-  configDefaults
+const {
+  default_local,
+  default_phone_region,
+  maintenance_window_start,
+  trusted_proxies: trustedProxiesDefault,
+  'memcache.local': memcacheLocal,
+  'memcache.distributed': memcacheDistributed,
+  'memcache.locking': memcacheLocking,
+  redis: redisDefault,
+  updatechecker,
+  check_for_working_wellknown_setup: wellknownSetup,
+  'filelocking.enabled': filelockingEnabled,
+  'integrity.check.disabled': integrityCheckDisabled,
+} = configDefaults
 
 const shape = object({
-  trusted_proxies: array(string),
+  dbpassword: string.optional().onMismatch(undefined),
+  trusted_proxies: array(string).onMismatch([...trustedProxiesDefault]),
   trusted_domains: array(string),
   default_locale: literals(Object.keys(locales).join(', ')).onMismatch(
     default_local,
@@ -17,7 +30,26 @@ const shape = object({
     Object.keys(phoneRegions).join(', '),
   ).onMismatch(default_phone_region),
   maintenance_window_start: natural.onMismatch(maintenance_window_start),
-  overwrite_protocol: nill.onMismatch(undefined),
+  overwriteprotocol: nill.onMismatch(undefined),
+  'memcache.local': literal(memcacheLocal).onMismatch(memcacheLocal),
+  'memcache.distributed': literal(memcacheDistributed).onMismatch(
+    memcacheDistributed,
+  ),
+  'memcache.locking': literal(memcacheLocking).onMismatch(memcacheLocking),
+  redis: object({
+    host: literal(redisDefault.host).onMismatch(redisDefault.host),
+    port: literal(redisDefault.port).onMismatch(redisDefault.port),
+  }).onMismatch({ ...redisDefault }),
+  updatechecker: literal(updatechecker).onMismatch(updatechecker),
+  check_for_working_wellknown_setup: literal(wellknownSetup).onMismatch(
+    wellknownSetup,
+  ),
+  'filelocking.enabled': literal(filelockingEnabled).onMismatch(
+    filelockingEnabled,
+  ),
+  'integrity.check.disabled': literal(integrityCheckDisabled).onMismatch(
+    integrityCheckDisabled,
+  ),
 })
 
 function toSingleQuotedLiteral(str: string) {

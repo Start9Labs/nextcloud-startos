@@ -1,3 +1,4 @@
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { storeJson } from '../fileModels/store.json'
 
@@ -7,7 +8,7 @@ export const getAdminCredentials = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Get Admin Credentials',
+    name: i18n('Get Admin Credentials'),
     description: '',
     warning: null,
     allowedStatuses: 'only-stopped',
@@ -23,15 +24,16 @@ export const getAdminCredentials = sdk.Action.withoutInput(
 
     return {
       version: '1' as const,
-      title: 'Success',
-      message:
+      title: i18n('Success'),
+      message: i18n(
         'Your admin username and password are below. Write them down or save them to a password manager.',
+      ),
       result: {
         type: 'group',
         value: [
           {
             type: 'single',
-            name: 'Username',
+            name: i18n('Username'),
             description: null,
             value: 'admin',
             masked: false,
@@ -40,7 +42,7 @@ export const getAdminCredentials = sdk.Action.withoutInput(
           },
           {
             type: 'single',
-            name: 'Password',
+            name: i18n('Password'),
             description: null,
             value: password ?? 'UNKNOWN',
             masked: true,

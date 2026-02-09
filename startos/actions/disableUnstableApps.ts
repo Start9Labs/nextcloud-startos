@@ -1,3 +1,4 @@
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { nextcloudMount } from '../utils'
 
@@ -7,11 +8,13 @@ export const disableUnstableApps = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Disable Non-default Apps',
-    description:
+    name: i18n('Disable Non-default Apps'),
+    description: i18n(
       'Use this if unstable apps were installed resulting in the UI becoming inaccessible with an Internal Server Error: "The server was unable to complete your request".',
-    warning:
+    ),
+    warning: i18n(
       'Running this action will disable ALL non-default app(s). Stable apps will need to be individually re-enabled.',
+    ),
     allowedStatuses: 'only-running',
     group: null,
     visibility: 'enabled',
@@ -28,15 +31,23 @@ export const disableUnstableApps = sdk.Action.withoutInput(
       async (sub) => {
         const defaultApps = [
           'activity',
+          'admin_audit',
+          'app_api',
+          'bruteforcesettings',
+          'calendar',
+          'circles',
           'cloud_federation_api',
           'comments',
+          'contacts',
           'contactsinteraction',
           'dashboard',
           'dav',
+          'encryption',
           'federatedfilesharing',
           'federation',
           'files',
           'files_downloadlimit',
+          'files_external',
           'files_pdfviewer',
           'files_reminders',
           'files_sharing',
@@ -60,14 +71,19 @@ export const disableUnstableApps = sdk.Action.withoutInput(
           'sharebymail',
           'support',
           'survey_client',
+          'suspicious_login',
           'systemtags',
           'text',
           'theming',
           'twofactor_backupcodes',
+          'twofactor_nextcloud_notification',
+          'twofactor_totp',
           'updatenotification',
+          'user_ldap',
           'user_status',
           'viewer',
           'weather_status',
+          'webhook_listeners',
           'workflowengine',
         ]
 
@@ -95,8 +111,8 @@ export const disableUnstableApps = sdk.Action.withoutInput(
 
     return {
       version: '1',
-      title: 'Success',
-      message: `The following apps have been disabled: <ul>${disabledApps.map((app) => `<li>${app}</li>`)}</ul>`,
+      title: i18n('Success'),
+      message: `${i18n('The following apps have been disabled:')} <ul>${disabledApps.map((app) => `<li>${app}</li>`)}</ul>`,
       result: null,
     }
   },

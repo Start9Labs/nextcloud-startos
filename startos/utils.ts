@@ -12,18 +12,27 @@ export const nextcloudMount = sdk.Mounts.of().mountVolume({
   subpath: null,
 })
 
-export const POSTGRES_ENV = {
-  POSTGRES_DB: 'nextcloud',
-  POSTGRES_USER: 'nextcloud',
-  POSTGRES_PASSWORD: getRandomPassword(),
-  PGDATA: `${POSTGRES_PATH}/17/docker`,
+export const POSTGRES_DB = 'nextcloud'
+export const POSTGRES_USER = 'nextcloud'
+export const PGDATA = `${POSTGRES_PATH}/data`
+
+export function getPostgresEnv() {
+  return {
+    POSTGRES_DB,
+    POSTGRES_USER,
+    PGDATA,
+  }
 }
 
-export const NEXTCLOUD_ENV = {
-  ...POSTGRES_ENV,
-  PHP_MEMORY_LIMIT: '1024M',
-  PHP_UPLOAD_LIMIT: '20480M',
-  POSTGRES_HOST: 'localhost',
+export function getNextcloudEnv(
+  postgresEnv: Record<string, string>,
+) {
+  return {
+    ...postgresEnv,
+    PHP_MEMORY_LIMIT: '1024M',
+    PHP_UPLOAD_LIMIT: '20480M',
+    POSTGRES_HOST: 'localhost',
+  }
 }
 
 export const locales = {
@@ -60,7 +69,28 @@ export const configDefaults = {
   default_local: 'en_US',
   default_phone_region: 'US',
   maintenance_window_start: 24,
+  trusted_proxies: ['10.0.3.0/24'],
+  'memcache.local': '\\OC\\Memcache\\APCu',
+  'memcache.distributed': '\\OC\\Memcache\\Redis',
+  'memcache.locking': '\\OC\\Memcache\\Redis',
+  redis: {
+    host: 'localhost',
+    port: 6379,
+  },
+  updatechecker: false,
+  check_for_working_wellknown_setup: true,
+  'filelocking.enabled': true,
+  'integrity.check.disabled': true,
 } as const
+
+export function getValkeySub(effects: T.Effects) {
+  return sdk.SubContainer.of(
+    effects,
+    { imageId: 'valkey' },
+    sdk.Mounts.of(),
+    'valkey',
+  )
+}
 
 export function getNextcloudSub(effects: T.Effects) {
   return sdk.SubContainer.of(
@@ -89,6 +119,8 @@ export function getBaseDaemons(
   effects: T.Effects,
   postgresSub: Awaited<ReturnType<typeof getPostgresSub>>,
   nextcloudSub: Awaited<ReturnType<typeof getNextcloudSub>>,
+  valkeySub: Awaited<ReturnType<typeof getValkeySub>>,
+  postgresEnv: Record<string, string>,
 ) {
   return sdk.Daemons.of(effects)
     .addOneshot('chown', {
@@ -102,7 +134,7 @@ export function getBaseDaemons(
       subcontainer: postgresSub,
       exec: {
         command: sdk.useEntrypoint(),
-        env: POSTGRES_ENV,
+        env: postgresEnv,
       },
       ready: {
         display: null,
@@ -110,7 +142,7 @@ export function getBaseDaemons(
           const { exitCode } = await postgresSub.exec([
             `pg_isready`,
             '-U',
-            POSTGRES_ENV.POSTGRES_USER,
+            POSTGRES_USER,
             '-h',
             'localhost',
           ])
@@ -125,6 +157,20 @@ export function getBaseDaemons(
             result: 'success',
             message: null,
           }
+        },
+      },
+      requires: [],
+    })
+    .addDaemon('valkey', {
+      subcontainer: valkeySub,
+      exec: { command: 'valkey-server' },
+      ready: {
+        display: null,
+        fn: async () => {
+          const res = await valkeySub.exec(['valkey-cli', 'ping'])
+          return res.stdout.toString().trim() === 'PONG'
+            ? { message: '', result: 'success' }
+            : { message: res.stdout.toString().trim(), result: 'failure' }
         },
       },
       requires: [],
