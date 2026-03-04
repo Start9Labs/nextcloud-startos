@@ -33,31 +33,13 @@ const migratePostgres = async (effects: T.Effects): Promise<string> => {
     pgMounts,
     'pg-migrate',
     async (sub) => {
-      // Guard: ensure PG 15→17 upgrade completed in 0.3.x before proceeding
-      const { exitCode } = await sub.exec(
-        ['test', '-d', `${POSTGRES_PATH}/17/main`],
-        { user: 'root' },
-      )
-      if (exitCode !== 0) {
-        throw new Error(
-          'PostgreSQL 17 data not found. Please start Nextcloud 31 on StartOS 0.3.5x to complete the PG 15→17 upgrade, then retry.',
-        )
-      }
-
       // Move PG data from NC 31 Debian path (17/main) to Docker canonical path (data)
       await sub.execFail(['mv', `${POSTGRES_PATH}/17/main`, PGDATA], {
         user: 'root',
       })
-      await sub.execFail(
-        [
-          'rm',
-          '-rf',
-          `${POSTGRES_PATH}/17`,
-          `${POSTGRES_PATH}/15`,
-          `${POSTGRES_PATH}/.pg17_upgrade_complete`,
-        ],
-        { user: 'root' },
-      )
+      await sub.execFail(['rm', '-rf', `${POSTGRES_PATH}/17`], {
+        user: 'root',
+      })
       await sub.execFail(['chown', '-R', 'postgres:postgres', POSTGRES_PATH], {
         user: 'root',
       })
@@ -143,14 +125,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v32_0_5_0_b0 = VersionInfo.of({
-  version: '32.0.5:0-beta.0',
+export const v32_0_6_0_b0 = VersionInfo.of({
+  version: '32.0.6:0-beta.0',
   releaseNotes: {
-    en_US: `- Updated to Nextcloud 32.0.5\n- Migrated from StartOS 0.3.x architecture to 0.4.0\n- Note: Ensure you've upgraded to Nextcloud 31 on StartOS 0.3.5x before upgrading to this version`,
-    es_ES: `- Actualizado a Nextcloud 32.0.5\n- Migrado de la arquitectura StartOS 0.3.x a 0.4.0\n- Nota: Asegúrese de haber actualizado a Nextcloud 31 en StartOS 0.3.5x antes de actualizar a esta versión`,
-    de_DE: `- Aktualisiert auf Nextcloud 32.0.5\n- Von StartOS 0.3.x-Architektur auf 0.4.0 migriert\n- Hinweis: Stellen Sie sicher, dass Sie auf Nextcloud 31 unter StartOS 0.3.5x aktualisiert haben, bevor Sie auf diese Version aktualisieren`,
-    pl_PL: `- Zaktualizowano do Nextcloud 32.0.5\n- Zmigrowano z architektury StartOS 0.3.x na 0.4.0\n- Uwaga: Upewnij się, że zaktualizowałeś do Nextcloud 31 na StartOS 0.3.5x przed aktualizacją do tej wersji`,
-    fr_FR: `- Mis à jour vers Nextcloud 32.0.5\n- Migration de l'architecture StartOS 0.3.x vers 0.4.0\n- Remarque : Assurez-vous d'avoir mis à jour vers Nextcloud 31 sur StartOS 0.3.5x avant de passer à cette version`,
+    en_US: `- Updated to Nextcloud 32.0.6\n- Migrated from StartOS 0.3.x architecture to 0.4.0`,
+    es_ES: `- Actualizado a Nextcloud 32.0.6\n- Migrado de la arquitectura StartOS 0.3.x a 0.4.0`,
+    de_DE: `- Aktualisiert auf Nextcloud 32.0.6\n- Von StartOS 0.3.x-Architektur auf 0.4.0 migriert`,
+    pl_PL: `- Zaktualizowano do Nextcloud 32.0.6\n- Zmigrowano z architektury StartOS 0.3.x na 0.4.0`,
+    fr_FR: `- Mis à jour vers Nextcloud 32.0.6\n- Migration de l'architecture StartOS 0.3.x vers 0.4.0`,
   },
   migrations: {
     up: async ({ effects }) => {

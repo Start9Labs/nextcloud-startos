@@ -7,7 +7,7 @@
 > **Upstream docs:** <https://docs.nextcloud.com/server/stable/admin_manual/>
 >
 > Everything not listed in this document should behave the same as upstream
-> Nextcloud 32.0.5. If a feature, setting, or behavior is not mentioned
+> Nextcloud. If a feature, setting, or behavior is not mentioned
 > here, the upstream documentation is accurate and fully applicable.
 
 [Nextcloud](https://nextcloud.com/) is a self-hosted productivity platform that provides file sync, sharing, collaboration, and extensibility through apps.
@@ -38,8 +38,8 @@ This package runs **three containers** as subcontainers:
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| nextcloud | `nextcloud:32.0.5-apache` | Nextcloud application with Apache and PHP-FPM |
-| postgres | `postgres:17-alpine` | PostgreSQL 17 database |
+| nextcloud | `nextcloud:<version>-apache` | Nextcloud application with Apache and PHP-FPM |
+| postgres | `postgres:17-alpine` | PostgreSQL database |
 | valkey | `valkey/valkey:9-alpine` | Redis-compatible in-memory cache |
 
 Architectures: x86_64, aarch64.
@@ -82,7 +82,7 @@ Valkey runs without a mounted volume — its cache is ephemeral and rebuilds on 
 3. Nextcloud auto-installs with generated admin credentials
 4. A **critical task** prompts you to retrieve the admin credentials before proceeding
 
-**Upgrade from StartOS 0.3.x:** The migration from Nextcloud 31 (0.3.5x) to 32 (0.4.0) handles PostgreSQL data directory relocation (Debian path to Docker canonical path), `config.yaml` to `config.php` migration, and admin password migration to the new store format. Users must have run Nextcloud 31 on 0.3.5x at least once (to complete the PG 15 to 17 upgrade) before upgrading.
+**Upgrade from StartOS 0.3.x:** The migration handles PostgreSQL data directory relocation (Debian path to Docker canonical path), `config.yaml` to `config.php` migration, and admin password migration to the new store format. Users must have run the previous Nextcloud version on 0.3.5x at least once (to complete the PG 15 to 17 upgrade) before upgrading.
 
 ---
 
@@ -253,10 +253,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development wo
 
 ```yaml
 package_id: nextcloud
-upstream_version: 32.0.5
 containers:
   - name: nextcloud
-    image: nextcloud:32.0.5-apache
+    image: nextcloud:<version>-apache
   - name: postgres
     image: postgres:17-alpine
   - name: valkey

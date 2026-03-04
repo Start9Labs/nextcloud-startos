@@ -65,24 +65,6 @@ export const phoneRegions = {
   PL: 'Poland',
 } as const
 
-export const configDefaults = {
-  default_local: 'en_US',
-  default_phone_region: 'US',
-  maintenance_window_start: 24,
-  trusted_proxies: ['10.0.3.0/24'],
-  'memcache.local': '\\OC\\Memcache\\APCu',
-  'memcache.distributed': '\\OC\\Memcache\\Redis',
-  'memcache.locking': '\\OC\\Memcache\\Redis',
-  redis: {
-    host: 'localhost',
-    port: 6379,
-  },
-  updatechecker: false,
-  check_for_working_wellknown_setup: true,
-  'filelocking.enabled': true,
-  'integrity.check.disabled': true,
-} as const
-
 export function getValkeySub(effects: T.Effects) {
   return sdk.SubContainer.of(
     effects,

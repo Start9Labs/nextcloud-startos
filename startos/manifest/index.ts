@@ -5,11 +5,11 @@ export const manifest = setupManifest({
   id: 'nextcloud',
   title: 'Nextcloud',
   license: 'gpl',
-  wrapperRepo: 'https://github.com/Start9Labs/nextcloud-startos',
+  packageRepo:
+    'https://github.com/Start9Labs/nextcloud-startos/tree/update/040',
   upstreamRepo: 'https://github.com/nextcloud/docker',
-  supportSite: 'https://github.com/nextcloud/docker/issues',
-  marketingSite: 'https://nextcloud.com/',
-  docsUrl: 'https://docs.nextcloud.com/',
+  marketingUrl: 'https://nextcloud.com/',
+  docsUrls: ['https://docs.nextcloud.com/'],
   donationUrl: null,
   description: { short, long },
   volumes: ['main', 'nextcloud', 'db'],
@@ -22,7 +22,7 @@ export const manifest = setupManifest({
     },
     nextcloud: {
       source: {
-        dockerTag: 'nextcloud:32.0.5-apache',
+        dockerTag: 'nextcloud:32.0.6-apache',
       },
       arch: ['x86_64', 'aarch64'],
     },

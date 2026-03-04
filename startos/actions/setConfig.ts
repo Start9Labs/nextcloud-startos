@@ -1,6 +1,6 @@
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import { locales, phoneRegions, configDefaults } from '../utils'
+import { locales, phoneRegions } from '../utils'
 import { configPhp } from '../fileModels/config.php'
 
 const { InputSpec, Value } = sdk
@@ -11,7 +11,7 @@ export const inputSpec = InputSpec.of({
     description: i18n(
       'This sets the locale on your Nextcloud server. It overrides automatic locale detection on public pages like login or shared items. User\'s locale preferences configured under "personal -> locale" override this setting after they have logged in.',
     ),
-    default: configDefaults.default_local,
+    default: 'en_US',
     values: locales,
   }),
   default_phone_region: Value.select({
@@ -19,7 +19,7 @@ export const inputSpec = InputSpec.of({
     description: i18n(
       'This sets the default phone region on your Nextcloud server for formatting and validating phone numbers.',
     ),
-    default: configDefaults.default_phone_region,
+    default: 'US',
     values: phoneRegions,
   }),
   maintenance_window_start: Value.number({

@@ -19,14 +19,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
   // get interface details
   const hostnames = await sdk.serviceInterface
-    .getOwn(effects, 'ui', (u) => u?.addressInfo?.format('hostname-info') || [])
+    .getOwn(effects, 'ui', (u) =>
+      u?.addressInfo?.public.hostnames.map((h) => h.hostname) || [],
+    )
     .const()
 
   await configPhp.merge(effects, {
-    trusted_domains: [
-      'localhost',
-      ...(hostnames?.map((h) => h.hostname.value) ?? []),
-    ],
+    trusted_domains: ['localhost', ...(hostnames || [])],
   })
 
   const nextcloudSub = await getNextcloudSub(effects)

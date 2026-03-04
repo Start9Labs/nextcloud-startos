@@ -1,55 +1,38 @@
-import { matches, FileHelper } from '@start9labs/start-sdk'
+import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
-import { configDefaults, locales, phoneRegions } from '../utils'
+import { locales, phoneRegions } from '../utils'
 
-const { object, string, natural, array, literals, literal, nill } = matches
-
-const {
-  default_local,
-  default_phone_region,
-  maintenance_window_start,
-  trusted_proxies: trustedProxiesDefault,
-  'memcache.local': memcacheLocal,
-  'memcache.distributed': memcacheDistributed,
-  'memcache.locking': memcacheLocking,
-  redis: redisDefault,
-  updatechecker,
-  check_for_working_wellknown_setup: wellknownSetup,
-  'filelocking.enabled': filelockingEnabled,
-  'integrity.check.disabled': integrityCheckDisabled,
-} = configDefaults
-
-const shape = object({
-  dbpassword: string.optional().onMismatch(undefined),
-  trusted_proxies: array(string).onMismatch([...trustedProxiesDefault]),
-  trusted_domains: array(string),
-  default_locale: literals(Object.keys(locales).join(', ')).onMismatch(
-    default_local,
-  ),
-  default_phone_region: literals(
-    Object.keys(phoneRegions).join(', '),
-  ).onMismatch(default_phone_region),
-  maintenance_window_start: natural.onMismatch(maintenance_window_start),
-  overwriteprotocol: nill.onMismatch(undefined),
-  'memcache.local': literal(memcacheLocal).onMismatch(memcacheLocal),
-  'memcache.distributed': literal(memcacheDistributed).onMismatch(
-    memcacheDistributed,
-  ),
-  'memcache.locking': literal(memcacheLocking).onMismatch(memcacheLocking),
-  redis: object({
-    host: literal(redisDefault.host).onMismatch(redisDefault.host),
-    port: literal(redisDefault.port).onMismatch(redisDefault.port),
-  }).onMismatch({ ...redisDefault }),
-  updatechecker: literal(updatechecker).onMismatch(updatechecker),
-  check_for_working_wellknown_setup: literal(wellknownSetup).onMismatch(
-    wellknownSetup,
-  ),
-  'filelocking.enabled': literal(filelockingEnabled).onMismatch(
-    filelockingEnabled,
-  ),
-  'integrity.check.disabled': literal(integrityCheckDisabled).onMismatch(
-    integrityCheckDisabled,
-  ),
+const shape = z.object({
+  dbpassword: z.string().optional().catch(undefined),
+  trusted_proxies: z.array(z.string()).catch(['10.0.3.0/24']),
+  trusted_domains: z.array(z.string()),
+  default_locale: z
+    .enum(Object.keys(locales) as [string, ...string[]])
+    .catch('en_US'),
+  default_phone_region: z
+    .enum(Object.keys(phoneRegions) as [string, ...string[]])
+    .catch('US'),
+  maintenance_window_start: z.number().int().min(0).catch(24),
+  overwriteprotocol: z.null().optional().catch(undefined),
+  'memcache.local': z
+    .literal('\\OC\\Memcache\\APCu')
+    .catch('\\OC\\Memcache\\APCu'),
+  'memcache.distributed': z
+    .literal('\\OC\\Memcache\\Redis')
+    .catch('\\OC\\Memcache\\Redis'),
+  'memcache.locking': z
+    .literal('\\OC\\Memcache\\Redis')
+    .catch('\\OC\\Memcache\\Redis'),
+  redis: z
+    .object({
+      host: z.literal('localhost').catch('localhost'),
+      port: z.literal(6379).catch(6379),
+    })
+    .catch({ host: 'localhost', port: 6379 }),
+  updatechecker: z.literal(false).catch(false),
+  check_for_working_wellknown_setup: z.literal(true).catch(true),
+  'filelocking.enabled': z.literal(true).catch(true),
+  'integrity.check.disabled': z.literal(true).catch(true),
 })
 
 function toSingleQuotedLiteral(str: string) {
@@ -106,7 +89,7 @@ function toPhpString(value: unknown, indent = 0): string {
   }
 }
 
-export const configPhp = FileHelper.raw<typeof shape._TYPE>(
+export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
   { base: sdk.volumes.nextcloud, subpath: './config/config.php' },
   (dataIn) => {
     return '<?php\n$CONFIG = ' + toPhpString(dataIn) + ';'
@@ -116,5 +99,5 @@ export const configPhp = FileHelper.raw<typeof shape._TYPE>(
     const { parse } = require('./php-parser.js')
     return parse(rawData)
   },
-  (x) => shape.unsafeCast(x),
+  (x) => shape.parse(x),
 )
