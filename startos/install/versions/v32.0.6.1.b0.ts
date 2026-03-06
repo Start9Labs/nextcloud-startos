@@ -125,14 +125,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v32_0_6_0_b0 = VersionInfo.of({
-  version: '32.0.6:0-beta.0',
+export const v32_0_6_1_b0 = VersionInfo.of({
+  version: '32.0.6:1-beta.0',
   releaseNotes: {
-    en_US: `- Updated to Nextcloud 32.0.6\n- Migrated from StartOS 0.3.x architecture to 0.4.0`,
-    es_ES: `- Actualizado a Nextcloud 32.0.6\n- Migrado de la arquitectura StartOS 0.3.x a 0.4.0`,
-    de_DE: `- Aktualisiert auf Nextcloud 32.0.6\n- Von StartOS 0.3.x-Architektur auf 0.4.0 migriert`,
-    pl_PL: `- Zaktualizowano do Nextcloud 32.0.6\n- Zmigrowano z architektury StartOS 0.3.x na 0.4.0`,
-    fr_FR: `- Mis à jour vers Nextcloud 32.0.6\n- Migration de l'architecture StartOS 0.3.x vers 0.4.0`,
+    en_US: `- Fix trusted_domains to include all non-local hostnames`,
+    es_ES: `- Corrección de trusted_domains para incluir todos los nombres de host no locales`,
+    de_DE: `- Korrektur von trusted_domains zur Einbeziehung aller nicht-lokalen Hostnamen`,
+    pl_PL: `- Naprawa trusted_domains aby uwzględnić wszystkie nielokalne nazwy hostów`,
+    fr_FR: `- Correction de trusted_domains pour inclure tous les noms d'hôte non locaux`,
   },
   migrations: {
     up: async ({ effects }) => {

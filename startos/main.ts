@@ -20,7 +20,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // get interface details
   const hostnames = await sdk.serviceInterface
     .getOwn(effects, 'ui', (u) =>
-      u?.addressInfo?.public.hostnames.map((h) => h.hostname) || [],
+      u?.addressInfo?.nonLocal.hostnames.map((h) => h.hostname) || [],
     )
     .const()
 
