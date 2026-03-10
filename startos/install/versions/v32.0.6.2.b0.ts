@@ -125,8 +125,8 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v32_0_6_1_b0 = VersionInfo.of({
-  version: '32.0.6:1-beta.0',
+export const v_32_0_6_2_b0 = VersionInfo.of({
+  version: '32.0.6:2-beta.0',
   releaseNotes: {
     en_US: `- Fix trusted_domains to include all non-local hostnames`,
     es_ES: `- Corrección de trusted_domains para incluir todos los nombres de host no locales`,

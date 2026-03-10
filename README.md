@@ -4,7 +4,7 @@
 
 # Nextcloud on StartOS
 
-> **Upstream docs:** <https://docs.nextcloud.com/server/stable/admin_manual/>
+> **Upstream docs:** <https://docs.nextcloud.com/server/latest/admin_manual/>
 >
 > Everything not listed in this document should behave the same as upstream
 > Nextcloud. If a feature, setting, or behavior is not mentioned
