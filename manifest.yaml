@@ -1,9 +1,13 @@
 id: nextcloud
 title: Nextcloud
-version: 31.0.13.1
+version: 31.0.14.1
 release-notes: |
-  * Update to v31.0.13 - See [full changelog](https://nextcloud.com/changelog/)
-  * PostgreSQL upgraded from 15 to 17
+  * Update to v31.0.14 - See [full changelog](https://nextcloud.com/changelog/)
+  * Fix admin delegation, unique index for oc_mounts, encryption filesystem init, occ worker interval option
+  * Fix download inhibition, SMB error handling, favicon ratios, folder creation in public shares
+  * Fix CalDAV UID check, TaskProcessing casting, files_external port config, federation empty URL query
+  * Improved SVG handling, added x-user-id header for DAV, calendar invitation restrictions
+  * Bundled app fixes (Activity, App API, Circles, PDF Viewer, Notifications, Text, TOTP)
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker

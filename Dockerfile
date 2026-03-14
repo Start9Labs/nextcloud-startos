@@ -1,4 +1,4 @@
-FROM nextcloud:31.0.13-fpm
+FROM nextcloud:31.0.14-fpm
 
 # arm64 or amd64
 ARG PLATFORM
