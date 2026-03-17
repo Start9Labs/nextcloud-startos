@@ -25,7 +25,7 @@ export const manifest = setupManifest({
     },
     nextcloud: {
       source: {
-        dockerTag: 'nextcloud:32.0.6-apache',
+        dockerTag: 'nextcloud:33.0.0-apache',
       },
       arch: ['x86_64', 'aarch64'],
     },
