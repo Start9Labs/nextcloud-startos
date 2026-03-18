@@ -125,10 +125,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_33_0_0_0_b0 = VersionInfo.of({
-  version: '33.0.0:0-beta.0',
+export const v_32_0_6_2_b1 = VersionInfo.of({
+  version: '32.0.6:2-beta.1',
   releaseNotes: {
-    en_US: 'Update Nextcloud to 33.0.0',
+    en_US: `- Fix trusted_domains to include all non-local hostnames`,
+    es_ES: `- Corrección de trusted_domains para incluir todos los nombres de host no locales`,
+    de_DE: `- Korrektur von trusted_domains zur Einbeziehung aller nicht-lokalen Hostnamen`,
+    pl_PL: `- Naprawa trusted_domains aby uwzględnić wszystkie nielokalne nazwy hostów`,
+    fr_FR: `- Correction de trusted_domains pour inclure tous les noms d'hôte non locaux`,
   },
   migrations: {
     up: async ({ effects }) => {
