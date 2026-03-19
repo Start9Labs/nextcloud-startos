@@ -1,21 +1,20 @@
-import { VersionInfo, T, IMPOSSIBLE } from '@start9labs/start-sdk'
-import { i18n } from '../../i18n'
-import { sdk } from '../../sdk'
+import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
 import { readFile, rm, stat } from 'fs/promises'
+import { cp } from 'node:fs/promises'
+import { resetAdmin } from '../../actions/resetAdmin'
 import { configPhp } from '../../fileModels/config.php'
 import { storeJson } from '../../fileModels/store.json'
+import { i18n } from '../../i18n'
+import { sdk } from '../../sdk'
 import {
-  nextcloudMount,
   NEXTCLOUD_PATH,
-  POSTGRES_PATH,
   PGDATA,
-  POSTGRES_USER,
   POSTGRES_DB,
+  POSTGRES_PATH,
+  POSTGRES_USER,
   getRandomPassword,
+  nextcloudMount,
 } from '../../utils'
-import { cp } from 'node:fs/promises'
-import YAML from 'yaml'
-import { resetAdmin } from '../../actions/resetAdmin'
 
 const migratePostgres = async (effects: T.Effects): Promise<string> => {
   const pgMounts = sdk.Mounts.of().mountVolume({
@@ -170,14 +169,12 @@ export const v_32_0_6_2_b1 = VersionInfo.of({
           pgMounts,
           'pg-relocate',
           async (sub) => {
-            await sub.execFail(
-              ['mv', `${POSTGRES_PATH}/17/docker`, PGDATA],
-              { user: 'root' },
-            )
-            await sub.execFail(
-              ['rm', '-rf', `${POSTGRES_PATH}/17`],
-              { user: 'root' },
-            )
+            await sub.execFail(['mv', `${POSTGRES_PATH}/17/docker`, PGDATA], {
+              user: 'root',
+            })
+            await sub.execFail(['rm', '-rf', `${POSTGRES_PATH}/17`], {
+              user: 'root',
+            })
           },
         )
       }
