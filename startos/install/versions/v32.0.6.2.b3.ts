@@ -129,14 +129,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b2 = VersionInfo.of({
-  version: '32.0.6:2-beta.2',
+export const v_32_0_6_2_b3 = VersionInfo.of({
+  version: '32.0.6:2-beta.3',
   releaseNotes: {
-    en_US: `- Fix trusted_domains to include all non-local hostnames`,
-    es_ES: `- Corrección de trusted_domains para incluir todos los nombres de host no locales`,
-    de_DE: `- Korrektur von trusted_domains zur Einbeziehung aller nicht-lokalen Hostnamen`,
-    pl_PL: `- Naprawa trusted_domains aby uwzględnić wszystkie nielokalne nazwy hostów`,
-    fr_FR: `- Correction de trusted_domains pour inclure tous les noms d'hôte non locaux`,
+    en_US: `- Optimize backups to exclude application files that are regenerated from the Docker image`,
+    es_ES: `- Optimizar copias de seguridad excluyendo archivos de aplicación regenerados desde la imagen Docker`,
+    de_DE: `- Backups optimieren durch Ausschluss von Anwendungsdateien, die aus dem Docker-Image regeneriert werden`,
+    pl_PL: `- Optymalizacja kopii zapasowych przez wykluczenie plików aplikacji regenerowanych z obrazu Docker`,
+    fr_FR: `- Optimiser les sauvegardes en excluant les fichiers d'application régénérés depuis l'image Docker`,
   },
   migrations: {
     up: async ({ effects }) => {
