@@ -129,14 +129,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b3 = VersionInfo.of({
-  version: '32.0.6:2-beta.3',
+export const v_32_0_6_2_b4 = VersionInfo.of({
+  version: '32.0.6:2-beta.4',
   releaseNotes: {
-    en_US: `- Optimize backups to exclude application files that are regenerated from the Docker image`,
-    es_ES: `- Optimizar copias de seguridad excluyendo archivos de aplicación regenerados desde la imagen Docker`,
-    de_DE: `- Backups optimieren durch Ausschluss von Anwendungsdateien, die aus dem Docker-Image regeneriert werden`,
-    pl_PL: `- Optymalizacja kopii zapasowych przez wykluczenie plików aplikacji regenerowanych z obrazu Docker`,
-    fr_FR: `- Optimiser les sauvegardes en excluant les fichiers d'application régénérés depuis l'image Docker`,
+    en_US: `- Fix backups: use pg_dump instead of raw volume rsync for database, exclude regenerable application files`,
+    es_ES: `- Corregir copias de seguridad: usar pg_dump en lugar de rsync de volumen para la base de datos, excluir archivos de aplicación regenerables`,
+    de_DE: `- Backups reparieren: pg_dump statt Volumen-rsync für die Datenbank verwenden, regenerierbare Anwendungsdateien ausschließen`,
+    pl_PL: `- Naprawa kopii zapasowych: użycie pg_dump zamiast rsync wolumenu dla bazy danych, wykluczenie regenerowalnych plików aplikacji`,
+    fr_FR: `- Corriger les sauvegardes : utiliser pg_dump au lieu de rsync de volume pour la base de données, exclure les fichiers d'application régénérables`,
   },
   migrations: {
     up: async ({ effects }) => {
