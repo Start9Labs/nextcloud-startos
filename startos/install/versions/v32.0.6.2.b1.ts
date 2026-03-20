@@ -32,13 +32,18 @@ const migratePostgres = async (effects: T.Effects): Promise<string> => {
     pgMounts,
     'pg-migrate',
     async (sub) => {
-      // Move PG data from NC 31 Debian path (17/main) to Docker canonical path (data)
-      await sub.execFail(['mv', `${POSTGRES_PATH}/17/main`, PGDATA], {
-        user: 'root',
-      })
-      await sub.execFail(['rm', '-rf', `${POSTGRES_PATH}/17`], {
-        user: 'root',
-      })
+      // Relocate PG data from 0.3.5x Debian path (17/main) to Docker path (data).
+      // If a previous migration attempt succeeded here but failed later,
+      // data/ already exists and 17/main is gone. Skip the move in that case.
+      const { exitCode } = await sub.exec(['test', '-d', PGDATA])
+      if (exitCode !== 0) {
+        await sub.execFail(['mv', `${POSTGRES_PATH}/17/main`, PGDATA], {
+          user: 'root',
+        })
+        await sub.execFail(['rm', '-rf', `${POSTGRES_PATH}/17`], {
+          user: 'root',
+        })
+      }
       await sub.execFail(['chown', '-R', 'postgres:postgres', POSTGRES_PATH], {
         user: 'root',
       })
