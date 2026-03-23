@@ -189,18 +189,24 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 
 ## Backups and Restore
 
-**Included in backup:**
+**Database:** Uses `pg_dump`/`pg_restore` for PostgreSQL instead of raw volume rsync. The dump is written directly to the backup target.
+
+**Volumes backed up via rsync:**
 
 - `main` — StartOS metadata (admin password)
-- `nextcloud` — User files, installed apps, `config.php`
-- `db` — Full PostgreSQL database
+- `nextcloud` — User files (`data/`), installed apps (`custom_apps/`), `config.php` (`config/`)
+
+**NOT included in backup:**
+
+- `db` volume — Not rsynced directly; database is captured via `pg_dump`
 
 **Restore behavior:**
 
 - All data, configuration, and installed apps are restored
+- Database is rebuilt from dump via `pg_restore`
 - No reconfiguration needed
 
-**Note:** Backups can be very large depending on user files. The database volume also grows with file metadata and activity history.
+**Note:** Backups can be very large depending on user files.
 
 ---
 
@@ -349,5 +355,5 @@ php_limits:
   memory: 1024M
   upload: 20480M
 
-backup_volumes: [main, nextcloud, db]
+backup_strategy: pg_dump (db) + volume rsync (main, nextcloud)
 ```
