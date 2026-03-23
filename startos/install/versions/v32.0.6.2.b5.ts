@@ -129,8 +129,8 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b4 = VersionInfo.of({
-  version: '32.0.6:2-beta.4',
+export const v_32_0_6_2_b5 = VersionInfo.of({
+  version: '32.0.6:2-beta.5',
   releaseNotes: {
     en_US: `- Fix backups: use pg_dump instead of raw volume rsync for database, exclude regenerable application files`,
     es_ES: `- Corregir copias de seguridad: usar pg_dump en lugar de rsync de volumen para la base de datos, excluir archivos de aplicación regenerables`,

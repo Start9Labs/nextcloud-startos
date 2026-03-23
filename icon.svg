@@ -18,7 +18,7 @@
    sodipodi:docname="nextcloud-icon.svg"
    x="0px"
    y="0px"
-   viewBox="0 0 64.000005 64.000001"
+   viewBox="-6 -6 76 76"
    xml:space="preserve"
    width="64"
    height="64"><metadata
@@ -64,6 +64,7 @@
    units="px">
 	</sodipodi:namedview>
 
+<rect x="-6" y="-6" width="76" height="76" fill="#ffffff" />
 <path
    id="XMLID_107_"
    inkscape:connector-curvature="0"

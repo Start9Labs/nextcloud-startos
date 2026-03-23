@@ -1,15 +1,15 @@
-import { sdk } from './sdk'
+import { configPhp } from './fileModels/config.php'
 import { i18n } from './i18n'
+import { sdk } from './sdk'
 import {
-  uiPort,
+  getBaseDaemons,
   getNextcloudEnv,
-  getPostgresEnv,
   getNextcloudSub,
+  getPostgresEnv,
   getPostgresSub,
   getValkeySub,
-  getBaseDaemons,
+  uiPort,
 } from './utils'
-import { configPhp } from './fileModels/config.php'
 
 export const main = sdk.setupMain(async ({ effects }) => {
   /**
@@ -19,8 +19,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
   // get interface details
   const hostnames = await sdk.serviceInterface
-    .getOwn(effects, 'ui', (u) =>
-      u?.addressInfo?.nonLocal.hostnames.map((h) => h.hostname) || [],
+    .getOwn(
+      effects,
+      'ui',
+      (u) => u?.addressInfo?.nonLocal.hostnames.map((h) => h.hostname) || [],
     )
     .const()
 
