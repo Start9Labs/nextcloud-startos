@@ -1,5 +1,5 @@
 import { sdk } from './sdk'
-import { PGDATA, POSTGRES_DB, POSTGRES_USER } from './utils'
+import { POSTGRES_DB, POSTGRES_PATH, POSTGRES_USER } from './utils'
 import { configPhp } from './fileModels/config.php'
 
 export const { createBackup, restoreInit } = sdk.setupBackups(
@@ -7,7 +7,8 @@ export const { createBackup, restoreInit } = sdk.setupBackups(
     sdk.Backups.withPgDump({
       imageId: 'postgres',
       dbVolume: 'db',
-      pgdata: PGDATA,
+      mountpoint: POSTGRES_PATH,
+      pgdataPath: '/data',
       database: POSTGRES_DB,
       user: POSTGRES_USER,
       password: async () => {

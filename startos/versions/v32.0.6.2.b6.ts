@@ -1,11 +1,11 @@
 import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
 import { readFile, rm, stat } from 'fs/promises'
 import { cp } from 'node:fs/promises'
-import { resetAdmin } from '../../actions/resetAdmin'
-import { configPhp } from '../../fileModels/config.php'
-import { storeJson } from '../../fileModels/store.json'
-import { i18n } from '../../i18n'
-import { sdk } from '../../sdk'
+import { resetAdmin } from '../actions/resetAdmin'
+import { configPhp } from '../fileModels/config.php'
+import { storeJson } from '../fileModels/store.json'
+import { i18n } from '../i18n'
+import { sdk } from '../sdk'
 import {
   NEXTCLOUD_PATH,
   PGDATA,
@@ -14,7 +14,7 @@ import {
   POSTGRES_USER,
   getRandomPassword,
   nextcloudMount,
-} from '../../utils'
+} from '../utils'
 
 const migratePostgres = async (effects: T.Effects): Promise<string> => {
   const pgMounts = sdk.Mounts.of().mountVolume({
@@ -129,8 +129,8 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b5 = VersionInfo.of({
-  version: '32.0.6:2-beta.5',
+export const v_32_0_6_2_b6 = VersionInfo.of({
+  version: '32.0.6:2-beta.6',
   releaseNotes: {
     en_US: `- Fix backups: use pg_dump instead of raw volume rsync for database, exclude regenerable application files`,
     es_ES: `- Corregir copias de seguridad: usar pg_dump en lugar de rsync de volumen para la base de datos, excluir archivos de aplicación regenerables`,
