@@ -6,25 +6,15 @@ import { configPhp } from '../fileModels/config.php'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import {
-  NEXTCLOUD_PATH,
-  PGDATA,
-  POSTGRES_DB,
-  POSTGRES_PATH,
-  POSTGRES_USER,
-  getRandomPassword,
-  nextcloudMount,
-} from '../utils'
+import { NEXTCLOUD_PATH, PGDATA, POSTGRES_PATH, nextcloudMount } from '../utils'
 
-const migratePostgres = async (effects: T.Effects): Promise<string> => {
+const relocatePostgres = async (effects: T.Effects) => {
   const pgMounts = sdk.Mounts.of().mountVolume({
     volumeId: 'db',
     mountpoint: POSTGRES_PATH,
     readonly: false,
     subpath: null,
   })
-
-  const newPassword = getRandomPassword()
 
   await sdk.SubContainer.withTemp(
     effects,
@@ -47,31 +37,11 @@ const migratePostgres = async (effects: T.Effects): Promise<string> => {
       await sub.execFail(['chown', '-R', 'postgres:postgres', POSTGRES_PATH], {
         user: 'root',
       })
-
-      // Start PG, change password, stop PG
-      await sub.execFail(
-        ['pg_ctl', 'start', '-D', PGDATA, '-w', '-o', '-c listen_addresses='],
-        { user: 'postgres' },
-      )
-      await sub.execFail(
-        [
-          'psql',
-          '-U',
-          POSTGRES_USER,
-          '-d',
-          POSTGRES_DB,
-          '-c',
-          `ALTER USER ${POSTGRES_USER} WITH PASSWORD '${newPassword}'`,
-        ],
-        { user: 'postgres' },
-      )
-      await sub.execFail(['pg_ctl', 'stop', '-D', PGDATA, '-w'], {
+      await sub.exec(['rm', '-f', `${PGDATA}/postmaster.pid`], {
         user: 'postgres',
       })
     },
   )
-
-  return newPassword
 }
 
 type OldConfig = {
@@ -80,15 +50,10 @@ type OldConfig = {
   maintenance_window_start: number
 }
 
-const migrateConfig = async (
-  effects: T.Effects,
-  config: OldConfig,
-  newDbPassword: string,
-) => {
+const migrateConfig = async (effects: T.Effects, config: OldConfig) => {
   await cp(configPhp.path, `${configPhp.path}.bak`)
 
   await configPhp.merge(effects, {
-    dbpassword: newDbPassword,
     default_locale: config['default-locale'],
     default_phone_region: config['default-phone-region'],
     maintenance_window_start: config.maintenance_window_start,
@@ -149,8 +114,8 @@ export const v_32_0_6_2_b6 = VersionInfo.of({
       ).then(YAML.parse, () => undefined)
 
       if (configYaml) {
-        const newDbPassword = await migratePostgres(effects)
-        await migrateConfig(effects, configYaml, newDbPassword)
+        await relocatePostgres(effects)
+        await migrateConfig(effects, configYaml)
         await migrateNextcloud(effects)
         await rm(configYamlPath)
       }
