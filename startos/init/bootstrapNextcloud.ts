@@ -4,12 +4,12 @@ import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
   getBaseDaemons,
-  getNextcloudSub,
-  getPostgresSub,
-  getValkeySub,
   getNextcloudEnv,
+  getNextcloudSub,
   getPostgresEnv,
+  getPostgresSub,
   getRandomPassword,
+  getValkeySub,
 } from '../utils'
 
 export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
@@ -70,7 +70,7 @@ export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
 
     await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
       reason: i18n(
-        'Set the admin password so you can administer your Nextcloud instance',
+        'Display your admin password so you can administer your Nextcloud instance',
       ),
     })
   }

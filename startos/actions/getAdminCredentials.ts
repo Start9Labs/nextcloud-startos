@@ -1,10 +1,10 @@
+import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import { storeJson } from '../fileModels/store.json'
 
 export const getAdminCredentials = sdk.Action.withoutInput(
   // id
-  'create-admin-user',
+  'get-admin-credentials',
 
   // metadata
   async ({ effects }) => ({
@@ -20,7 +20,7 @@ export const getAdminCredentials = sdk.Action.withoutInput(
   async ({ effects }) => {
     const password = await storeJson.read((s) => s.adminPassword).once()
 
-    storeJson.merge(effects, { adminPassword: undefined })
+    await storeJson.merge(effects, { adminPassword: undefined })
 
     return {
       version: '1' as const,

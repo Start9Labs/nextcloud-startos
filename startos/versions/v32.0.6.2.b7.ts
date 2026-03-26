@@ -61,10 +61,12 @@ const migrateConfig = async (effects: T.Effects, config: OldConfig) => {
     'htaccess.RewriteBase': undefined,
   })
 
-  const adminPassword: string | undefined = await readFile(
-    '/media/startos/volumes/main/start9/password.dat',
-    'utf-8',
-  ).catch(() => undefined)
+  const adminPassword: string | undefined = (
+    await readFile(
+      '/media/startos/volumes/main/start9/password.dat',
+      'utf-8',
+    ).catch(() => undefined)
+  )?.trim()
   if (adminPassword) {
     await storeJson.merge(effects, { adminPassword })
   } else {

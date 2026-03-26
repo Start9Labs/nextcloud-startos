@@ -13,8 +13,8 @@ const dict = {
   WebDAV: 6,
   'Addresses for WebDAV syncing': 7,
 
-  // initializeNextcloud.ts
-  'Set the admin password so you can administer your Nextcloud instance': 8,
+  // bootstrapNextcloud.ts
+  'Display your admin password so you can administer your Nextcloud instance': 8,
 
   // v32.0.5.0.ts
   'Admin password could not be recovered from migration. Please reset it.': 9,
