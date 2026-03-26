@@ -3,8 +3,16 @@ import { sdk } from '../sdk'
 import { locales, phoneRegions } from '../utils'
 
 const shape = z.object({
+  dbtype: z.literal('pgsql').catch('pgsql'),
+  dbname: z.literal('nextcloud').catch('nextcloud'),
+  dbhost: z.literal('localhost').catch('localhost'),
+  dbport: z.literal('').catch(''),
+  dbtableprefix: z.literal('oc_').catch('oc_'),
+  dbuser: z.literal('nextcloud').catch('nextcloud'),
   dbpassword: z.string().optional().catch(undefined),
-  trusted_proxies: z.array(z.string()).catch(['10.0.3.0/24']),
+  trusted_proxies: z
+    .tuple([z.literal('10.0.3.0/24')])
+    .catch(['10.0.3.0/24'] as const),
   trusted_domains: z.array(z.string()),
   default_locale: z
     .enum(Object.keys(locales) as [string, ...string[]])
@@ -33,6 +41,14 @@ const shape = z.object({
   check_for_working_wellknown_setup: z.literal(true).catch(true),
   'filelocking.enabled': z.literal(true).catch(true),
   'integrity.check.disabled': z.literal(true).catch(true),
+  'updater.server.url': z
+    .literal('nextcloud.startos')
+    .catch('nextcloud.startos'),
+  datadirectory: z
+    .literal('/var/www/html/data')
+    .catch('/var/www/html/data'),
+  'overwrite.cli.url': z.string().optional().catch(undefined),
+  'htaccess.RewriteBase': z.string().optional().catch(undefined),
 })
 
 function toSingleQuotedLiteral(str: string) {

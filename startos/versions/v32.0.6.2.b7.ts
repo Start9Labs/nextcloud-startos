@@ -57,6 +57,8 @@ const migrateConfig = async (effects: T.Effects, config: OldConfig) => {
     default_locale: config['default-locale'],
     default_phone_region: config['default-phone-region'],
     maintenance_window_start: config.maintenance_window_start,
+    'overwrite.cli.url': undefined,
+    'htaccess.RewriteBase': undefined,
   })
 
   const adminPassword: string | undefined = await readFile(
@@ -94,22 +96,22 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b6 = VersionInfo.of({
-  version: '32.0.6:2-beta.6',
+export const v_32_0_6_2_b7 = VersionInfo.of({
+  version: '32.0.6:2-beta.7',
   releaseNotes: {
-    en_US: `- Fix backups: use pg_dump instead of raw volume rsync for database, exclude regenerable application files`,
-    es_ES: `- Corregir copias de seguridad: usar pg_dump en lugar de rsync de volumen para la base de datos, excluir archivos de aplicación regenerables`,
-    de_DE: `- Backups reparieren: pg_dump statt Volumen-rsync für die Datenbank verwenden, regenerierbare Anwendungsdateien ausschließen`,
-    pl_PL: `- Naprawa kopii zapasowych: użycie pg_dump zamiast rsync wolumenu dla bazy danych, wykluczenie regenerowalnych plików aplikacji`,
-    fr_FR: `- Corriger les sauvegardes : utiliser pg_dump au lieu de rsync de volume pour la base de données, exclure les fichiers d'application régénérables`,
+    en_US: `- Fix broken images on clearnet by enforcing correct reverse proxy settings\n- Enforce database and server configuration in config.php`,
+    es_ES: `- Corregir imágenes rotas en clearnet aplicando la configuración correcta del proxy inverso\n- Aplicar configuración de base de datos y servidor en config.php`,
+    de_DE: `- Fehlende Bilder im Clearnet durch korrekte Reverse-Proxy-Einstellungen beheben\n- Datenbank- und Servereinstellungen in config.php erzwingen`,
+    pl_PL: `- Naprawienie brakujących obrazów w clearnet przez wymuszenie poprawnych ustawień reverse proxy\n- Wymuszenie konfiguracji bazy danych i serwera w config.php`,
+    fr_FR: `- Corriger les images manquantes sur clearnet en appliquant les bons paramètres de proxy inverse\n- Appliquer la configuration de la base de données et du serveur dans config.php`,
   },
   migrations: {
     up: async ({ effects }) => {
-      const configYamlPath = '/media/startos/volumes/main/start9/config.yaml'
+      const start9Path = '/media/startos/volumes/main/start9'
 
       // Only run 0.3.5x → 0.4.0 migration if config.yaml exists (0.3.5x marker)
       const configYaml: OldConfig | undefined = await readFile(
-        configYamlPath,
+        `${start9Path}/config.yaml`,
         'utf-8',
       ).then(YAML.parse, () => undefined)
 
@@ -117,7 +119,12 @@ export const v_32_0_6_2_b6 = VersionInfo.of({
         await relocatePostgres(effects)
         await migrateConfig(effects, configYaml)
         await migrateNextcloud(effects)
-        await rm(configYamlPath)
+        await rm(start9Path)
+        // Remove stale config.php keys from 0.3.5.1
+        await configPhp.merge(effects, {
+          'overwrite.cli.url': undefined,
+          'htaccess.RewriteBase': undefined,
+        })
       }
 
       // Previous 0.4.0 beta: relocate PGDATA (17/docker → data)
@@ -148,9 +155,6 @@ export const v_32_0_6_2_b6 = VersionInfo.of({
           },
         )
       }
-
-      // Merge config.php to apply new schema defaults (memcache, redis, etc.)
-      await configPhp.merge(effects, {})
     },
     down: IMPOSSIBLE,
   },
