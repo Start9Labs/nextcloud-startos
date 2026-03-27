@@ -20,14 +20,7 @@ Key = String / Number
 
 Value = String / Number / Array / Bool / Null
 
-Bool = "true" / "false" { 
-    switch (text()) {
-        case "true":
-            return true
-        case "false":
-            return false
-    }
-}
+Bool = "true" { return true } / "false" { return false }
 
 Null = "null" { return null }
 
@@ -80,6 +73,7 @@ char
       / "u" digits:$(HEXDIG HEXDIG HEXDIG HEXDIG) {
           return String.fromCharCode(parseInt(digits, 16));
         }
+      / c:. { return "\\" + c; }
     )
     { return sequence; }
 
