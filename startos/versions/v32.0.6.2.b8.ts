@@ -121,7 +121,7 @@ export const v_32_0_6_2_b8 = VersionInfo.of({
         await relocatePostgres(effects)
         await migrateConfig(effects, configYaml)
         await migrateNextcloud(effects)
-        await rm(start9Path)
+        await rm(start9Path, { recursive: true })
         // Remove stale config.php keys from 0.3.5.1
         await configPhp.merge(effects, {
           'overwrite.cli.url': undefined,
