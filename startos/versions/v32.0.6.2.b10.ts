@@ -98,8 +98,8 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b9 = VersionInfo.of({
-  version: '32.0.6:2-beta.9',
+export const v_32_0_6_2_b10 = VersionInfo.of({
+  version: '32.0.6:2-beta.10',
   releaseNotes: {
     en_US: `- Fix broken images on clearnet by enforcing correct reverse proxy settings\n- Enforce database and server configuration in config.php`,
     es_ES: `- Corregir imágenes rotas en clearnet aplicando la configuración correcta del proxy inverso\n- Aplicar configuración de base de datos y servidor en config.php`,

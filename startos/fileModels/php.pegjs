@@ -13,6 +13,7 @@ Array = "array" _ "(" _ first:ArrayEntry rest:NextArrayEntry* _ ","? _ ")" {
     }
     return res
 }
+  / "array" _ "(" _ ")" { return [] }
 
 ArrayEntry = key:Key _ "=>" _ value:Value { return { key, value } }
 
