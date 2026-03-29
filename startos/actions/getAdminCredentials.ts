@@ -19,11 +19,14 @@ export const getAdminCredentials = sdk.Action.withoutInput(
   // the execution function
   async ({ effects }) => {
     const password = await storeJson.read((s) => s.adminPassword).once()
+    if (!password) {
+      throw new Error('Admin password not seeded')
+    }
 
     await storeJson.merge(effects, { adminPassword: undefined })
 
     return {
-      version: '1' as const,
+      version: '1',
       title: i18n('Success'),
       message: i18n(
         'Your admin username and password are below. Write them down or save them to a password manager.',
@@ -44,7 +47,7 @@ export const getAdminCredentials = sdk.Action.withoutInput(
             type: 'single',
             name: i18n('Password'),
             description: null,
-            value: password ?? 'UNKNOWN',
+            value: password,
             masked: true,
             copyable: true,
             qr: false,

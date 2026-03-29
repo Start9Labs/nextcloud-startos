@@ -14,9 +14,7 @@ import {
 
 export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
   if (kind === 'install') {
-    const adminPassword =
-      (await storeJson.read((s) => s.adminPassword).const(effects)) ??
-      getRandomPassword()
+    const adminPassword = getRandomPassword()
     const postgresPassword = getRandomPassword()
 
     const nextcloudSub = await getNextcloudSub(effects)
@@ -67,6 +65,8 @@ export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
         requires: ['chown', 'postgres', 'valkey'],
       })
       .runUntilSuccess(600_000)
+
+    await storeJson.merge(effects, { adminPassword })
 
     await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
       reason: i18n(
