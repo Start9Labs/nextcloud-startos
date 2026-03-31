@@ -98,14 +98,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b10 = VersionInfo.of({
-  version: '32.0.6:2-beta.10',
+export const v_32_0_6_2_b11 = VersionInfo.of({
+  version: '32.0.6:2-beta.11',
   releaseNotes: {
-    en_US: `- Fix broken images on clearnet by enforcing correct reverse proxy settings\n- Enforce database and server configuration in config.php`,
-    es_ES: `- Corregir imágenes rotas en clearnet aplicando la configuración correcta del proxy inverso\n- Aplicar configuración de base de datos y servidor en config.php`,
-    de_DE: `- Fehlende Bilder im Clearnet durch korrekte Reverse-Proxy-Einstellungen beheben\n- Datenbank- und Servereinstellungen in config.php erzwingen`,
-    pl_PL: `- Naprawienie brakujących obrazów w clearnet przez wymuszenie poprawnych ustawień reverse proxy\n- Wymuszenie konfiguracji bazy danych i serwera w config.php`,
-    fr_FR: `- Corriger les images manquantes sur clearnet en appliquant les bons paramètres de proxy inverse\n- Appliquer la configuration de la base de données et du serveur dans config.php`,
+    en_US: `- Fix config.php parser to handle empty and implicit-key arrays`,
+    es_ES: `- Corregir el analizador de config.php para manejar arrays vacíos y con claves implícitas`,
+    de_DE: `- config.php-Parser für leere und implizit indizierte Arrays korrigiert`,
+    pl_PL: `- Naprawienie parsera config.php dla pustych tablic i tablic z niejawnymi kluczami`,
+    fr_FR: `- Corriger le parseur config.php pour gérer les tableaux vides et à clés implicites`,
   },
   migrations: {
     up: async ({ effects }) => {

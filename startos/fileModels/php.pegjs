@@ -5,17 +5,21 @@ NextArrayEntry = _ "," _ entry:ArrayEntry { return entry }
 Array = "array" _ "(" _ first:ArrayEntry rest:NextArrayEntry* _ ","? _ ")" {
     const entries = [first, ...rest]
     let res = []
+    let autoIdx = 0
     for (let i = 0; i < entries.length; i++) {
         const { key, value } = entries[i]
-        if (key !== res.length && Array.isArray(res))
+        const k = key === null ? autoIdx : key
+        if (typeof k === 'number') autoIdx = k + 1
+        if (k !== res.length && Array.isArray(res))
             res = res.reduce((acc, x, idx) => ({...acc, [idx]: x }), {})
-        res[key] = value
+        res[k] = value
     }
     return res
 }
   / "array" _ "(" _ ")" { return [] }
 
 ArrayEntry = key:Key _ "=>" _ value:Value { return { key, value } }
+  / value:Value { return { key: null, value } }
 
 Key = String / Number
 
