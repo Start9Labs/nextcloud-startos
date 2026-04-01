@@ -6,7 +6,7 @@ export const manifest = setupManifest({
   title: 'Nextcloud',
   license: 'gpl',
   packageRepo:
-    'https://github.com/Start9Labs/nextcloud-startos/tree/update/040',
+    'https://github.com/Start9Labs/nextcloud-startos',
   upstreamRepo: 'https://github.com/nextcloud/docker',
   marketingUrl: 'https://nextcloud.com/',
   docsUrls: [
@@ -25,7 +25,7 @@ export const manifest = setupManifest({
     },
     nextcloud: {
       source: {
-        dockerTag: 'nextcloud:32.0.6-apache',
+        dockerTag: 'nextcloud:32.0.7-apache',
       },
       arch: ['x86_64', 'aarch64'],
     },

@@ -98,14 +98,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_6_2_b11 = VersionInfo.of({
-  version: '32.0.6:2-beta.11',
+export const v_32_0_7_0 = VersionInfo.of({
+  version: '32.0.7:0',
   releaseNotes: {
-    en_US: `- Fix config.php parser to handle empty and implicit-key arrays`,
-    es_ES: `- Corregir el analizador de config.php para manejar arrays vacíos y con claves implícitas`,
-    de_DE: `- config.php-Parser für leere und implizit indizierte Arrays korrigiert`,
-    pl_PL: `- Naprawienie parsera config.php dla pustych tablic i tablic z niejawnymi kluczami`,
-    fr_FR: `- Corriger le parseur config.php pour gérer les tableaux vides et à clés implicites`,
+    en_US: 'Update Nextcloud to 32.0.7',
+    es_ES: 'Actualización de Nextcloud a 32.0.7',
+    de_DE: 'Update von Nextcloud auf 32.0.7',
+    pl_PL: 'Aktualizacja Nextcloud do 32.0.7',
+    fr_FR: 'Mise à jour de Nextcloud vers 32.0.7',
   },
   migrations: {
     up: async ({ effects }) => {
