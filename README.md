@@ -38,9 +38,9 @@ This package runs **three containers** as subcontainers:
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| nextcloud | `nextcloud:<version>-apache` | Nextcloud application with Apache and PHP-FPM |
-| postgres | `postgres:17-alpine` | PostgreSQL database |
-| valkey | `valkey/valkey:9-alpine` | Redis-compatible in-memory cache |
+| nextcloud | `nextcloud` (Apache variant) | Nextcloud application with Apache and PHP-FPM |
+| postgres | `postgres` (Alpine) | PostgreSQL database |
+| valkey | `valkey/valkey` (Alpine) | Redis-compatible in-memory cache |
 
 Architectures: x86_64, aarch64.
 
@@ -259,101 +259,32 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development wo
 
 ```yaml
 package_id: nextcloud
-containers:
-  - name: nextcloud
-    image: nextcloud:<version>-apache
-  - name: postgres
-    image: postgres:17-alpine
-  - name: valkey
-    image: valkey/valkey:9-alpine
-
+image: nextcloud (Apache variant), postgres (Alpine), valkey/valkey (Alpine)
+architectures:
+  - x86_64
+  - aarch64
 volumes:
-  main:
-    backup: true
-    purpose: StartOS metadata, admin password
-  nextcloud:
-    mount: /var/www/html
-    backup: true
-    purpose: app code, user files, config.php
-  db:
-    mount: /var/lib/postgresql
-    backup: true
-    purpose: PostgreSQL data
-
-interfaces:
-  webui:
-    type: ui
-    port: 80
-    path: /
-  webdav:
-    type: api
-    port: 80
-    path: /remote.php/dav/
-
-enforced_config:
-  trusted_proxies: ["10.0.3.0/24"]
-  memcache.local: \OC\Memcache\APCu
-  memcache.distributed: \OC\Memcache\Redis
-  memcache.locking: \OC\Memcache\Redis
-  filelocking.enabled: true
-  redis: {host: localhost, port: 6379}
-  updatechecker: false
-  check_for_working_wellknown_setup: true
-  integrity.check.disabled: true
-
-user_config:
-  - default_locale (select)
-  - default_phone_region (select)
-  - maintenance_window_start (0-24)
-
+  main: host (StartOS metadata, admin password)
+  nextcloud: /var/www/html
+  db: /var/lib/postgresql
+ports:
+  ui: 80
+  webdav: 80
+dependencies: none
+startos_managed_env_vars:
+  - PHP_MEMORY_LIMIT
+  - PHP_UPLOAD_LIMIT
+  - POSTGRES_DB
+  - POSTGRES_USER
+  - POSTGRES_HOST
+  - PGDATA
 actions:
-  - id: set-config
-    name: Configure
-    has_input: true
-  - id: reset-admin
-    name: Reset Admin Password
-    has_input: true
-    requires: running
-  - id: disable-maintenance
-    name: Disable Maintenance Mode
-    group: CLI Tools
-    requires: running
-  - id: disable-unstable-apps
-    name: Disable Non-default Apps
-    requires: running
-  - id: download-models
-    name: Download ML Models for Recognize
-    group: CLI Tools
-    requires: running
-  - id: index-memories
-    name: Index Media for Memories
-    group: CLI Tools
-    requires: running
-  - id: index-places
-    name: Setup Map for Memories
-    group: CLI Tools
-    requires: running
-  - id: create-admin-user
-    name: Get Admin Credentials
-    hidden: true
-    requires: stopped
-
-dependencies: []
-
-health_checks:
-  - name: Web Interface
-    method: port_listening
-    port: 80
-  - name: PostgreSQL
-    method: pg_isready
-    internal: true
-  - name: Valkey
-    method: valkey-cli ping
-    internal: true
-
-php_limits:
-  memory: 1024M
-  upload: 20480M
-
-backup_strategy: pg_dump (db) + volume rsync (main, nextcloud)
+  - set-config
+  - reset-admin
+  - disable-maintenance
+  - disable-unstable-apps
+  - download-models
+  - index-memories
+  - index-places
+  - create-admin-user
 ```
