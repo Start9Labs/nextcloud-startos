@@ -132,7 +132,12 @@ const migrateNextcloud = async (effects: T.Effects) => {
       //
       // This keeps peak memory proportional to the largest single directory,
       // not the total file count.
+      let dirCount = 0
       const chmodDir = async (dir: string) => {
+        dirCount++
+        if (dirCount % 100 === 0) {
+          console.info(`chmod migration: processed ${dirCount} directories, current: ${dir}`)
+        }
         await sub.execFail(
           ['sh', '-c', `find "$1" -maxdepth 1 -print0 | xargs -0 -n 5000 chmod ug+rw,o-rwx`, '_', dir],
           { user: 'root' },
