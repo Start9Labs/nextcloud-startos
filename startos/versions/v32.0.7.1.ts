@@ -89,10 +89,6 @@ const migrateNextcloud = async (effects: T.Effects) => {
         [
           'find',
           NEXTCLOUD_PATH,
-          '-path',
-          `${NEXTCLOUD_PATH}/data`,
-          '-prune',
-          '-o',
           '-exec',
           'chmod',
           'ug+rw,o-rwx',
