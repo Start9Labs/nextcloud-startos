@@ -85,21 +85,27 @@ const migrateNextcloud = async (effects: T.Effects) => {
     nextcloudMount,
     'upgrade-sub',
     async (sub) => {
-      await sub.execFail(['chmod', '-R', 'ug+rw', NEXTCLOUD_PATH], {
-        user: 'root',
-      })
+      await sub.execFail(
+        [
+          'find',
+          NEXTCLOUD_PATH,
+          '-exec',
+          'chmod',
+          'ug+rw,o-rwx',
+          '{}',
+          '+',
+        ],
+        { user: 'root' },
+      )
       await sub.execFail(['chmod', 'u+x', `${NEXTCLOUD_PATH}/occ`], {
-        user: 'root',
-      })
-      await sub.execFail(['chmod', '-R', 'o-rwx', NEXTCLOUD_PATH], {
         user: 'root',
       })
     },
   )
 }
 
-export const v_32_0_7_0 = VersionInfo.of({
-  version: '32.0.7:0',
+export const v_32_0_7_1 = VersionInfo.of({
+  version: '32.0.7:1',
   releaseNotes: {
     en_US: 'Update Nextcloud to 32.0.7',
     es_ES: 'Actualización de Nextcloud a 32.0.7',
