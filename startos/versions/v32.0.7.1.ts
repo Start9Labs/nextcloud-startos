@@ -85,10 +85,20 @@ const migrateNextcloud = async (effects: T.Effects) => {
     nextcloudMount,
     'upgrade-sub',
     async (sub) => {
+      // Fix permissions on Nextcloud app files (everything except data/).
+      // In 0.3.5.1, the upstream Docker entrypoint set group=root. In 0.4.0,
+      // the group is www-data. We need ug+rw so the owner and group can
+      // read/write, and o-rwx so other users (including dependent services
+      // not in the www-data group) cannot access app internals.
+      // The data/ directory is excluded here and handled separately below.
       await sub.execFail(
         [
           'find',
           NEXTCLOUD_PATH,
+          '-path',
+          `${NEXTCLOUD_PATH}/data`,
+          '-prune',
+          '-o',
           '-exec',
           'chmod',
           'ug+rw,o-rwx',
@@ -97,9 +107,49 @@ const migrateNextcloud = async (effects: T.Effects) => {
         ],
         { user: 'root' },
       )
+      // occ must be executable for Nextcloud CLI operations
       await sub.execFail(['chmod', 'u+x', `${NEXTCLOUD_PATH}/occ`], {
         user: 'root',
       })
+
+      // Fix permissions on user data files (data/).
+      //
+      // The data directory can be enormous (2TB+), so we cannot use a single
+      // recursive find or chmod -R — both accumulate inode metadata for the
+      // entire tree in memory and get OOM-killed (SIGKILL) in the
+      // memory-constrained migration subcontainer.
+      //
+      // Strategy: walk the directory tree from TypeScript, processing one
+      // directory at a time. For each directory:
+      //   1. find -maxdepth 1 -print0 | xargs -0 -n 5000 chmod ...
+      //      Streams the immediate children through xargs in batches of 5000,
+      //      so neither find nor chmod ever holds more than one directory's
+      //      listing in memory.
+      //   2. find -maxdepth 1 -mindepth 1 -type d -print0
+      //      Lists only the immediate subdirectories so we can recurse into
+      //      them one at a time. Uses -print0 / split('\0') to handle
+      //      filenames with spaces or special characters.
+      //
+      // This keeps peak memory proportional to the largest single directory,
+      // not the total file count.
+      const chmodDir = async (dir: string) => {
+        await sub.execFail(
+          ['sh', '-c', `find "$1" -maxdepth 1 -print0 | xargs -0 -n 5000 chmod ug+rw,o-rwx`, '_', dir],
+          { user: 'root' },
+        )
+        const { stdout } = await sub.execFail(
+          ['find', dir, '-maxdepth', '1', '-mindepth', '1', '-type', 'd', '-print0'],
+          { user: 'root' },
+        )
+        const subdirs = stdout
+          .toString()
+          .split('\0')
+          .filter((s) => s.length > 0)
+        for (const subdir of subdirs) {
+          await chmodDir(subdir)
+        }
+      }
+      await chmodDir(`${NEXTCLOUD_PATH}/data`)
     },
   )
 }
