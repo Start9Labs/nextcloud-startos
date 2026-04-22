@@ -64,7 +64,7 @@ export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
         },
         requires: ['chown', 'postgres', 'valkey'],
       })
-      .runUntilSuccess(600_000)
+      .runUntilSuccess(300_000)
 
     await storeJson.merge(effects, { adminPassword })
 

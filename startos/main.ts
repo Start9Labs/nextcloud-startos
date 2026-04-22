@@ -8,6 +8,7 @@ import {
   getPostgresEnv,
   getPostgresSub,
   getValkeySub,
+  nextcloudMount,
   uiPort,
 } from './utils'
 
@@ -18,16 +19,23 @@ export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Nextcloud...'))
 
   // get interface details
-  const hostnames = await sdk.serviceInterface
+  const hostnameInfo = await sdk.serviceInterface
     .getOwn(
       effects,
       'ui',
-      (u) => u?.addressInfo?.nonLocal.hostnames.map((h) => h.hostname) || [],
+      (u) =>
+        u?.addressInfo
+          ?.filter({
+            exclude: { kind: ['link-local', 'bridge'] },
+          })
+          .format('hostname-info') || [],
     )
     .const()
 
   await configPhp.merge(effects, {
-    trusted_domains: ['localhost', ...(hostnames || [])],
+    trusted_domains: hostnameInfo.map((h) =>
+      h.metadata.kind === 'ipv6' ? `[${h.hostname}]` : h.hostname,
+    ),
   })
 
   const nextcloudSub = await getNextcloudSub(effects)
@@ -43,20 +51,38 @@ export const main = sdk.setupMain(async ({ effects }) => {
     nextcloudSub,
     valkeySub,
     postgresEnv,
-  ).addDaemon('nextcloud', {
-    subcontainer: nextcloudSub,
-    exec: {
-      command: sdk.useEntrypoint(),
-      env: getNextcloudEnv(postgresEnv),
-    },
-    ready: {
-      display: i18n('Web Interface'),
-      fn: () =>
-        sdk.healthCheck.checkPortListening(effects, uiPort, {
-          successMessage: i18n('The web interface is ready'),
-          errorMessage: i18n('The web interface is not ready'),
-        }),
-    },
-    requires: ['chown', 'postgres', 'valkey'],
-  })
+  )
+    .addDaemon('nextcloud', {
+      subcontainer: nextcloudSub,
+      exec: {
+        command: sdk.useEntrypoint(),
+        env: getNextcloudEnv(postgresEnv),
+      },
+      ready: {
+        display: i18n('Web Interface'),
+        fn: () =>
+          sdk.healthCheck.checkPortListening(effects, uiPort, {
+            successMessage: i18n('The web interface is ready'),
+            errorMessage: i18n('The web interface is not ready'),
+          }),
+      },
+      requires: ['chown', 'postgres', 'valkey'],
+    })
+    .addDaemon('cron', {
+      subcontainer: await sdk.SubContainer.of(
+        effects,
+        { imageId: 'nextcloud' },
+        nextcloudMount,
+        'nextcloud-cron',
+      ),
+      exec: {
+        command: ['/cron.sh'],
+        env: getNextcloudEnv(postgresEnv),
+      },
+      ready: {
+        display: null,
+        fn: async () => ({ result: 'success', message: null }),
+      },
+      requires: ['nextcloud'],
+    })
 })

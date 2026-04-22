@@ -1,4 +1,4 @@
 ## How the upstream version is pulled
-- dockerTag in `startos/manifest/index.ts`: `nextcloud:<version>-apache`
+- `NEXTCLOUD_VERSION` ARG in `nextcloud.Dockerfile` (default used when building). The image is `dockerBuild` in `startos/manifest/index.ts` (extends `nextcloud:<version>-apache` to add ffmpeg for video thumbnails).
 
 > Upstream repo is nextcloud/docker (Docker image), not nextcloud/server.

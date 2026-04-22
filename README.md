@@ -34,17 +34,20 @@
 
 ## Image and Container Runtime
 
-This package runs **three containers** as subcontainers:
+This package runs **four containers** as subcontainers:
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| nextcloud | `nextcloud` (Apache variant) | Nextcloud application with Apache and PHP-FPM |
+| nextcloud | `nextcloud` (Apache variant, extended with ffmpeg) | Nextcloud application with Apache and PHP-FPM |
 | postgres | `postgres` (Alpine) | PostgreSQL database |
 | valkey | `valkey/valkey` (Alpine) | Redis-compatible in-memory cache |
+| cron | Same image as nextcloud | Runs `/cron.sh` (busybox crond) to trigger Nextcloud background jobs every 5 minutes |
 
 Architectures: x86_64, aarch64.
 
-**Startup order:** A `chown` one-shot runs first alongside `postgres` and `valkey`. The `nextcloud` container waits until all three are ready before starting.
+**Startup order:** A `chown` one-shot runs first alongside `postgres` and `valkey`. The `nextcloud` container waits until all three are ready before starting. The `cron` container waits for `nextcloud` to be ready.
+
+**ffmpeg:** The nextcloud image is built locally (extends `nextcloud:<version>-apache`) to install `ffmpeg`, which Nextcloud's preview providers shell out to for video thumbnails.
 
 **How this differs from upstream:** A standard Nextcloud Docker deployment typically uses separate `docker-compose` services and a standalone Redis container. On StartOS, all three containers are orchestrated as subcontainers within a single service, communicating over localhost. There is no Docker network or `docker-compose.yml`; the SDK manages the lifecycle.
 
@@ -259,7 +262,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development wo
 
 ```yaml
 package_id: nextcloud
-image: nextcloud (Apache variant), postgres (Alpine), valkey/valkey (Alpine)
+image: nextcloud (Apache variant, extended with ffmpeg), postgres (Alpine), valkey/valkey (Alpine)
 architectures:
   - x86_64
   - aarch64
