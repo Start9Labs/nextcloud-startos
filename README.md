@@ -120,6 +120,7 @@ The **Configure** action exposes:
 | Default locale | `en_US` | Display language for public pages (login, shared items) |
 | Default phone region | `US` | Phone number formatting region |
 | Maintenance window start | `24` (disabled) | UTC hour (0-23) for background job scheduling; `24` = no preference |
+| Disable skeleton files for new accounts | `false` | When enabled, sets `skeletondirectory` to `''` so new user accounts are not seeded with Nextcloud's default sample documents, photos, and README. Existing accounts are unaffected. |
 
 All other Nextcloud settings (mail, apps, users, sharing, etc.) are managed through the Nextcloud admin interface after login.
 

@@ -159,14 +159,19 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_8_1 = VersionInfo.of({
-  version: '32.0.8:1',
+export const v_32_0_8_2 = VersionInfo.of({
+  version: '32.0.8:2',
   releaseNotes: {
-    en_US: 'Internal updates (start-sdk 1.3.3)',
-    es_ES: 'Actualizaciones internas (start-sdk 1.3.3)',
-    de_DE: 'Interne Aktualisierungen (start-sdk 1.3.3)',
-    pl_PL: 'Aktualizacje wewnętrzne (start-sdk 1.3.3)',
-    fr_FR: 'Mises à jour internes (start-sdk 1.3.3)',
+    en_US:
+      'Configure action: added a toggle to disable skeleton files for new accounts.',
+    es_ES:
+      'Acción Configurar: añadida una opción para desactivar los archivos predeterminados para nuevas cuentas.',
+    de_DE:
+      'Aktion Konfigurieren: Schalter hinzugefügt, um Skeleton-Dateien für neue Konten zu deaktivieren.',
+    pl_PL:
+      'Akcja Konfiguracja: dodano przełącznik wyłączający pliki szablonowe dla nowych kont.',
+    fr_FR:
+      "Action Configurer : ajout d'une option pour désactiver les fichiers squelettes pour les nouveaux comptes.",
   },
   migrations: {
     up: async ({ effects }) => {

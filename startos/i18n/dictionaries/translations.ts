@@ -47,6 +47,8 @@ export default {
     42: 'Configura el mapa para la geolocalización inversa (encontrar la ubicación) de sus fotos en la aplicación Memories. Principalmente consiste en descargar datos del mapa. Se activará una reindexación al final del proceso. DEBE instalar la aplicación Memories antes de ejecutar esta acción.',
     43: 'Este es un proceso intensivo que requerirá recursos y tiempo significativos del sistema. Si está en un dispositivo con recursos limitados, es mejor no realizar otros procesos intensivos (como la descarga inicial de blockchain de Bitcoin) al mismo tiempo. Esta acción consumirá aproximadamente 2-3 GB de espacio en disco, y puede verificar el progreso viendo la cantidad de geometrías pobladas en la base de datos en Configuración de administración -> Memories -> Geolocalización inversa (conjunto completo es ~561,000)',
     44: 'Ahora puede usar el mapa dentro de su aplicación Memories.',
+    45: 'Desactivar archivos predeterminados para nuevas cuentas',
+    46: 'Cuando está activado, las nuevas cuentas de usuario no se inicializan con los archivos predeterminados de Nextcloud (documentos de muestra, fotos, README, etc.). Las cuentas existentes no se ven afectadas.',
   },
   de_DE: {
     0: 'Starte Nextcloud...',
@@ -94,6 +96,8 @@ export default {
     42: 'Richtet die Karte für die umgekehrte Geotagging (Standortbestimmung) Ihrer Fotos in der Memories-Anwendung ein. Dies besteht hauptsächlich aus dem Herunterladen von Kartendaten. Am Ende des Prozesses wird eine Neuindexierung ausgelöst. Sie MÜSSEN die Memories-App installieren, bevor Sie diese Aktion ausführen.',
     43: 'Dies ist ein intensiver Prozess, der erhebliche Systemressourcen und Zeit erfordert. Auf einem Gerät mit geringeren Ressourcen sollten Sie keine anderen intensiven Prozesse (wie den initialen Blockchain-Download von Bitcoin) gleichzeitig durchführen. Diese Aktion verbraucht ungefähr 2-3 GB Speicherplatz. Den Fortschritt können Sie unter Admin-Einstellungen -> Memories -> Umgekehrtes Geotagging überprüfen (vollständiger Satz ist ~561.000)',
     44: 'Sie können jetzt die Karte in Ihrer Memories-Anwendung verwenden.',
+    45: 'Skeleton-Dateien für neue Konten deaktivieren',
+    46: 'Wenn aktiviert, werden neue Benutzerkonten nicht mit den Standard-Skeleton-Dateien von Nextcloud (Beispieldokumente, Fotos, README usw.) befüllt. Bestehende Konten sind nicht betroffen.',
   },
   pl_PL: {
     0: 'Uruchamianie Nextcloud...',
@@ -141,6 +145,8 @@ export default {
     42: 'Konfiguruje mapę do odwrotnego geotagowania (znajdowania lokalizacji) zdjęć w aplikacji Memories. Głównie polega na pobieraniu danych mapy. Na końcu procesu zostanie uruchomione ponowne indeksowanie. MUSISZ zainstalować aplikację Memories przed uruchomieniem tej akcji.',
     43: 'Jest to intensywny proces wymagający znacznych zasobów systemowych i czasu. Na urządzeniu z mniejszymi zasobami lepiej nie wykonywać jednocześnie innych intensywnych procesów (takich jak początkowe pobieranie łańcucha bloków Bitcoin). Ta akcja zajmie około 2-3 GB miejsca na dysku. Postęp można sprawdzić, przeglądając liczbę geometrii wypełnionych w bazie danych w Ustawienia administratora -> Memories -> Odwrotne geotagowanie (pełny zestaw to ~561 000)',
     44: 'Możesz teraz korzystać z mapy w aplikacji Memories.',
+    45: 'Wyłącz pliki szablonowe dla nowych kont',
+    46: 'Po włączeniu nowe konta użytkowników nie są wypełniane domyślnymi plikami szablonowymi Nextcloud (przykładowe dokumenty, zdjęcia, README itp.). Istniejące konta nie są zmieniane.',
   },
   fr_FR: {
     0: 'Démarrage de Nextcloud...',
@@ -188,5 +194,7 @@ export default {
     42: "Configure la carte pour le géotagging inversé (trouver l'emplacement) de vos photos dans l'application Memories. Cela consiste principalement à télécharger des données cartographiques. Une réindexation sera déclenchée à la fin du processus. Vous DEVEZ installer l'application Memories avant d'exécuter cette action.",
     43: "Il s'agit d'un processus intensif qui nécessitera des ressources système et du temps importants. Sur un appareil aux ressources limitées, il est préférable de ne pas effectuer d'autres processus intensifs (comme le téléchargement initial de la blockchain Bitcoin) en même temps. Cette action consommera environ 2-3 Go d'espace disque. Vous pouvez vérifier la progression en consultant le nombre de géométries remplies dans la base de données sous Paramètres d'administration -> Memories -> Géotagging inversé (ensemble complet ~561 000)",
     44: 'Vous pouvez maintenant utiliser la carte dans votre application Memories.',
+    45: 'Désactiver les fichiers squelettes pour les nouveaux comptes',
+    46: "Lorsque cette option est activée, les nouveaux comptes utilisateurs ne sont pas initialisés avec les fichiers squelettes par défaut de Nextcloud (exemples de documents, photos, README, etc.). Les comptes existants ne sont pas affectés.",
   },
 } satisfies Record<string, LangDict>

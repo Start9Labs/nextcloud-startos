@@ -33,6 +33,13 @@ export const inputSpec = InputSpec.of({
     max: 24,
     required: true,
   }),
+  disable_skeleton_files: Value.toggle({
+    name: i18n('Disable Skeleton Files for New Accounts'),
+    description: i18n(
+      "When enabled, new user accounts are not seeded with Nextcloud's default skeleton files (sample documents, photos, README, etc.). Existing accounts are unaffected.",
+    ),
+    default: false,
+  }),
 })
 
 export const setConfig = sdk.Action.withInput(
@@ -55,10 +62,20 @@ export const setConfig = sdk.Action.withInput(
   inputSpec,
 
   // optionally pre-fill the input form
-  async ({ effects }) => configPhp.read().once() as any,
+  async ({ effects }) => {
+    const config = (await configPhp.read().once()) as any
+    return {
+      ...config,
+      disable_skeleton_files: config?.skeletondirectory === '',
+    }
+  },
 
   // the execution function
   async ({ effects, input }) => {
-    await configPhp.merge(effects, input)
+    const { disable_skeleton_files, ...rest } = input
+    await configPhp.merge(effects, {
+      ...rest,
+      skeletondirectory: disable_skeleton_files ? '' : undefined,
+    })
   },
 )

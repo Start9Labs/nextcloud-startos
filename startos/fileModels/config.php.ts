@@ -49,6 +49,7 @@ const shape = z.object({
     .catch('/var/www/html/data'),
   'overwrite.cli.url': z.string().optional().catch(undefined),
   'htaccess.RewriteBase': z.string().optional().catch(undefined),
+  skeletondirectory: z.string().optional().catch(undefined),
 })
 
 function toSingleQuotedLiteral(str: string) {

@@ -28,6 +28,8 @@ const dict = {
   'This sets the default phone region on your Nextcloud server for formatting and validating phone numbers.': 15,
   'Maintenance Window Start Time': 16,
   'UTC start time for non-time sensitive background jobs. Setting this to a low-usage time frees up resources during the rest of the day by only running these non-time sensitive jobs in the 4 hours following the specified start time. Set to 24 (default) if there is no preference for when these jobs are run, but beware that resource intensive jobs may then run unnecessarily during high usage periods. This may lead to slower performance and a lower quality user experience.': 17,
+  'Disable Skeleton Files for New Accounts': 45,
+  "When enabled, new user accounts are not seeded with Nextcloud's default skeleton files (sample documents, photos, README, etc.). Existing accounts are unaffected.": 46,
 
   // resetAdmin.ts
   'Reset Admin Password': 18,
