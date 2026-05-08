@@ -1,7 +1,7 @@
+import { configPhp } from '../fileModels/config.php'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { locales, phoneRegions } from '../utils'
-import { configPhp } from '../fileModels/config.php'
 
 const { InputSpec, Value } = sdk
 

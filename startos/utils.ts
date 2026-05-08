@@ -5,6 +5,34 @@ export const uiPort = 80 as const
 export const NEXTCLOUD_PATH = '/var/www/html' as const
 export const POSTGRES_PATH = '/var/lib/postgresql' as const
 
+const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
+
+/**
+ * Throws `errorMessage` if a Nextcloud app's files are not present on the
+ * volume. Checks both `custom_apps/` (user-installed) and `apps/` (built-in).
+ * Used by actions that require a prerequisite Nextcloud app — calling this at
+ * the top of the action's `run` produces a coherent error in the UI when the
+ * app is missing.
+ *
+ * Note: this only checks file presence, not whether the app is enabled in
+ * Nextcloud's database. An installed-but-disabled app passes this check;
+ * running its `occ` namespace would then fail.
+ */
+export async function requireNextcloudApp(
+  name: string,
+  errorMessage: string,
+): Promise<void> {
+  const { stat } = await import('node:fs/promises')
+  for (const dir of ['custom_apps', 'apps']) {
+    const ok = await stat(`${NEXTCLOUD_VOLUME_HOST}/${dir}/${name}`).then(
+      () => true,
+      () => false,
+    )
+    if (ok) return
+  }
+  throw new Error(errorMessage)
+}
+
 export const nextcloudMount = sdk.Mounts.of().mountVolume({
   volumeId: 'nextcloud',
   mountpoint: NEXTCLOUD_PATH,

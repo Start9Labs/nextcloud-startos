@@ -165,19 +165,21 @@ Disables all user-installed apps (preserves ~48 Nextcloud defaults). Use when a 
 
 **Group:** CLI Tools
 
-Downloads ML models (~1-2 GB) for object and face identification. Requires the Recognize app to be installed first. Can take up to 15 minutes.
+Queues a background download of ML models (~1-2 GB) for object and face identification. Requires the Recognize app to be installed first. Can be invoked whether the service is running or stopped — the request is recorded in `store.json` and the actual download runs as a oneshot in the main daemon chain the next time the service is up. Progress and failure are reported via the **Recognize Model Download** health check on the service status page; the check appears only while a download is in flight or after a failure, and disappears on success. Re-invoking while a download is queued or running is a no-op.
+
+**Stopping during a download:** the `recognize:download-models` command is killed when the service stops. The pending flag is left in place, so on the next service start the oneshot resumes — the upstream command is idempotent and skips models it has already downloaded.
 
 ### Index Media for Memories
 
 **Group:** CLI Tools
 
-Forces re-indexing of media files for the Memories app. Normally runs automatically via background tasks every 5 minutes. Requires the Memories app to be installed and a media path selected.
+Queues a background re-index of media files for the Memories app. Normally indexing runs automatically via Nextcloud background tasks every 5 minutes; use this action only to force a re-index. Requires the Memories app to be installed and a media path selected. Can be invoked whether the service is running or stopped — the request is recorded in `store.json` and the run happens in the main daemon chain when the service is up. Progress is reported via the **Memories Indexing** health check; the check appears only while a run is in flight or after a failure, and disappears on success. Re-invoking while a run is queued or running is a no-op. If the service is stopped mid-run, the pending flag persists and the run resumes on next start.
 
 ### Setup Map for Memories
 
 **Group:** CLI Tools
 
-Downloads map data (~2-3 GB, ~561,000 geometries) for reverse geotagging photos. Requires the Memories app to be installed. Resource-intensive — avoid running alongside other heavy operations.
+Queues a background download of map data (~2-3 GB, ~561,000 geometries) and a re-index for reverse geotagging photos. Requires the Memories app to be installed. Resource-intensive — avoid running alongside other heavy operations. Same async pattern as the other long-running actions: invocable while running or stopped, progress reported via the **Memories Map Setup** health check, idempotent on stop/restart.
 
 ### Get Admin Credentials
 
@@ -221,8 +223,15 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 | Web Interface | Port listening | Port 80 | "The web interface is ready" |
 | PostgreSQL | `pg_isready` | localhost | Internal only |
 | Valkey | `valkey-cli ping` | localhost | Internal only |
+| Recognize Model Download | Compares `actions.pending.downloadModels` vs `actions.completed.downloadModels` in `store.json` | n/a | `loading` while a queued download is running. Hidden otherwise. |
+| Memories Indexing | Compares `actions.pending.indexMemories` vs `actions.completed.indexMemories` in `store.json` | n/a | `loading` while a queued re-index is running. Hidden otherwise. |
+| Memories Map Setup | Compares `actions.pending.indexPlaces` vs `actions.completed.indexPlaces` in `store.json` | n/a | `loading` while a queued map setup is running. Hidden otherwise. |
 
-The Nextcloud daemon will not start until PostgreSQL and Valkey are both confirmed ready.
+The Nextcloud daemon will not start until PostgreSQL and Valkey are both confirmed ready. Each long-running CLI action (Download Models, Index Memories, Setup Map) writes its identifier into `store.json` at `actions.pending.<id>` with `Date.now()` as the value. The `long-running-tasks` oneshot in `setupMain` walks the three known IDs in declared order and runs the underlying `occ` command for any whose `pending` timestamp is newer than its `completed` timestamp (or whose `completed` is absent). On normal exit, `runOcc` writes a fresh timestamp into `actions.completed.<id>`. On abort (service stop or chain rebuild), the child is SIGKILLed and no `completed` timestamp is written, so the work resumes on next start (occ commands are idempotent). Output streams to the service logs in real time.
+
+Reactivity is armed at chain build via `storeJson.read((s) => s.actions.pending).const(effects)`. The mapped subscription only watches the `pending` bag — writes to `actions.completed` produce the same mapped value, so the SDK's eq check dedups them and **no chain rebuild fires on task completion**. Triggering a new action does change `actions.pending` (a new timestamp), so the chain rebuilds immediately, the in-flight `occ` (if any) is aborted, and the new chain's oneshot scans the pending bag from scratch — including any task it just killed, which gets re-run from the start. Re-invoking the same action while it's queued or running short-circuits in the action body (it sees its own `pending > completed` and returns "Already in Progress" without writing anything), so no rebuild fires.
+
+The CLI Tools actions that depend on a Nextcloud app (Recognize for model download, Memories for indexing/map setup) are always shown as enabled. When invoked, they check for the prerequisite app's files under `apps/` or `custom_apps/` on the volume and throw an "Install the X app in Nextcloud first." error if missing. (Action visibility is exported only at install/update time and not reactively refreshed when an app is installed from the Nextcloud admin UI, so disabled-with-reason was unreliable — the run-time check is authoritative.)
 
 ---
 

@@ -1,6 +1,6 @@
-import { i18n } from '../i18n'
-import { sdk } from '../sdk'
-import { nextcloudMount } from '../utils'
+import { i18n } from '../../i18n'
+import { sdk } from '../../sdk'
+import { nextcloudMount } from '../../utils'
 
 export const disableMaintenanceMode = sdk.Action.withoutInput(
   // id
@@ -10,11 +10,11 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
   async ({ effects }) => ({
     name: i18n('Disable Maintenance Mode'),
     description: i18n(
-      'Use this if your UI has gotten stuck in "Maintenance Mode". Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart. The typical solution is to BE PATIENT and allow the opportunity for organic progress. Resort to this action only if necessary. Being in maintenance mode for more than 15min likely constitutes "being stuck."',
+      'Use this if the UI is stuck in "Maintenance Mode" for more than 15 minutes. Brief maintenance mode is normal after updates (including some Nextcloud app updates) or restarts — wait first before resorting to this action.',
     ),
     warning: null,
     allowedStatuses: 'only-running',
-    group: 'CLI Tools',
+    group: 'Maintenance',
     visibility: 'enabled',
   }),
 

@@ -1,6 +1,6 @@
-import { i18n } from '../i18n'
-import { sdk } from '../sdk'
-import { nextcloudMount } from '../utils'
+import { i18n } from '../../i18n'
+import { sdk } from '../../sdk'
+import { nextcloudMount } from '../../utils'
 
 export const disableUnstableApps = sdk.Action.withoutInput(
   // id
@@ -13,10 +13,10 @@ export const disableUnstableApps = sdk.Action.withoutInput(
       'Use this if unstable apps were installed resulting in the UI becoming inaccessible with an Internal Server Error: "The server was unable to complete your request".',
     ),
     warning: i18n(
-      'Running this action will disable ALL non-default app(s). Stable apps will need to be individually re-enabled.',
+      'Disables ALL non-default apps. Stable apps must be re-enabled individually.',
     ),
     allowedStatuses: 'only-running',
-    group: null,
+    group: 'Maintenance',
     visibility: 'enabled',
   }),
 

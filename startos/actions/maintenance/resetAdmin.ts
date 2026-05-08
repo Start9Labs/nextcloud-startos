@@ -1,6 +1,6 @@
-import { i18n } from '../i18n'
-import { sdk } from '../sdk'
-import { getRandomPassword, nextcloudMount } from '../utils'
+import { i18n } from '../../i18n'
+import { sdk } from '../../sdk'
+import { getRandomPassword, nextcloudMount } from '../../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -38,7 +38,7 @@ export const resetAdmin = sdk.Action.withInput(
     description: i18n('Generate a new password for an admin user'),
     warning: null,
     allowedStatuses: 'only-running',
-    group: null,
+    group: 'Maintenance',
     visibility: 'enabled',
   }),
 

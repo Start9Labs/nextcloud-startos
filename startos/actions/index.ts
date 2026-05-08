@@ -1,11 +1,11 @@
 import { sdk } from '../sdk'
+import { downloadModels } from './app-commands/downloadModels'
+import { indexMemories } from './app-commands/indexMemories'
+import { indexPlaces } from './app-commands/indexPlaces'
 import { getAdminCredentials } from './getAdminCredentials'
-import { disableMaintenanceMode } from './disableMaintenanceMode'
-import { disableUnstableApps } from './disableUnstableApps'
-import { downloadModels } from './downloadModels'
-import { indexMemories } from './indexMemories'
-import { indexPlaces } from './indexPlaces'
-import { resetAdmin } from './resetAdmin'
+import { disableMaintenanceMode } from './maintenance/disableMaintenanceMode'
+import { disableUnstableApps } from './maintenance/disableUnstableApps'
+import { resetAdmin } from './maintenance/resetAdmin'
 import { setConfig } from './setConfig'
 
 export const actions = sdk.Actions.of()
