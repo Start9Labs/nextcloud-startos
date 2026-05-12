@@ -9,10 +9,6 @@ export const manifest = setupManifest({
     'https://github.com/Start9Labs/nextcloud-startos',
   upstreamRepo: 'https://github.com/nextcloud/docker',
   marketingUrl: 'https://nextcloud.com/',
-  docsUrls: [
-    'https://docs.nextcloud.com/server/latest/admin_manual/',
-    'https://docs.nextcloud.com/server/latest/user_manual/en/',
-  ],
   donationUrl: null,
   description: { short, long },
   volumes: ['main', 'nextcloud', 'db'],
