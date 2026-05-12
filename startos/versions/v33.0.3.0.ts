@@ -177,49 +177,49 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_9_0 = VersionInfo.of({
-  version: '32.0.9:0',
+export const v_33_0_3_0 = VersionInfo.of({
+  version: '33.0.3:0',
   releaseNotes: {
     en_US: `**Bumps**
 
-- Nextcloud → 32.0.9
+- Nextcloud → 33.0.3 (Hub 13)
+- start-sdk → 1.5.0
 
-**Fixes**
+**Notes**
 
-- App-command actions (Recognize model download, Memories indexing, Memories map setup) no longer auto-restart Nextcloud when a task completes.
-- Recognize/Memories prerequisite checks now run at action invocation and throw a clear error if the app is missing, instead of relying on UI visibility gating that did not refresh after install.`,
+- Nextcloud 33 disables the MP3 cover-art preview provider by default for performance and stability. Re-enable it from the admin previews settings if you rely on it.`,
     es_ES: `**Cambios de versión**
 
-- Nextcloud → 32.0.9
+- Nextcloud → 33.0.3 (Hub 13)
+- start-sdk → 1.5.0
 
-**Correcciones**
+**Notas**
 
-- Las acciones de comando de aplicaciones (descarga de modelos de Recognize, indexación de Memories, configuración del mapa de Memories) ya no reinician Nextcloud automáticamente cuando finaliza una tarea.
-- Las comprobaciones de requisitos de Recognize/Memories se realizan ahora al invocar la acción y muestran un error claro si la aplicación no está instalada, en lugar de depender de un bloqueo en la interfaz que no se actualizaba tras la instalación.`,
+- Nextcloud 33 desactiva por defecto el proveedor de previsualización de carátulas MP3 por motivos de rendimiento y estabilidad. Reactívalo en la configuración de previsualizaciones del administrador si lo necesitas.`,
     de_DE: `**Versionserhöhungen**
 
-- Nextcloud → 32.0.9
+- Nextcloud → 33.0.3 (Hub 13)
+- start-sdk → 1.5.0
 
-**Fehlerbehebungen**
+**Hinweise**
 
-- App-Command-Aktionen (Recognize-Modell-Download, Memories-Indexierung, Memories-Karteneinrichtung) starten Nextcloud nicht mehr automatisch neu, wenn eine Aufgabe abgeschlossen wird.
-- Die Voraussetzungsprüfungen für Recognize/Memories werden jetzt beim Aufrufen der Aktion ausgeführt und zeigen einen klaren Fehler an, wenn die App fehlt, anstatt sich auf eine UI-Sperre zu verlassen, die nach der Installation nicht aktualisiert wurde.`,
+- Nextcloud 33 deaktiviert den MP3-Cover-Vorschauanbieter standardmäßig aus Leistungs- und Stabilitätsgründen. Bei Bedarf in den Vorschaueinstellungen des Administrators wieder aktivieren.`,
     pl_PL: `**Aktualizacje wersji**
 
-- Nextcloud → 32.0.9
+- Nextcloud → 33.0.3 (Hub 13)
+- start-sdk → 1.5.0
 
-**Poprawki**
+**Uwagi**
 
-- Akcje poleceń aplikacji (pobieranie modeli Recognize, indeksowanie Memories, konfiguracja mapy Memories) nie restartują już automatycznie Nextcloud po zakończeniu zadania.
-- Kontrole wymagań Recognize/Memories są teraz wykonywane w momencie uruchomienia akcji i zwracają czytelny błąd, jeśli aplikacja nie jest zainstalowana, zamiast polegać na blokowaniu w interfejsie, które nie odświeżało się po instalacji.`,
+- Nextcloud 33 domyślnie wyłącza dostawcę podglądu okładek MP3 ze względu na wydajność i stabilność. Włącz go ponownie w ustawieniach podglądów administratora, jeśli go potrzebujesz.`,
     fr_FR: `**Mises à jour**
 
-- Nextcloud → 32.0.9
+- Nextcloud → 33.0.3 (Hub 13)
+- start-sdk → 1.5.0
 
-**Corrections**
+**Notes**
 
-- Les actions de commande d'application (téléchargement des modèles Recognize, indexation Memories, configuration de la carte Memories) ne redémarrent plus automatiquement Nextcloud lorsqu'une tâche se termine.
-- Les vérifications des prérequis Recognize/Memories sont désormais effectuées au lancement de l'action et affichent une erreur claire si l'application est manquante, au lieu de s'appuyer sur un verrouillage de l'interface qui ne se rafraîchissait pas après l'installation.`,
+- Nextcloud 33 désactive par défaut le fournisseur d'aperçu de pochettes MP3 pour des raisons de performance et de stabilité. Réactivez-le depuis les paramètres d'aperçus de l'administrateur si vous en avez besoin.`,
   },
   migrations: {
     up: async ({ effects }) => {

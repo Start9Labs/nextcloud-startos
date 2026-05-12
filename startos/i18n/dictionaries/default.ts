@@ -16,7 +16,7 @@ const dict = {
   // bootstrapNextcloud.ts
   'Display your admin password so you can administer your Nextcloud instance': 8,
 
-  // v32.0.5.0.ts
+  // v33.0.3.0.ts
   'Admin password could not be recovered from migration. Please reset it.': 9,
 
   // setConfig.ts
