@@ -177,49 +177,24 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_9_0 = VersionInfo.of({
-  version: '32.0.9:0',
+export const v_32_0_9_1 = VersionInfo.of({
+  version: '32.0.9:1',
   releaseNotes: {
-    en_US: `**Bumps**
+    en_US: `**Internal**
 
-- Nextcloud → 32.0.9
+- Update to start-sdk 1.5.0.`,
+    es_ES: `**Interno**
 
-**Fixes**
+- Actualización a start-sdk 1.5.0.`,
+    de_DE: `**Intern**
 
-- App-command actions (Recognize model download, Memories indexing, Memories map setup) no longer auto-restart Nextcloud when a task completes.
-- Recognize/Memories prerequisite checks now run at action invocation and throw a clear error if the app is missing, instead of relying on UI visibility gating that did not refresh after install.`,
-    es_ES: `**Cambios de versión**
+- Aktualisierung auf start-sdk 1.5.0.`,
+    pl_PL: `**Wewnętrzne**
 
-- Nextcloud → 32.0.9
+- Aktualizacja do start-sdk 1.5.0.`,
+    fr_FR: `**Interne**
 
-**Correcciones**
-
-- Las acciones de comando de aplicaciones (descarga de modelos de Recognize, indexación de Memories, configuración del mapa de Memories) ya no reinician Nextcloud automáticamente cuando finaliza una tarea.
-- Las comprobaciones de requisitos de Recognize/Memories se realizan ahora al invocar la acción y muestran un error claro si la aplicación no está instalada, en lugar de depender de un bloqueo en la interfaz que no se actualizaba tras la instalación.`,
-    de_DE: `**Versionserhöhungen**
-
-- Nextcloud → 32.0.9
-
-**Fehlerbehebungen**
-
-- App-Command-Aktionen (Recognize-Modell-Download, Memories-Indexierung, Memories-Karteneinrichtung) starten Nextcloud nicht mehr automatisch neu, wenn eine Aufgabe abgeschlossen wird.
-- Die Voraussetzungsprüfungen für Recognize/Memories werden jetzt beim Aufrufen der Aktion ausgeführt und zeigen einen klaren Fehler an, wenn die App fehlt, anstatt sich auf eine UI-Sperre zu verlassen, die nach der Installation nicht aktualisiert wurde.`,
-    pl_PL: `**Aktualizacje wersji**
-
-- Nextcloud → 32.0.9
-
-**Poprawki**
-
-- Akcje poleceń aplikacji (pobieranie modeli Recognize, indeksowanie Memories, konfiguracja mapy Memories) nie restartują już automatycznie Nextcloud po zakończeniu zadania.
-- Kontrole wymagań Recognize/Memories są teraz wykonywane w momencie uruchomienia akcji i zwracają czytelny błąd, jeśli aplikacja nie jest zainstalowana, zamiast polegać na blokowaniu w interfejsie, które nie odświeżało się po instalacji.`,
-    fr_FR: `**Mises à jour**
-
-- Nextcloud → 32.0.9
-
-**Corrections**
-
-- Les actions de commande d'application (téléchargement des modèles Recognize, indexation Memories, configuration de la carte Memories) ne redémarrent plus automatiquement Nextcloud lorsqu'une tâche se termine.
-- Les vérifications des prérequis Recognize/Memories sont désormais effectuées au lancement de l'action et affichent une erreur claire si l'application est manquante, au lieu de s'appuyer sur un verrouillage de l'interface qui ne se rafraîchissait pas après l'installation.`,
+- Mise à jour vers start-sdk 1.5.0.`,
   },
   migrations: {
     up: async ({ effects }) => {
