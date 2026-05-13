@@ -180,19 +180,39 @@ const migrateNextcloud = async (effects: T.Effects) => {
 export const v_32_0_9_1 = VersionInfo.of({
   version: '32.0.9:1',
   releaseNotes: {
-    en_US: `**Internal**
+    en_US: `**Features**
+
+- Long-running background tasks (Recognize model download, Memories indexing, Memories map setup) now post a StartOS notification when they finish.
+
+**Internal**
 
 - Update to start-sdk 1.5.0.`,
-    es_ES: `**Interno**
+    es_ES: `**Funciones**
+
+- Las tareas en segundo plano de larga duración (descarga de modelos de Recognize, indexación de Memories, configuración del mapa de Memories) ahora publican una notificación en StartOS cuando finalizan.
+
+**Interno**
 
 - Actualización a start-sdk 1.5.0.`,
-    de_DE: `**Intern**
+    de_DE: `**Funktionen**
+
+- Lang laufende Hintergrundaufgaben (Recognize-Modell-Download, Memories-Indexierung, Memories-Karten-Einrichtung) senden jetzt eine StartOS-Benachrichtigung, wenn sie abgeschlossen sind.
+
+**Intern**
 
 - Aktualisierung auf start-sdk 1.5.0.`,
-    pl_PL: `**Wewnętrzne**
+    pl_PL: `**Funkcje**
+
+- Długotrwałe zadania w tle (pobieranie modeli Recognize, indeksowanie Memories, konfiguracja mapy Memories) publikują teraz powiadomienie w StartOS po zakończeniu.
+
+**Wewnętrzne**
 
 - Aktualizacja do start-sdk 1.5.0.`,
-    fr_FR: `**Interne**
+    fr_FR: `**Fonctionnalités**
+
+- Les tâches d'arrière-plan de longue durée (téléchargement des modèles Recognize, indexation Memories, configuration de la carte Memories) publient désormais une notification StartOS lorsqu'elles se terminent.
+
+**Interne**
 
 - Mise à jour vers start-sdk 1.5.0.`,
   },

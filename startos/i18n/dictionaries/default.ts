@@ -125,6 +125,26 @@ const dict = {
   // Maintenance actions: tightened wording.
   'Use this if the UI is stuck in "Maintenance Mode" for more than 15 minutes. Brief maintenance mode is normal after updates (including some Nextcloud app updates) or restarts — wait first before resorting to this action.': 81,
   'Disables ALL non-default apps. Stable apps must be re-enabled individually.': 82,
+
+  // main.ts: long-running task completion notifications (posted from runOcc)
+  'Recognize Models Downloaded': 83,
+  'The Recognize app has finished downloading its machine learning models. Object and face recognition is now available.': 84,
+  'Recognize Model Download Failed': 85,
+  'The Recognize model download exited with an error — tap for the last log lines. Re-run the "Download Machine Learning Models for Recognize" action to retry.': 86,
+  'Memories Indexing Complete': 87,
+  'The Memories app has finished re-indexing your media.': 88,
+  'Memories Indexing Failed': 89,
+  'The Memories media re-index exited with an error — tap for the last log lines. Re-run the "Index Media for Memories" action to retry.': 90,
+  'Memories Map Setup Complete': 91,
+  'Map data has finished downloading and your photos have been re-indexed for reverse geotagging in the Memories app.': 92,
+  'Memories Map Setup Failed': 93,
+  'The Memories map setup exited with an error — tap for the last log lines. Re-run the "Setup Map for Memories" action to retry.': 94,
+  // main.ts: failure-notification "View Details" body (built by logDetails)
+  'Last lines from the service log:': 95,
+  'The command produced no output before exiting.': 96,
+  'Exit code:': 97,
+  'Terminated by signal:': 98,
+  'SIGKILL usually means the task ran out of memory.': 99,
 } as const
 
 /**
