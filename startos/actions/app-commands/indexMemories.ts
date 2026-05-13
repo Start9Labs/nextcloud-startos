@@ -13,7 +13,9 @@ export const indexMemories = sdk.Action.withoutInput(
     description: i18n(
       'Triggers a background re-index of media for the Memories app. Indexing normally runs every 5 minutes via Nextcloud background jobs; use this only to force a re-index. You must install the Memories app and select your media path before running this action.',
     ),
-    warning: null,
+    warning: i18n(
+      'Forces a full media re-index and restarts the service. Memories already re-indexes itself every 5 minutes via background jobs.',
+    ),
     allowedStatuses: 'any',
     group: 'App Commands',
     visibility: 'enabled',

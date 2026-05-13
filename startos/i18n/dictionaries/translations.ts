@@ -102,6 +102,7 @@ export default {
     97: 'Código de salida:',
     98: 'Terminado por la señal:',
     99: 'SIGKILL suele indicar que la tarea se quedó sin memoria.',
+    100: 'Fuerza una reindexación completa de medios y reinicia el servicio. Memories ya se reindexa solo cada 5 minutos mediante tareas en segundo plano.',
   },
   de_DE: {
     0: 'Starte Nextcloud...',
@@ -204,6 +205,7 @@ export default {
     97: 'Exit-Code:',
     98: 'Beendet durch Signal:',
     99: 'SIGKILL bedeutet meist, dass der Task keinen Arbeitsspeicher mehr hatte.',
+    100: 'Erzwingt eine vollständige Medien-Neuindexierung und startet den Dienst neu. Memories indexiert sich bereits alle 5 Minuten über Hintergrundaufgaben selbst neu.',
   },
   pl_PL: {
     0: 'Uruchamianie Nextcloud...',
@@ -306,6 +308,7 @@ export default {
     97: 'Kod wyjścia:',
     98: 'Zakończono sygnałem:',
     99: 'SIGKILL zwykle oznacza, że zadaniu zabrakło pamięci.',
+    100: 'Wymusza pełne ponowne indeksowanie multimediów i ponownie uruchamia usługę. Memories i tak ponownie indeksuje się co 5 minut za pomocą zadań w tle.',
   },
   fr_FR: {
     0: 'Démarrage de Nextcloud...',
@@ -408,5 +411,6 @@ export default {
     97: 'Code de sortie :',
     98: 'Terminé par le signal :',
     99: 'SIGKILL signifie généralement que la tâche a manqué de mémoire.',
+    100: "Force une réindexation complète des médias et redémarre le service. Memories se réindexe déjà toutes les 5 minutes via les tâches d'arrière-plan.",
   },
 } satisfies Record<string, LangDict>

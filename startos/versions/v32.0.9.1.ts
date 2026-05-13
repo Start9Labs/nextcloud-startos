@@ -183,6 +183,7 @@ export const v_32_0_9_1 = VersionInfo.of({
     en_US: `**Features**
 
 - Long-running background tasks (Recognize model download, Memories indexing, Memories map setup) now post a StartOS notification when they finish.
+- The "Index Media for Memories" action now asks for confirmation before forcing a re-index.
 
 **Internal**
 
@@ -190,6 +191,7 @@ export const v_32_0_9_1 = VersionInfo.of({
     es_ES: `**Funciones**
 
 - Las tareas en segundo plano de larga duración (descarga de modelos de Recognize, indexación de Memories, configuración del mapa de Memories) ahora publican una notificación en StartOS cuando finalizan.
+- La acción "Indexar medios para Memories" ahora pide confirmación antes de forzar una reindexación.
 
 **Interno**
 
@@ -197,6 +199,7 @@ export const v_32_0_9_1 = VersionInfo.of({
     de_DE: `**Funktionen**
 
 - Lang laufende Hintergrundaufgaben (Recognize-Modell-Download, Memories-Indexierung, Memories-Karten-Einrichtung) senden jetzt eine StartOS-Benachrichtigung, wenn sie abgeschlossen sind.
+- Die Aktion "Medien für Memories indexieren" fragt jetzt vor einer erzwungenen Neuindexierung nach Bestätigung.
 
 **Intern**
 
@@ -204,6 +207,7 @@ export const v_32_0_9_1 = VersionInfo.of({
     pl_PL: `**Funkcje**
 
 - Długotrwałe zadania w tle (pobieranie modeli Recognize, indeksowanie Memories, konfiguracja mapy Memories) publikują teraz powiadomienie w StartOS po zakończeniu.
+- Akcja "Indeksuj multimedia dla Memories" prosi teraz o potwierdzenie przed wymuszeniem ponownego indeksowania.
 
 **Wewnętrzne**
 
@@ -211,6 +215,7 @@ export const v_32_0_9_1 = VersionInfo.of({
     fr_FR: `**Fonctionnalités**
 
 - Les tâches d'arrière-plan de longue durée (téléchargement des modèles Recognize, indexation Memories, configuration de la carte Memories) publient désormais une notification StartOS lorsqu'elles se terminent.
+- L'action « Indexer les médias pour Memories » demande désormais une confirmation avant de forcer une réindexation.
 
 **Interne**
 

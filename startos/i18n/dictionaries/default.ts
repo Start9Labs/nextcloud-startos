@@ -145,6 +145,9 @@ const dict = {
   'Exit code:': 97,
   'Terminated by signal:': 98,
   'SIGKILL usually means the task ran out of memory.': 99,
+
+  // indexMemories.ts: confirmation warning shown before the action runs
+  'Forces a full media re-index and restarts the service. Memories already re-indexes itself every 5 minutes via background jobs.': 100,
 } as const
 
 /**
