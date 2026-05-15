@@ -177,49 +177,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_9_1 = VersionInfo.of({
-  version: '32.0.9:1',
+export const v_32_0_9_2 = VersionInfo.of({
+  version: '32.0.9:2',
   releaseNotes: {
-    en_US: `**Features**
-
-- Long-running background tasks (Recognize model download, Memories indexing, Memories map setup) now post a StartOS notification when they finish.
-- The "Index Media for Memories" action now asks for confirmation before forcing a re-index.
-
-**Internal**
-
-- Update to start-sdk 1.5.0.`,
-    es_ES: `**Funciones**
-
-- Las tareas en segundo plano de larga duración (descarga de modelos de Recognize, indexación de Memories, configuración del mapa de Memories) ahora publican una notificación en StartOS cuando finalizan.
-- La acción "Indexar medios para Memories" ahora pide confirmación antes de forzar una reindexación.
-
-**Interno**
-
-- Actualización a start-sdk 1.5.0.`,
-    de_DE: `**Funktionen**
-
-- Lang laufende Hintergrundaufgaben (Recognize-Modell-Download, Memories-Indexierung, Memories-Karten-Einrichtung) senden jetzt eine StartOS-Benachrichtigung, wenn sie abgeschlossen sind.
-- Die Aktion "Medien für Memories indexieren" fragt jetzt vor einer erzwungenen Neuindexierung nach Bestätigung.
-
-**Intern**
-
-- Aktualisierung auf start-sdk 1.5.0.`,
-    pl_PL: `**Funkcje**
-
-- Długotrwałe zadania w tle (pobieranie modeli Recognize, indeksowanie Memories, konfiguracja mapy Memories) publikują teraz powiadomienie w StartOS po zakończeniu.
-- Akcja "Indeksuj multimedia dla Memories" prosi teraz o potwierdzenie przed wymuszeniem ponownego indeksowania.
-
-**Wewnętrzne**
-
-- Aktualizacja do start-sdk 1.5.0.`,
-    fr_FR: `**Fonctionnalités**
-
-- Les tâches d'arrière-plan de longue durée (téléchargement des modèles Recognize, indexation Memories, configuration de la carte Memories) publient désormais une notification StartOS lorsqu'elles se terminent.
-- L'action « Indexer les médias pour Memories » demande désormais une confirmation avant de forcer une réindexation.
-
-**Interne**
-
-- Mise à jour vers start-sdk 1.5.0.`,
+    en_US: 'Fixes a bug that caused database backups to be empty.',
+    es_ES: 'Corrige un error que provocaba que las copias de seguridad de la base de datos estuvieran vacías.',
+    de_DE: 'Behebt einen Fehler, durch den Datenbank-Backups leer waren.',
+    pl_PL: 'Naprawia błąd powodujący, że kopie zapasowe bazy danych były puste.',
+    fr_FR: 'Corrige un bug qui rendait les sauvegardes de base de données vides.',
   },
   migrations: {
     up: async ({ effects }) => {
