@@ -8,6 +8,24 @@ import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { NEXTCLOUD_PATH, PGDATA, POSTGRES_PATH, nextcloudMount } from '../utils'
 
+const POSTGRES_VOLUME_HOST = '/media/startos/volumes/db' as const
+
+// True when 0.3.5x left config.yaml on the main volume but no postgres cluster
+// was ever written — the user configured Nextcloud but never started it. In
+// that state relocatePostgres fails on the missing source (the "mv 17/main"
+// error) and migrateNextcloud fails on the empty app volume; there's nothing
+// to migrate, so we surface a clear "uninstall and reinstall" message instead.
+const isNeverStarted = async (): Promise<boolean> => {
+  for (const p of [
+    `${POSTGRES_VOLUME_HOST}/17/main`,
+    `${POSTGRES_VOLUME_HOST}/15/main`,
+    `${POSTGRES_VOLUME_HOST}/data`,
+  ]) {
+    if (await stat(p).then(() => true, () => false)) return false
+  }
+  return true
+}
+
 const relocatePostgres = async (effects: T.Effects) => {
   const pgMounts = sdk.Mounts.of().mountVolume({
     volumeId: 'db',
@@ -197,6 +215,11 @@ export const v_32_0_9_2 = VersionInfo.of({
       ).then(YAML.parse, () => undefined)
 
       if (configYaml) {
+        if (await isNeverStarted()) {
+          throw new Error(
+            'This Nextcloud package was configured on StartOS 0.3.5x but never started, so there is no data to migrate to 0.4.0. Please uninstall the Nextcloud package and reinstall it to set up a fresh 0.4.0 install.',
+          )
+        }
         await relocatePostgres(effects)
         await migrateConfig(effects, configYaml)
         await migrateNextcloud(effects)
