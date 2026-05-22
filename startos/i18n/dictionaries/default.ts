@@ -156,7 +156,7 @@ const dict = {
   'The file cache has been rebuilt. Externally synced files should now appear correctly in the Nextcloud UI.': 104,
 
   // repair.ts
-  'Repair': 105,
+  Repair: 105,
   'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.': 106,
   'Repair Complete': 107,
   'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.': 108,
