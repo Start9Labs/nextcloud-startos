@@ -148,6 +148,18 @@ const dict = {
 
   // indexMemories.ts: confirmation warning shown before the action runs
   'Forces a full media re-index and restarts the service. Memories already re-indexes itself every 5 minutes via background jobs.': 100,
+
+  // scanFiles.ts
+  'Scan Files': 101,
+  'Rebuilds the file cache index. Run this after syncing files externally (e.g. via rclone, rsync, or SFTP). Without a scan, externally added or modified files may appear stale, show incorrect sizes, or be missing from search.': 102,
+  'Scan Complete': 103,
+  'The file cache has been rebuilt. Externally synced files should now appear correctly in the Nextcloud UI.': 104,
+
+  // repair.ts
+  'Repair': 105,
+  'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.': 106,
+  'Repair Complete': 107,
+  'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.': 108,
 } as const
 
 /**
