@@ -1,13 +1,10 @@
-import { isPending, storeJson } from '../../fileModels/store.json'
 import { i18n } from '../../i18n'
-import { sdk } from '../../sdk'
 import { requireNextcloudApp } from '../../utils'
+import { queuedTaskAction } from '../queuedTask'
 
-export const indexPlaces = sdk.Action.withoutInput(
-  // id
+export const indexPlaces = queuedTaskAction(
   'index-places',
-
-  // metadata
+  'indexPlaces',
   {
     name: i18n('Setup Map for Memories'),
     description: i18n(
@@ -20,40 +17,9 @@ export const indexPlaces = sdk.Action.withoutInput(
     group: 'App Commands',
     visibility: 'enabled',
   },
-
-  // the execution function
-  async ({ effects }) => {
-    await requireNextcloudApp(
+  () =>
+    requireNextcloudApp(
       'memories',
       i18n('Install the Memories app in Nextcloud first.'),
-    )
-    const store = await storeJson.read().once()
-    if (
-      isPending(
-        store?.actions.pending ?? {},
-        store?.actions.completed ?? {},
-        'indexPlaces',
-      )
-    ) {
-      return {
-        version: '1',
-        title: i18n('Already in Progress'),
-        message: i18n('Action is already in progress.'),
-        result: null,
-      }
-    }
-
-    await storeJson.merge(effects, {
-      actions: { pending: { indexPlaces: Date.now() } },
-    })
-
-    return {
-      version: '1',
-      title: i18n('In Progress'),
-      message: i18n(
-        'Service has been automatically restarted and a new health check created to monitor progress.',
-      ),
-      result: null,
-    }
-  },
+    ),
 )
