@@ -21,7 +21,13 @@ const isNeverStarted = async (): Promise<boolean> => {
     `${POSTGRES_VOLUME_HOST}/15/main`,
     `${POSTGRES_VOLUME_HOST}/data`,
   ]) {
-    if (await stat(p).then(() => true, () => false)) return false
+    if (
+      await stat(p).then(
+        () => true,
+        () => false,
+      )
+    )
+      return false
   }
   return true
 }
@@ -195,14 +201,17 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_9_2 = VersionInfo.of({
-  version: '32.0.9:2',
+export const v_32_0_9_3 = VersionInfo.of({
+  version: '32.0.9:3',
   releaseNotes: {
-    en_US: 'Fixes a bug that caused database backups to be empty.',
-    es_ES: 'Corrige un error que provocaba que las copias de seguridad de la base de datos estuvieran vacías.',
-    de_DE: 'Behebt einen Fehler, durch den Datenbank-Backups leer waren.',
-    pl_PL: 'Naprawia błąd powodujący, że kopie zapasowe bazy danych były puste.',
-    fr_FR: 'Corrige un bug qui rendait les sauvegardes de base de données vides.',
+    en_US: 'Adds "Scan Files" and "Repair" maintenance actions.',
+    es_ES:
+      'Añade las acciones de mantenimiento «Escanear archivos» y «Reparar».',
+    de_DE:
+      'Fügt die Wartungsaktionen „Dateien scannen“ und „Reparieren“ hinzu.',
+    pl_PL: 'Dodaje akcje konserwacji „Skanuj pliki” i „Napraw”.',
+    fr_FR:
+      'Ajoute les actions de maintenance « Scanner les fichiers » et « Réparer ».',
   },
   migrations: {
     up: async ({ effects }) => {

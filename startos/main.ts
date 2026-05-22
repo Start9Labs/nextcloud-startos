@@ -23,6 +23,8 @@ const OCC_ARGS: Record<ActionId, string[]> = {
   downloadModels: ['recognize:download-models'],
   indexMemories: ['memories:index'],
   indexPlaces: ['memories:places-setup'],
+  scanFiles: ['files:scan', '--all'],
+  repair: ['maintenance:repair', '--no-interaction'],
 }
 
 // On failure a task's notification shows the last LOG_TAIL_LINES lines of its
@@ -83,6 +85,34 @@ const TASK_NOTICE: Record<
       title: i18n('Memories Map Setup Failed'),
       message: i18n(
         'The Memories map setup exited with an error — tap for the last log lines. Re-run the "Setup Map for Memories" action to retry.',
+      ),
+    },
+  },
+  scanFiles: {
+    ok: {
+      title: i18n('Scan Complete'),
+      message: i18n(
+        'The file cache has been rebuilt. Externally synced files should now appear correctly in the Nextcloud UI.',
+      ),
+    },
+    failed: {
+      title: i18n('File Scan Failed'),
+      message: i18n(
+        'The file scan exited with an error — tap for the last log lines. Re-run the "Scan Files" action to retry.',
+      ),
+    },
+  },
+  repair: {
+    ok: {
+      title: i18n('Repair Complete'),
+      message: i18n(
+        'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.',
+      ),
+    },
+    failed: {
+      title: i18n('Repair Failed'),
+      message: i18n(
+        'The repair routine exited with an error — tap for the last log lines. Re-run the "Repair" action to retry.',
       ),
     },
   },
@@ -250,6 +280,28 @@ export const main = sdk.setupMain(async ({ effects }) => {
                 'indexPlaces',
                 i18n('Setting up map data for the Memories app...'),
               ),
+            },
+            requires: ['nextcloud'] as const,
+          }
+        : null,
+    )
+    .addHealthCheck('scan-files', () =>
+      isPending(pending, completed, 'scanFiles')
+        ? {
+            ready: {
+              display: i18n('File Scan'),
+              fn: taskHealth('scanFiles', i18n('Scanning files...')),
+            },
+            requires: ['nextcloud'] as const,
+          }
+        : null,
+    )
+    .addHealthCheck('repair', () =>
+      isPending(pending, completed, 'repair')
+        ? {
+            ready: {
+              display: i18n('Repair'),
+              fn: taskHealth('repair', i18n('Repairing Nextcloud...')),
             },
             requires: ['nextcloud'] as const,
           }

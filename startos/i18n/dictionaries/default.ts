@@ -148,6 +148,27 @@ const dict = {
 
   // indexMemories.ts: confirmation warning shown before the action runs
   'Forces a full media re-index and restarts the service. Memories already re-indexes itself every 5 minutes via background jobs.': 100,
+
+  // scanFiles.ts / repair.ts: action name + description
+  'Scan Files': 101,
+  'Rebuilds the file cache index. Run this after syncing files externally (e.g. via rclone, rsync, or SFTP). Without a scan, externally added or modified files may appear stale, show incorrect sizes, or be missing from search.': 102,
+  Repair: 105,
+  'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.': 106,
+
+  // main.ts: scan-files / repair health checks (the repair check reuses 'Repair')
+  'File Scan': 115,
+  'Scanning files...': 109,
+  'Repairing Nextcloud...': 110,
+
+  // main.ts: scan-files / repair task completion notifications (posted from runOcc)
+  'Scan Complete': 103,
+  'The file cache has been rebuilt. Externally synced files should now appear correctly in the Nextcloud UI.': 104,
+  'File Scan Failed': 111,
+  'The file scan exited with an error — tap for the last log lines. Re-run the "Scan Files" action to retry.': 112,
+  'Repair Complete': 107,
+  'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.': 108,
+  'Repair Failed': 113,
+  'The repair routine exited with an error — tap for the last log lines. Re-run the "Repair" action to retry.': 114,
 } as const
 
 /**

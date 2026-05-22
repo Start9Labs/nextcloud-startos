@@ -161,6 +161,18 @@ Disables all user-installed apps (preserves ~48 Nextcloud defaults). Use when a 
 
 **Warning:** Disables ALL non-default apps, not just the problematic one.
 
+### Scan Files
+
+**Group:** Maintenance
+
+Queues a background `occ files:scan --all` to rebuild the file cache index. Run this after syncing files into the Nextcloud volume externally (e.g. via rclone, rsync, or SFTP). Without a scan, externally added or modified files may appear stale, show incorrect sizes, or be absent from search. The request is recorded in `store.json` and the scan runs as a oneshot in the main daemon chain the next time the service is up (the action starts the service if it is stopped). On a large library the scan can take many minutes; progress is reported via the **File Scan** health check on the service status page, and a notification is posted to the StartOS notifications panel when it finishes (on failure its "View Details" body carries the exit code and the tail of the command's output). Re-invoking while a scan is queued or running is a no-op. If the service is stopped mid-scan the pending flag is left in place and the scan resumes on next start — `files:scan` is idempotent.
+
+### Repair
+
+**Group:** Maintenance
+
+Queues a background `occ maintenance:repair --no-interaction`. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown. The request is recorded in `store.json` and the repair runs as a oneshot in the main daemon chain the next time the service is up (the action starts the service if it is stopped). Progress is reported via the **Repair** health check on the service status page, and a notification is posted when it finishes (on failure its "View Details" body carries the exit code and the tail of the command's output). Re-invoking while a repair is queued or running is a no-op. If the service is stopped mid-repair the pending flag is left in place and the repair resumes on next start.
+
 ### Download Machine Learning Models for Recognize
 
 **Group:** CLI Tools
@@ -296,6 +308,8 @@ actions:
   - reset-admin
   - disable-maintenance
   - disable-unstable-apps
+  - scan-files
+  - repair
   - download-models
   - index-memories
   - index-places
