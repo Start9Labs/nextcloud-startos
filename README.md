@@ -161,6 +161,18 @@ Disables all user-installed apps (preserves ~48 Nextcloud defaults). Use when a 
 
 **Warning:** Disables ALL non-default apps, not just the problematic one.
 
+### Scan Files
+
+**Group:** Maintenance
+
+Runs `occ files:scan --all` as `www-data`. Rebuilds the file cache index. Run this after syncing files into the Nextcloud volume externally (e.g. via rclone, rsync, or SFTP). Without a scan, externally added or modified files may appear stale, show incorrect sizes, or be absent from search. Requires service to be running.
+
+### Repair
+
+**Group:** Maintenance
+
+Runs `occ maintenance:repair --no-interaction` as `www-data`. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown. Requires service to be running.
+
 ### Download Machine Learning Models for Recognize
 
 **Group:** CLI Tools
@@ -296,6 +308,8 @@ actions:
   - reset-admin
   - disable-maintenance
   - disable-unstable-apps
+  - scan-files
+  - repair
   - download-models
   - index-memories
   - index-places
