@@ -5,6 +5,8 @@ export const ACTION_IDS = [
   'downloadModels',
   'indexMemories',
   'indexPlaces',
+  'scanFiles',
+  'repair',
 ] as const
 export type ActionId = (typeof ACTION_IDS)[number]
 
@@ -12,6 +14,8 @@ const actionTimestamps = z.object({
   downloadModels: z.number().optional(),
   indexMemories: z.number().optional(),
   indexPlaces: z.number().optional(),
+  scanFiles: z.number().optional(),
+  repair: z.number().optional(),
 })
 
 const shape = z.object({

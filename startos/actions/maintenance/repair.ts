@@ -1,43 +1,50 @@
+import { isPending, storeJson } from '../../fileModels/store.json'
 import { i18n } from '../../i18n'
 import { sdk } from '../../sdk'
-import { nextcloudMount } from '../../utils'
 
 export const repair = sdk.Action.withoutInput(
   // id
   'repair',
 
   // metadata
-  async ({ effects }) => ({
+  {
     name: i18n('Repair'),
     description: i18n(
       'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.',
     ),
     warning: null,
-    allowedStatuses: 'only-running',
+    allowedStatuses: 'any',
     group: 'Maintenance',
     visibility: 'enabled',
-  }),
+  },
 
-  // execution
+  // the execution function
   async ({ effects }) => {
-    await sdk.SubContainer.withTemp(
-      effects,
-      { imageId: 'nextcloud' },
-      nextcloudMount,
-      'repair-sub',
-      async (sub) => {
-        await sub.execFail(
-          ['php', 'occ', 'maintenance:repair', '--no-interaction'],
-          { user: 'www-data' },
-        )
-      },
-    )
+    const store = await storeJson.read().once()
+    if (
+      isPending(
+        store?.actions.pending ?? {},
+        store?.actions.completed ?? {},
+        'repair',
+      )
+    ) {
+      return {
+        version: '1',
+        title: i18n('Already in Progress'),
+        message: i18n('Action is already in progress.'),
+        result: null,
+      }
+    }
+
+    await storeJson.merge(effects, {
+      actions: { pending: { repair: Date.now() } },
+    })
 
     return {
       version: '1',
-      title: i18n('Repair Complete'),
+      title: i18n('In Progress'),
       message: i18n(
-        'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.',
+        'Service has been automatically restarted and a new health check created to monitor progress.',
       ),
       result: null,
     }
