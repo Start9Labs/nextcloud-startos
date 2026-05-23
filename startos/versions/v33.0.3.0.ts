@@ -201,17 +201,18 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_9_3 = VersionInfo.of({
-  version: '32.0.9:3',
+export const v_33_0_3_0 = VersionInfo.of({
+  version: '33.0.3:0',
   releaseNotes: {
-    en_US: 'Adds "Scan Files" and "Repair" maintenance actions.',
+    en_US: 'Bumps Nextcloud → 33.0.3 (Hub 11); bumps start-sdk → 1.5.3.',
     es_ES:
-      'Añade las acciones de mantenimiento «Escanear archivos» y «Reparar».',
+      'Actualiza Nextcloud → 33.0.3 (Hub 11); actualiza start-sdk → 1.5.3.',
     de_DE:
-      'Fügt die Wartungsaktionen „Dateien scannen“ und „Reparieren“ hinzu.',
-    pl_PL: 'Dodaje akcje konserwacji „Skanuj pliki” i „Napraw”.',
+      'Aktualisiert Nextcloud → 33.0.3 (Hub 11); aktualisiert start-sdk → 1.5.3.',
+    pl_PL:
+      'Aktualizuje Nextcloud → 33.0.3 (Hub 11); aktualizuje start-sdk → 1.5.3.',
     fr_FR:
-      'Ajoute les actions de maintenance « Scanner les fichiers » et « Réparer ».',
+      'Met à jour Nextcloud → 33.0.3 (Hub 11) ; met à jour start-sdk → 1.5.3.',
   },
   migrations: {
     up: async ({ effects }) => {
