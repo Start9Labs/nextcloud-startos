@@ -201,18 +201,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_33_0_3_0 = VersionInfo.of({
-  version: '33.0.3:0',
+export const v_33_0_4_0 = VersionInfo.of({
+  version: '33.0.4:0',
   releaseNotes: {
-    en_US: 'Bumps Nextcloud → 33.0.3 (Hub 11); bumps start-sdk → 1.5.3.',
-    es_ES:
-      'Actualiza Nextcloud → 33.0.3 (Hub 11); actualiza start-sdk → 1.5.3.',
-    de_DE:
-      'Aktualisiert Nextcloud → 33.0.3 (Hub 11); aktualisiert start-sdk → 1.5.3.',
-    pl_PL:
-      'Aktualizuje Nextcloud → 33.0.3 (Hub 11); aktualizuje start-sdk → 1.5.3.',
-    fr_FR:
-      'Met à jour Nextcloud → 33.0.3 (Hub 11) ; met à jour start-sdk → 1.5.3.',
+    en_US: 'Bumps Nextcloud → 33.0.4 (Hub 11).',
+    es_ES: 'Actualiza Nextcloud → 33.0.4 (Hub 11).',
+    de_DE: 'Aktualisiert Nextcloud → 33.0.4 (Hub 11).',
+    pl_PL: 'Aktualizuje Nextcloud → 33.0.4 (Hub 11).',
+    fr_FR: 'Met à jour Nextcloud → 33.0.4 (Hub 11).',
   },
   migrations: {
     up: async ({ effects }) => {
