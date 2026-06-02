@@ -201,7 +201,7 @@ const migrateNextcloud = async (effects: T.Effects) => {
   )
 }
 
-export const v_32_0_9_3 = VersionInfo.of({
+export const current = VersionInfo.of({
   version: '32.0.9:3',
   releaseNotes: {
     en_US: 'Adds "Scan Files" and "Repair" maintenance actions.',
