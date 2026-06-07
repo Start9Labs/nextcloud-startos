@@ -202,13 +202,13 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '32.0.11:0',
+  version: '33.0.5:0',
   releaseNotes: {
-    en_US: 'Bumps Nextcloud to 32.0.11.',
-    es_ES: 'Actualiza Nextcloud a 32.0.11.',
-    de_DE: 'Aktualisiert Nextcloud auf 32.0.11.',
-    pl_PL: 'Aktualizuje Nextcloud do 32.0.11.',
-    fr_FR: 'Met à jour Nextcloud vers 32.0.11.',
+    en_US: 'Bumps Nextcloud to 33.0.5.',
+    es_ES: 'Actualiza Nextcloud a 33.0.5.',
+    de_DE: 'Aktualisiert Nextcloud auf 33.0.5.',
+    pl_PL: 'Aktualizuje Nextcloud do 33.0.5.',
+    fr_FR: 'Met à jour Nextcloud vers 33.0.5.',
   },
   migrations: {
     up: async ({ effects }) => {
