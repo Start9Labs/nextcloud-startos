@@ -202,13 +202,73 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '32.0.11:0',
+  version: '33.0.5:0',
   releaseNotes: {
-    en_US: 'Bumps Nextcloud to 32.0.11.',
-    es_ES: 'Actualiza Nextcloud a 32.0.11.',
-    de_DE: 'Aktualisiert Nextcloud auf 32.0.11.',
-    pl_PL: 'Aktualizuje Nextcloud do 32.0.11.',
-    fr_FR: 'Met à jour Nextcloud vers 32.0.11.',
+    en_US: `Updates Nextcloud to 33.0.5 (Hub 26), a major release.
+
+**Highlights**
+
+- Federated folder shares, Markdown support in comments, and improved file copy/move conflict handling.
+- New localhost-only Prometheus \`/metrics\` endpoint and several apps rebuilt on Vue 3.
+
+**Heads-up**
+
+- The internet-connectivity check now uses \`connectivity.nextcloud.com\`; allow it through any firewall.
+- Drops support for PHP 8.1 and PostgreSQL 13 (this package ships compatible PHP and PostgreSQL 17, so no action needed).
+
+Full changelog: https://nextcloud.com/changelog/`,
+    es_ES: `Actualiza Nextcloud a 33.0.5 (Hub 26), una versión principal.
+
+**Novedades**
+
+- Compartición federada de carpetas, soporte de Markdown en comentarios y mejor gestión de conflictos al copiar/mover archivos.
+- Nuevo endpoint Prometheus \`/metrics\` (solo localhost) y varias apps reconstruidas con Vue 3.
+
+**Aviso**
+
+- La comprobación de conectividad ahora usa \`connectivity.nextcloud.com\`; permítelo en tu cortafuegos.
+- Elimina el soporte de PHP 8.1 y PostgreSQL 13 (este paquete incluye PHP compatible y PostgreSQL 17, así que no hay que hacer nada).
+
+Registro de cambios completo: https://nextcloud.com/changelog/`,
+    de_DE: `Aktualisiert Nextcloud auf 33.0.5 (Hub 26), eine Hauptversion.
+
+**Highlights**
+
+- Föderierte Ordnerfreigaben, Markdown-Unterstützung in Kommentaren und verbesserte Konfliktbehandlung beim Kopieren/Verschieben von Dateien.
+- Neuer Prometheus-\`/metrics\`-Endpunkt (nur localhost) und mehrere auf Vue 3 umgestellte Apps.
+
+**Hinweis**
+
+- Die Internet-Konnektivitätsprüfung nutzt jetzt \`connectivity.nextcloud.com\`; in der Firewall freigeben.
+- Entfernt die Unterstützung für PHP 8.1 und PostgreSQL 13 (dieses Paket liefert kompatibles PHP und PostgreSQL 17 mit, daher ist nichts zu tun).
+
+Vollständiges Änderungsprotokoll: https://nextcloud.com/changelog/`,
+    pl_PL: `Aktualizuje Nextcloud do 33.0.5 (Hub 26), wydanie główne.
+
+**Najważniejsze**
+
+- Federacyjne udostępnianie folderów, obsługa Markdown w komentarzach i lepsza obsługa konfliktów przy kopiowaniu/przenoszeniu plików.
+- Nowy punkt końcowy Prometheus \`/metrics\` (tylko localhost) oraz kilka aplikacji przebudowanych na Vue 3.
+
+**Uwaga**
+
+- Sprawdzanie łączności z internetem korzysta teraz z \`connectivity.nextcloud.com\`; zezwól na nie w zaporze.
+- Usuwa obsługę PHP 8.1 i PostgreSQL 13 (ten pakiet dostarcza zgodny PHP oraz PostgreSQL 17, więc nie trzeba nic robić).
+
+Pełny dziennik zmian: https://nextcloud.com/changelog/`,
+    fr_FR: `Met à jour Nextcloud vers 33.0.5 (Hub 26), une version majeure.
+
+**Nouveautés**
+
+- Partages de dossiers fédérés, prise en charge du Markdown dans les commentaires et meilleure gestion des conflits de copie/déplacement de fichiers.
+- Nouveau point de terminaison Prometheus \`/metrics\` (localhost uniquement) et plusieurs applications reconstruites avec Vue 3.
+
+**À noter**
+
+- La vérification de connectivité Internet utilise désormais \`connectivity.nextcloud.com\` ; autorisez-le dans votre pare-feu.
+- Abandon de la prise en charge de PHP 8.1 et PostgreSQL 13 (ce paquet fournit un PHP compatible et PostgreSQL 17, aucune action requise).
+
+Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
   migrations: {
     up: async ({ effects }) => {
