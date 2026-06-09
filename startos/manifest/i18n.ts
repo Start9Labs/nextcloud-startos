@@ -6,6 +6,19 @@ export const short = {
   fr_FR: 'Un foyer sûr pour toutes vos données',
 }
 
+export const filebrowserDescription = {
+  en_US:
+    'Provides shared file storage that Nextcloud can surface as a folder in Files.',
+  es_ES:
+    'Proporciona almacenamiento de archivos compartido que Nextcloud puede mostrar como una carpeta en Archivos.',
+  de_DE:
+    'Stellt gemeinsam genutzten Dateispeicher bereit, den Nextcloud als Ordner in Dateien anzeigen kann.',
+  pl_PL:
+    'Udostępnia współdzieloną przestrzeń na pliki, którą Nextcloud może pokazać jako folder w aplikacji Pliki.',
+  fr_FR:
+    'Fournit un stockage de fichiers partagé que Nextcloud peut afficher comme un dossier dans Fichiers.',
+}
+
 export const long = {
   en_US:
     'Access & share your files, calendars, contacts, mail & more from any device, on your terms.',
@@ -16,5 +29,5 @@ export const long = {
   pl_PL:
     'Uzyskuj dostęp i udostępniaj pliki, kalendarze, kontakty, pocztę i więcej z dowolnego urządzenia, na własnych warunkach.',
   fr_FR:
-    'Accédez et partagez vos fichiers, calendriers, contacts, courriers et plus depuis n\'importe quel appareil, selon vos conditions.',
+    "Accédez et partagez vos fichiers, calendriers, contacts, courriers et plus depuis n'importe quel appareil, selon vos conditions.",
 }

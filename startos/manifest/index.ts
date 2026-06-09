@@ -1,12 +1,11 @@
 import { setupManifest } from '@start9labs/start-sdk'
-import { long, short } from './i18n'
+import { filebrowserDescription, long, short } from './i18n'
 
 export const manifest = setupManifest({
   id: 'nextcloud',
   title: 'Nextcloud',
   license: 'gpl',
-  packageRepo:
-    'https://github.com/Start9Labs/nextcloud-startos',
+  packageRepo: 'https://github.com/Start9Labs/nextcloud-startos',
   upstreamRepo: 'https://github.com/nextcloud/docker',
   marketingUrl: 'https://nextcloud.com/',
   donationUrl: null,
@@ -42,5 +41,14 @@ export const manifest = setupManifest({
     start: null,
     stop: null,
   },
-  dependencies: {},
+  dependencies: {
+    filebrowser: {
+      description: filebrowserDescription,
+      optional: true,
+      metadata: {
+        title: 'File Browser',
+        icon: 'https://raw.githubusercontent.com/Start9Labs/filebrowser-startos/fbf1fefb51cca9731f2a9a9e6f790ca150aa9d04/icon.svg',
+      },
+    },
+  },
 })

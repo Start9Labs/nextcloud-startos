@@ -169,6 +169,19 @@ const dict = {
   'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.': 108,
   'Repair Failed': 113,
   'The repair routine exited with an error — tap for the last log lines. Re-run the "Repair" action to retry.': 114,
+
+  // externalStorage.ts: External Storage action + File Browser source
+  'External Storage': 116,
+  'Each selected service is mounted into Nextcloud and added to Files. File Browser is mounted read-write, so you can move its files into Nextcloud. Clear a selection to remove it.': 117,
+  'File Browser': 118,
+  "Show other StartOS services' files as folders in Nextcloud Files, via the built-in External Storage app.": 119,
+  'Available to Users': 120,
+  'Which Nextcloud users see the selected storage in their Files. Leave empty to make it available to all users.': 121,
+  'Available to Users — ${source}': 123,
+  'Not mounted': 124,
+  'Available to all users': 125,
+  'Available to specific users': 126,
+  Users: 127,
 } as const
 
 /**

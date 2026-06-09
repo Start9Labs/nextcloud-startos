@@ -18,6 +18,18 @@ export const { createBackup, restoreInit } = sdk.setupBackups(
         return config.dbpassword
       },
     })
+      // Backup scope: the Postgres dump above, the `main` volume (store.json,
+      // admin password), and three subpaths of the `nextcloud` volume below
+      // (user files, config, installed apps).
+      //
+      // External Storage sources (e.g. File Browser, surfaced by the
+      // `external-storage` action) are deliberately NOT backed up here: their
+      // files live on the SOURCE service's own volume, mounted into Nextcloud
+      // at /mnt/filebrowser — never under any dataPath below — so rsync never
+      // touches them, and the source service backs up its own data. Only the
+      // external-mount config + filecache index travel in the pg_dump, so the
+      // mount re-links automatically on restore. Do NOT add the mount path (or
+      // a blanket addVolume('nextcloud')) to this backup set.
       .addVolume('main')
       .addSync({
         dataPath: '/media/startos/volumes/nextcloud/data/',

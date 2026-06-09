@@ -216,6 +216,10 @@ export const current = VersionInfo.of({
 - The internet-connectivity check now uses \`connectivity.nextcloud.com\`; allow it through any firewall.
 - Drops support for PHP 8.1 and PostgreSQL 13 (this package ships compatible PHP and PostgreSQL 17, so no action needed).
 
+**External Storage**
+
+- New action to surface File Browser's shared storage as a folder in your Files, scoped per Nextcloud user — so you can move files into Nextcloud.
+
 Full changelog: https://nextcloud.com/changelog/`,
     es_ES: `Actualiza Nextcloud a 33.0.5 (Hub 26), una versión principal.
 
@@ -228,6 +232,10 @@ Full changelog: https://nextcloud.com/changelog/`,
 
 - La comprobación de conectividad ahora usa \`connectivity.nextcloud.com\`; permítelo en tu cortafuegos.
 - Elimina el soporte de PHP 8.1 y PostgreSQL 13 (este paquete incluye PHP compatible y PostgreSQL 17, así que no hay que hacer nada).
+
+**Almacenamiento externo**
+
+- Nueva acción para mostrar el almacenamiento compartido de File Browser como una carpeta en tus Archivos, por usuario de Nextcloud, para que puedas mover archivos a Nextcloud.
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
     de_DE: `Aktualisiert Nextcloud auf 33.0.5 (Hub 26), eine Hauptversion.
@@ -242,6 +250,10 @@ Registro de cambios completo: https://nextcloud.com/changelog/`,
 - Die Internet-Konnektivitätsprüfung nutzt jetzt \`connectivity.nextcloud.com\`; in der Firewall freigeben.
 - Entfernt die Unterstützung für PHP 8.1 und PostgreSQL 13 (dieses Paket liefert kompatibles PHP und PostgreSQL 17 mit, daher ist nichts zu tun).
 
+**Externer Speicher**
+
+- Neue Aktion, um den gemeinsamen Speicher von File Browser als Ordner in Dateien anzuzeigen — pro Nextcloud-Benutzer, sodass Sie Dateien nach Nextcloud verschieben können.
+
 Vollständiges Änderungsprotokoll: https://nextcloud.com/changelog/`,
     pl_PL: `Aktualizuje Nextcloud do 33.0.5 (Hub 26), wydanie główne.
 
@@ -255,6 +267,10 @@ Vollständiges Änderungsprotokoll: https://nextcloud.com/changelog/`,
 - Sprawdzanie łączności z internetem korzysta teraz z \`connectivity.nextcloud.com\`; zezwól na nie w zaporze.
 - Usuwa obsługę PHP 8.1 i PostgreSQL 13 (ten pakiet dostarcza zgodny PHP oraz PostgreSQL 17, więc nie trzeba nic robić).
 
+**Magazyn zewnętrzny**
+
+- Nowa akcja udostępniająca współdzieloną przestrzeń File Browser jako folder w aplikacji Pliki, per użytkownik Nextcloud, dzięki czemu możesz przenosić pliki do Nextcloud.
+
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
     fr_FR: `Met à jour Nextcloud vers 33.0.5 (Hub 26), une version majeure.
 
@@ -267,6 +283,10 @@ Pełny dziennik zmian: https://nextcloud.com/changelog/`,
 
 - La vérification de connectivité Internet utilise désormais \`connectivity.nextcloud.com\` ; autorisez-le dans votre pare-feu.
 - Abandon de la prise en charge de PHP 8.1 et PostgreSQL 13 (ce paquet fournit un PHP compatible et PostgreSQL 17, aucune action requise).
+
+**Stockage externe**
+
+- Nouvelle action pour afficher le stockage partagé de File Browser comme un dossier dans Fichiers, par utilisateur Nextcloud, afin de pouvoir déplacer des fichiers vers Nextcloud.
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
