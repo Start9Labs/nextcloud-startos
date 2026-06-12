@@ -202,71 +202,76 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.0:0',
   releaseNotes: {
-    en_US: `Updates Nextcloud to 33.0.5 (Hub 26), a major release.
+    en_US: `Updates Nextcloud to 34.0.0 (Hub 26 Spring), a major release.
 
 **Highlights**
 
-- Federated folder shares, Markdown support in comments, and improved file copy/move conflict handling.
-- New localhost-only Prometheus \`/metrics\` endpoint and several apps rebuilt on Vue 3.
+- Euro-Office now bundled in — a collaborative document, spreadsheet, presentation and PDF editor.
+- Nextcloud Assistant goes cross-platform with a Context Agent that searches across files and emails.
+- Preview expiry and on-demand migration, calendar federation, and S3 SSE-KMS encryption support.
 
 **Heads-up**
 
-- The internet-connectivity check now uses \`connectivity.nextcloud.com\`; allow it through any firewall.
-- Drops support for PHP 8.1 and PostgreSQL 13 (this package ships compatible PHP and PostgreSQL 17, so no action needed).
+- Legacy front-end libraries (jQuery, Backbone, Handlebars) are removed; some unmaintained third-party apps may need an update.
+- Runs on PHP 8.2–8.5 and PostgreSQL 17, both shipped with this package, so no action is needed.
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Actualiza Nextcloud a 33.0.5 (Hub 26), una versión principal.
+    es_ES: `Actualiza Nextcloud a 34.0.0 (Hub 26 Spring), una versión principal.
 
 **Novedades**
 
-- Compartición federada de carpetas, soporte de Markdown en comentarios y mejor gestión de conflictos al copiar/mover archivos.
-- Nuevo endpoint Prometheus \`/metrics\` (solo localhost) y varias apps reconstruidas con Vue 3.
+- Ahora incluye Euro-Office: editor colaborativo de documentos, hojas de cálculo, presentaciones y PDF.
+- El Asistente de Nextcloud es multiplataforma, con un Agente de Contexto que busca en archivos y correos.
+- Expiración de vistas previas y migración bajo demanda, federación de calendarios y cifrado S3 SSE-KMS.
 
 **Aviso**
 
-- La comprobación de conectividad ahora usa \`connectivity.nextcloud.com\`; permítelo en tu cortafuegos.
-- Elimina el soporte de PHP 8.1 y PostgreSQL 13 (este paquete incluye PHP compatible y PostgreSQL 17, así que no hay que hacer nada).
+- Se eliminan bibliotecas de front-end heredadas (jQuery, Backbone, Handlebars); algunas apps de terceros sin mantenimiento podrían necesitar actualización.
+- Funciona con PHP 8.2–8.5 y PostgreSQL 17, ambos incluidos en este paquete, así que no hay que hacer nada.
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Aktualisiert Nextcloud auf 33.0.5 (Hub 26), eine Hauptversion.
+    de_DE: `Aktualisiert Nextcloud auf 34.0.0 (Hub 26 Spring), eine Hauptversion.
 
 **Highlights**
 
-- Föderierte Ordnerfreigaben, Markdown-Unterstützung in Kommentaren und verbesserte Konfliktbehandlung beim Kopieren/Verschieben von Dateien.
-- Neuer Prometheus-\`/metrics\`-Endpunkt (nur localhost) und mehrere auf Vue 3 umgestellte Apps.
+- Euro-Office ist jetzt integriert — ein kollaborativer Editor für Dokumente, Tabellen, Präsentationen und PDFs.
+- Der Nextcloud-Assistent wird plattformübergreifend, mit einem Context Agent, der Dateien und E-Mails durchsucht.
+- Vorschau-Ablauf und Migration auf Abruf, Kalender-Föderation und S3-SSE-KMS-Verschlüsselung.
 
 **Hinweis**
 
-- Die Internet-Konnektivitätsprüfung nutzt jetzt \`connectivity.nextcloud.com\`; in der Firewall freigeben.
-- Entfernt die Unterstützung für PHP 8.1 und PostgreSQL 13 (dieses Paket liefert kompatibles PHP und PostgreSQL 17 mit, daher ist nichts zu tun).
+- Veraltete Frontend-Bibliotheken (jQuery, Backbone, Handlebars) wurden entfernt; manche ungepflegten Drittanbieter-Apps brauchen evtl. ein Update.
+- Läuft auf PHP 8.2–8.5 und PostgreSQL 17, beide in diesem Paket enthalten, daher ist nichts zu tun.
 
 Vollständiges Änderungsprotokoll: https://nextcloud.com/changelog/`,
-    pl_PL: `Aktualizuje Nextcloud do 33.0.5 (Hub 26), wydanie główne.
+    pl_PL: `Aktualizuje Nextcloud do 34.0.0 (Hub 26 Spring), wydanie główne.
 
 **Najważniejsze**
 
-- Federacyjne udostępnianie folderów, obsługa Markdown w komentarzach i lepsza obsługa konfliktów przy kopiowaniu/przenoszeniu plików.
-- Nowy punkt końcowy Prometheus \`/metrics\` (tylko localhost) oraz kilka aplikacji przebudowanych na Vue 3.
+- W zestawie znalazł się Euro-Office — współdzielony edytor dokumentów, arkuszy, prezentacji i plików PDF.
+- Asystent Nextcloud działa wieloplatformowo, z Agentem Kontekstu przeszukującym pliki i e-maile.
+- Wygasanie podglądów i migracja na żądanie, federacja kalendarzy oraz szyfrowanie S3 SSE-KMS.
 
 **Uwaga**
 
-- Sprawdzanie łączności z internetem korzysta teraz z \`connectivity.nextcloud.com\`; zezwól na nie w zaporze.
-- Usuwa obsługę PHP 8.1 i PostgreSQL 13 (ten pakiet dostarcza zgodny PHP oraz PostgreSQL 17, więc nie trzeba nic robić).
+- Usunięto przestarzałe biblioteki front-endu (jQuery, Backbone, Handlebars); niektóre nieutrzymywane aplikacje zewnętrzne mogą wymagać aktualizacji.
+- Działa na PHP 8.2–8.5 i PostgreSQL 17 — oba dostarczane z tym pakietem, więc nie trzeba nic robić.
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Met à jour Nextcloud vers 33.0.5 (Hub 26), une version majeure.
+    fr_FR: `Met à jour Nextcloud vers 34.0.0 (Hub 26 Spring), une version majeure.
 
 **Nouveautés**
 
-- Partages de dossiers fédérés, prise en charge du Markdown dans les commentaires et meilleure gestion des conflits de copie/déplacement de fichiers.
-- Nouveau point de terminaison Prometheus \`/metrics\` (localhost uniquement) et plusieurs applications reconstruites avec Vue 3.
+- Euro-Office est désormais intégré — un éditeur collaboratif de documents, feuilles de calcul, présentations et PDF.
+- L'Assistant Nextcloud devient multiplateforme, avec un Context Agent qui cherche dans les fichiers et les e-mails.
+- Expiration des aperçus et migration à la demande, fédération des calendriers et chiffrement S3 SSE-KMS.
 
 **À noter**
 
-- La vérification de connectivité Internet utilise désormais \`connectivity.nextcloud.com\` ; autorisez-le dans votre pare-feu.
-- Abandon de la prise en charge de PHP 8.1 et PostgreSQL 13 (ce paquet fournit un PHP compatible et PostgreSQL 17, aucune action requise).
+- Les bibliothèques front-end héritées (jQuery, Backbone, Handlebars) sont supprimées ; certaines applications tierces non maintenues peuvent nécessiter une mise à jour.
+- Fonctionne avec PHP 8.2–8.5 et PostgreSQL 17, tous deux fournis avec ce paquet, aucune action requise.
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
