@@ -203,6 +203,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
             successMessage: i18n('The web interface is ready'),
             errorMessage: i18n('The web interface is not ready'),
           }),
+        // The stock image's entrypoint runs `occ upgrade` BEFORE it binds the
+        // port, so the UI is legitimately down for the whole migration. Treat
+        // that window as "starting", not "failed", so the status page doesn't
+        // bait a restart mid-upgrade (which is what corrupts it). This is only
+        // display polish — the `finish-upgrade` oneshot below is the real safety
+        // net if a migration is interrupted anyway.
+        gracePeriod: 300_000,
       },
       requires: ['chown', 'postgres', 'valkey'],
     })
@@ -220,6 +227,101 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ready: {
         display: null,
         fn: async () => ({ result: 'success', message: null }),
+      },
+      requires: ['nextcloud'],
+    })
+    .addOneshot('finish-upgrade', {
+      subcontainer: nextcloudSub,
+      exec: {
+        fn: async (subc, abort) => {
+          // Auto-complete an upgrade the stock image's entrypoint left unfinished.
+          //
+          // That entrypoint runs `occ upgrade` only when the deployed code is
+          // behind the image — it never re-checks the version the DB has
+          // acknowledged. So an upgrade interrupted after the file sync but
+          // before the migration completed (e.g. the service was restarted
+          // mid-upgrade) strands the instance permanently: the code is new, the
+          // DB still records the old version, every later start skips the
+          // upgrade, and the UI serves "Update needed — use the command line
+          // updater".
+          //
+          // Running here, AFTER the web daemon is ready (requires:
+          // ['nextcloud']), is what makes this safe:
+          //   - in the normal case the entrypoint has already upgraded by the
+          //     time the daemon is ready, so `needsDbUpgrade` is false and this
+          //     is a no-op — the two upgrades can never overlap; and
+          //   - `occ upgrade` then runs exactly as the manual recovery does,
+          //     with apache up serving the maintenance page while it works.
+          // We fail OPEN: any error is logged/notified and we return, so a
+          // failed migration leaves the UI reachable (fixable by hand) rather
+          // than wedging startup. `occ upgrade` is idempotent, so a redundant
+          // run is harmless.
+          if (abort.aborted) return null
+
+          const status = await subc
+            .exec(['php', 'occ', 'status', '--output=json'], {
+              user: 'www-data',
+            })
+            .catch(() => null)
+          const out = `${status?.stdout?.toString() ?? ''}\n${status?.stderr?.toString() ?? ''}`
+          // Match both the JSON ("needsDbUpgrade":true) and human
+          // (needsDbUpgrade: true) shapes, plus occ's "… require upgrade"
+          // banner — so detection doesn't hinge on --output=json taking effect.
+          if (
+            !/needsDbUpgrade["']?\s*:\s*true/i.test(out) &&
+            !/requires? upgrade/i.test(out)
+          ) {
+            return null
+          }
+
+          console.info(i18n('Completing an interrupted Nextcloud upgrade...'))
+          const child = await subc.spawn(
+            ['php', 'occ', 'upgrade', '--no-interaction'],
+            { user: 'www-data', stdio: 'pipe' },
+          )
+          if (abort.aborted) {
+            child.kill('SIGKILL')
+            return null
+          }
+          abort.addEventListener('abort', () => child.kill('SIGKILL'), {
+            once: true,
+          })
+          child.stdout?.on('data', (c: Buffer) => process.stdout.write(c))
+          child.stderr?.on('data', (c: Buffer) => process.stderr.write(c))
+          const { code } = await new Promise<{ code: number | null }>((res) =>
+            child.on('exit', (code) => res({ code })),
+          )
+          if (abort.aborted) return null
+
+          if (code === 0) {
+            // The upgrade toggles maintenance mode while it runs and normally
+            // clears it; ensure it's off in case this run resumed one that was
+            // interrupted with the flag already set.
+            await subc
+              .exec(['php', 'occ', 'maintenance:mode', '--off'], {
+                user: 'www-data',
+              })
+              .catch(() => null)
+            await sdk.notification.create(effects, {
+              level: 'success',
+              title: i18n('Update Completed'),
+              message: i18n(
+                'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.',
+              ),
+              data: null,
+            })
+          } else {
+            await sdk.notification.create(effects, {
+              level: 'error',
+              title: i18n('Update Could Not Be Completed'),
+              message: i18n(
+                'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").',
+              ),
+              data: null,
+            })
+          }
+          return null
+        },
       },
       requires: ['nextcloud'],
     })
@@ -241,7 +343,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
           return null
         },
       },
-      requires: ['nextcloud'],
+      // Behind finish-upgrade so a recovery migration never runs occ commands
+      // concurrently with a task (which would hit maintenance mode).
+      requires: ['nextcloud', 'finish-upgrade'],
     })
     .addHealthCheck('recognize-models', () =>
       isPending(pending, completed, 'downloadModels')

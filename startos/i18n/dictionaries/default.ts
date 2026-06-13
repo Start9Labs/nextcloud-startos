@@ -169,6 +169,13 @@ const dict = {
   'Nextcloud has been repaired. If you were experiencing file or sharing issues, they should now be resolved.': 108,
   'Repair Failed': 113,
   'The repair routine exited with an error — tap for the last log lines. Re-run the "Repair" action to retry.': 114,
+
+  // main.ts: finish-upgrade oneshot (auto-completes an interrupted upgrade)
+  'Completing an interrupted Nextcloud upgrade...': 116,
+  'Update Completed': 117,
+  'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.': 118,
+  'Update Could Not Be Completed': 119,
+  'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").': 120,
 } as const
 
 /**

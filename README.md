@@ -45,7 +45,7 @@ This package runs **four containers** as subcontainers:
 
 Architectures: x86_64, aarch64.
 
-**Startup order:** A `chown` one-shot runs first alongside `postgres` and `valkey`. The `nextcloud` container waits until all three are ready before starting. The `cron` container waits for `nextcloud` to be ready.
+**Startup order:** A `chown` one-shot runs first alongside `postgres` and `valkey`. The `nextcloud` container waits until all three are ready before starting. The `cron` container waits for `nextcloud` to be ready. After `nextcloud` is ready, a `finish-upgrade` one-shot completes any upstream upgrade that was interrupted (see [Health Checks](#health-checks)), and the `long-running-tasks` one-shot runs after it.
 
 **ffmpeg:** The nextcloud image is built locally (extends `nextcloud:<version>-apache`) to install `ffmpeg`, which Nextcloud's preview providers shell out to for video thumbnails.
 
@@ -153,7 +153,7 @@ Generates a new 24-character random password for a selected admin user. Displays
 
 **Group:** CLI Tools
 
-Runs `occ maintenance:mode --off`. Use this if the web UI is stuck showing "Maintenance mode". Brief maintenance mode after updates is normal — wait at least 15 minutes before using this action.
+Runs `occ maintenance:mode --off`. Use this if the web UI is stuck showing "Maintenance mode". Brief maintenance mode after updates is normal — wait at least 15 minutes before using this action. An upgrade interrupted partway (e.g. by a restart) is now completed automatically by the `finish-upgrade` one-shot on the next start (see [Health Checks](#health-checks)), so this action is rarely needed.
 
 ### Disable Non-default Apps
 
@@ -232,7 +232,7 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 
 | Check | Method | Target | Display |
 |-------|--------|--------|---------|
-| Web Interface | Port listening | Port 80 | "The web interface is ready" |
+| Web Interface | Port listening | Port 80 | "The web interface is ready". A 5-minute `gracePeriod` reports `starting` rather than `failure` while the port is down, so an in-progress upgrade isn't shown as a fault. |
 | PostgreSQL | `pg_isready` | localhost | Internal only |
 | Valkey | `valkey-cli ping` | localhost | Internal only |
 | Recognize Model Download | Compares `actions.pending.downloadModels` vs `actions.completed.downloadModels` in `store.json` | n/a | `loading` while a queued download is running. Hidden otherwise. |
@@ -240,6 +240,8 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 | Memories Map Setup | Compares `actions.pending.indexPlaces` vs `actions.completed.indexPlaces` in `store.json` | n/a | `loading` while a queued map setup is running. Hidden otherwise. |
 
 The Nextcloud daemon will not start until PostgreSQL and Valkey are both confirmed ready. Each long-running CLI action (Download Models, Index Memories, Setup Map) writes its identifier into `store.json` at `actions.pending.<id>` with `Date.now()` as the value. The `long-running-tasks` oneshot in `setupMain` walks the three known IDs in declared order and runs the underlying `occ` command for any whose `pending` timestamp is newer than its `completed` timestamp (or whose `completed` is absent). When the `occ` child exits — whether it succeeded or failed — `runOcc` posts a completion notification to the StartOS notifications panel (success-level, or error-level on a non-zero exit, whose "View Details" body shows the exit code or terminating signal plus the last `LOG_TAIL_LINES` lines of the command's combined stdout/stderr) and writes a fresh timestamp into `actions.completed.<id>` so a failed run doesn't loop. On abort (service stop or chain rebuild), the child is SIGKILLed and neither the notification nor the `completed` timestamp is written, so the work resumes on next start (occ commands are idempotent). Output streams to the service logs in real time; `runOcc` retains only the last `LOG_TAIL_LINES` lines of it in memory, which become the failure notification's tail.
+
+**Finishing an interrupted upgrade:** The upstream image's entrypoint runs `occ upgrade` only when the deployed code is behind the image — it does not re-check the version the database has acknowledged. So an upgrade interrupted after the file sync but before the migration completes (for example, the service restarted mid-upgrade) strands the instance: new code, old DB version, and every subsequent start skips the upgrade while the UI serves "Update needed — use the command line updater". The `finish-upgrade` one-shot (`requires: ['nextcloud']`, so it runs after the web daemon is ready) detects this via `occ status` and runs `occ upgrade` to completion, then clears maintenance mode and posts a notification. In the normal case the entrypoint has already upgraded by the time the daemon is ready, so the check is a no-op and the two upgrades never overlap. It fails open — any error is logged and notified, never thrown — so a failed migration leaves the UI reachable rather than wedging startup, and `occ upgrade` is idempotent so a redundant run is harmless. The `long-running-tasks` one-shot is ordered behind it (`requires: ['nextcloud', 'finish-upgrade']`) so a recovery migration never runs `occ` concurrently with a task.
 
 Reactivity is armed at chain build via `storeJson.read((s) => s.actions.pending).const(effects)`. The mapped subscription only watches the `pending` bag — writes to `actions.completed` produce the same mapped value, so the SDK's eq check dedups them and **no chain rebuild fires on task completion**. Triggering a new action does change `actions.pending` (a new timestamp), so the chain rebuilds immediately, the in-flight `occ` (if any) is aborted, and the new chain's oneshot scans the pending bag from scratch — including any task it just killed, which gets re-run from the start. Re-invoking the same action while it's queued or running short-circuits in the action body (it sees its own `pending > completed` and returns "Already in Progress" without writing anything), so no rebuild fires.
 

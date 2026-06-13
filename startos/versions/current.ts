@@ -202,13 +202,14 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '33.0.5:1',
   releaseNotes: {
     en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
 
 - New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
 - Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
 - PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
+- An update interrupted partway (e.g. by a restart) now finishes automatically on the next start, and the web interface shows as "starting" rather than "failed" while an update runs
 
 Full changelog: https://nextcloud.com/changelog/`,
     es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
@@ -216,6 +217,7 @@ Full changelog: https://nextcloud.com/changelog/`,
 - Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
 - Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
 - PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
+- Una actualización interrumpida a medias (por ejemplo, por un reinicio) ahora se completa automáticamente en el siguiente inicio, y la interfaz web aparece como «iniciando» en lugar de «fallida» mientras se ejecuta una actualización
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
     de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
@@ -223,6 +225,7 @@ Registro de cambios completo: https://nextcloud.com/changelog/`,
 - Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
 - Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
 - PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
+- Eine teilweise unterbrochene Aktualisierung (z. B. durch einen Neustart) wird jetzt beim nächsten Start automatisch abgeschlossen, und die Weboberfläche wird während einer Aktualisierung als „wird gestartet" statt als „fehlgeschlagen" angezeigt
 
 Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
     pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
@@ -230,6 +233,7 @@ Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
 - Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
 - Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
 - PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
+- Aktualizacja przerwana w trakcie (np. przez ponowne uruchomienie) jest teraz automatycznie kończona przy następnym uruchomieniu, a interfejs webowy podczas aktualizacji jest oznaczany jako „uruchamianie" zamiast „błąd"
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
     fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
@@ -237,6 +241,7 @@ Pełny dziennik zmian: https://nextcloud.com/changelog/`,
 - Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
 - Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
 - PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
+- Une mise à jour interrompue en cours de route (par exemple par un redémarrage) se termine maintenant automatiquement au prochain démarrage, et l'interface web est indiquée comme « démarrage » plutôt que « échec » pendant une mise à jour
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
