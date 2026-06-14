@@ -202,13 +202,83 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '32.0.11:0',
+  version: '33.0.5:0',
   releaseNotes: {
-    en_US: 'Bumps Nextcloud to 32.0.11.',
-    es_ES: 'Actualiza Nextcloud a 32.0.11.',
-    de_DE: 'Aktualisiert Nextcloud auf 32.0.11.',
-    pl_PL: 'Aktualizuje Nextcloud do 32.0.11.',
-    fr_FR: 'Met à jour Nextcloud vers 32.0.11.',
+    en_US: `Updates Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+
+**Highlights**
+
+- Markdown support in comments and federated folder shares.
+- Rewritten LDAP setup wizard with local caching and expanded admin delegation.
+- Faster previews for large remote files plus on-demand preview migration.
+- Security: more flexible rate limiting and improved two-factor defaults.
+
+**Heads-up**
+
+- Drops Oracle 11 support and cleans up deprecated APIs and legacy JavaScript; some unmaintained third-party apps may need an update.
+- Requires PHP 8.2+, shipped with this package, so no action is needed.
+
+Full changelog: https://nextcloud.com/changelog/`,
+    es_ES: `Actualiza Nextcloud a 33.0.5 (Hub 26 Winter), una versión principal.
+
+**Novedades**
+
+- Compatibilidad con Markdown en comentarios y recursos compartidos de carpetas federadas.
+- Asistente de configuración LDAP reescrito con caché local y mayor delegación de administración.
+- Vistas previas más rápidas para archivos remotos grandes y migración de vistas previas bajo demanda.
+- Seguridad: limitación de tasa más flexible y mejores valores predeterminados de doble factor.
+
+**Aviso**
+
+- Se elimina la compatibilidad con Oracle 11 y se depuran APIs obsoletas y JavaScript heredado; algunas apps de terceros sin mantenimiento podrían necesitar actualización.
+- Requiere PHP 8.2+, incluido en este paquete, así que no hay que hacer nada.
+
+Registro de cambios completo: https://nextcloud.com/changelog/`,
+    de_DE: `Aktualisiert Nextcloud auf 33.0.5 (Hub 26 Winter), eine Hauptversion.
+
+**Highlights**
+
+- Markdown-Unterstützung in Kommentaren und föderierte Ordnerfreigaben.
+- Neu geschriebener LDAP-Einrichtungsassistent mit lokalem Caching und erweiterter Admin-Delegation.
+- Schnellere Vorschauen für große entfernte Dateien sowie Migration auf Abruf.
+- Sicherheit: flexiblere Ratenbegrenzung und verbesserte Zwei-Faktor-Standardwerte.
+
+**Hinweis**
+
+- Oracle-11-Unterstützung entfällt; veraltete APIs und Alt-JavaScript werden bereinigt; manche ungepflegten Drittanbieter-Apps brauchen evtl. ein Update.
+- Erfordert PHP 8.2+, in diesem Paket enthalten, daher ist nichts zu tun.
+
+Vollständiges Änderungsprotokoll: https://nextcloud.com/changelog/`,
+    pl_PL: `Aktualizuje Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+
+**Najważniejsze**
+
+- Obsługa Markdown w komentarzach oraz federacyjne udostępnianie folderów.
+- Przepisany kreator konfiguracji LDAP z lokalnym buforowaniem i szerszą delegacją administracji.
+- Szybsze podglądy dużych plików zdalnych oraz migracja podglądów na żądanie.
+- Bezpieczeństwo: elastyczniejsze ograniczanie liczby żądań i lepsze domyślne ustawienia dwuskładnikowe.
+
+**Uwaga**
+
+- Usunięto obsługę Oracle 11 oraz uporządkowano przestarzałe API i stary JavaScript; niektóre nieutrzymywane aplikacje zewnętrzne mogą wymagać aktualizacji.
+- Wymaga PHP 8.2+, dostarczanego z tym pakietem, więc nie trzeba nic robić.
+
+Pełny dziennik zmian: https://nextcloud.com/changelog/`,
+    fr_FR: `Met à jour Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+
+**Nouveautés**
+
+- Prise en charge du Markdown dans les commentaires et partages de dossiers fédérés.
+- Assistant de configuration LDAP réécrit avec cache local et délégation d'administration étendue.
+- Aperçus plus rapides pour les gros fichiers distants et migration des aperçus à la demande.
+- Sécurité : limitation de débit plus flexible et meilleurs réglages par défaut du double facteur.
+
+**À noter**
+
+- Suppression de la prise en charge d'Oracle 11 et nettoyage des API obsolètes et du JavaScript hérité ; certaines applications tierces non maintenues peuvent nécessiter une mise à jour.
+- Nécessite PHP 8.2+, fourni avec ce paquet, aucune action requise.
+
+Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
   migrations: {
     up: async ({ effects }) => {
