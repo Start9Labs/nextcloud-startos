@@ -202,80 +202,90 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.0:0',
   releaseNotes: {
-    en_US: `Updates Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updates Nextcloud to 34.0.0 (Hub 26 Spring), a major release.
 
 **Highlights**
 
-- Markdown support in comments and federated folder shares.
-- Rewritten LDAP setup wizard with local caching and expanded admin delegation.
-- Faster previews for large remote files plus on-demand preview migration.
-- Security: more flexible rate limiting and improved two-factor defaults.
+- Euro-Office joins the Nextcloud Office suite, with local processing for faster, more responsive editing.
+- Lighter, refined interface with a new waffle app launcher.
+- Assistant gains document sidebar chat and a context agent that searches across files, emails, tasks, Deck, and Forms.
+- Calendar read/write federation between instances and improved delegation.
+- New file type support (.HIF, .TOML, .OVPN) and file creation-time tracking.
+- Security: one-time login QR codes enabled by default.
 
 **Heads-up**
 
-- Drops Oracle 11 support and cleans up deprecated APIs and legacy JavaScript; some unmaintained third-party apps may need an update.
+- jQuery and jQuery UI are removed; some unmaintained third-party apps may need an update.
 - Requires PHP 8.2+, shipped with this package, so no action is needed.
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Actualiza Nextcloud a 33.0.5 (Hub 26 Winter), una versión principal.
+    es_ES: `Actualiza Nextcloud a 34.0.0 (Hub 26 Spring), una versión principal.
 
 **Novedades**
 
-- Compatibilidad con Markdown en comentarios y recursos compartidos de carpetas federadas.
-- Asistente de configuración LDAP reescrito con caché local y mayor delegación de administración.
-- Vistas previas más rápidas para archivos remotos grandes y migración de vistas previas bajo demanda.
-- Seguridad: limitación de tasa más flexible y mejores valores predeterminados de doble factor.
+- Euro-Office se suma a la suite Nextcloud Office, con procesamiento local para una edición más rápida y fluida.
+- Interfaz más ligera y refinada con un nuevo lanzador de aplicaciones tipo waffle.
+- El Asistente incorpora chat en la barra lateral de documentos y un agente de contexto que busca en archivos, correos, tareas, Deck y Forms.
+- Federación de calendario en lectura/escritura entre instancias y mejor delegación.
+- Compatibilidad con nuevos tipos de archivo (.HIF, .TOML, .OVPN) y registro de la hora de creación.
+- Seguridad: códigos QR de inicio de sesión de un solo uso activados de forma predeterminada.
 
 **Aviso**
 
-- Se elimina la compatibilidad con Oracle 11 y se depuran APIs obsoletas y JavaScript heredado; algunas apps de terceros sin mantenimiento podrían necesitar actualización.
+- Se eliminan jQuery y jQuery UI; algunas apps de terceros sin mantenimiento podrían necesitar actualización.
 - Requiere PHP 8.2+, incluido en este paquete, así que no hay que hacer nada.
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Aktualisiert Nextcloud auf 33.0.5 (Hub 26 Winter), eine Hauptversion.
+    de_DE: `Aktualisiert Nextcloud auf 34.0.0 (Hub 26 Spring), eine Hauptversion.
 
 **Highlights**
 
-- Markdown-Unterstützung in Kommentaren und föderierte Ordnerfreigaben.
-- Neu geschriebener LDAP-Einrichtungsassistent mit lokalem Caching und erweiterter Admin-Delegation.
-- Schnellere Vorschauen für große entfernte Dateien sowie Migration auf Abruf.
-- Sicherheit: flexiblere Ratenbegrenzung und verbesserte Zwei-Faktor-Standardwerte.
+- Euro-Office wird Teil der Nextcloud-Office-Suite, mit lokaler Verarbeitung für schnelleres, reaktionsfreudigeres Bearbeiten.
+- Leichtere, überarbeitete Oberfläche mit neuem Waffle-App-Starter.
+- Der Assistent erhält Dokument-Seitenleisten-Chat und einen Kontext-Agenten, der Dateien, E-Mails, Aufgaben, Deck und Forms durchsucht.
+- Kalender-Föderation mit Lese-/Schreibzugriff zwischen Instanzen und verbesserte Delegation.
+- Unterstützung neuer Dateitypen (.HIF, .TOML, .OVPN) und Erfassung der Erstellungszeit.
+- Sicherheit: Einmal-Login-QR-Codes standardmäßig aktiviert.
 
 **Hinweis**
 
-- Oracle-11-Unterstützung entfällt; veraltete APIs und Alt-JavaScript werden bereinigt; manche ungepflegten Drittanbieter-Apps brauchen evtl. ein Update.
+- jQuery und jQuery UI werden entfernt; manche ungepflegten Drittanbieter-Apps brauchen evtl. ein Update.
 - Erfordert PHP 8.2+, in diesem Paket enthalten, daher ist nichts zu tun.
 
 Vollständiges Änderungsprotokoll: https://nextcloud.com/changelog/`,
-    pl_PL: `Aktualizuje Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+    pl_PL: `Aktualizuje Nextcloud do 34.0.0 (Hub 26 Spring), wydanie główne.
 
 **Najważniejsze**
 
-- Obsługa Markdown w komentarzach oraz federacyjne udostępnianie folderów.
-- Przepisany kreator konfiguracji LDAP z lokalnym buforowaniem i szerszą delegacją administracji.
-- Szybsze podglądy dużych plików zdalnych oraz migracja podglądów na żądanie.
-- Bezpieczeństwo: elastyczniejsze ograniczanie liczby żądań i lepsze domyślne ustawienia dwuskładnikowe.
+- Euro-Office dołącza do pakietu Nextcloud Office, z lokalnym przetwarzaniem dla szybszej i płynniejszej edycji.
+- Lżejszy, dopracowany interfejs z nowym launcherem aplikacji typu waffle.
+- Asystent zyskuje czat w panelu bocznym dokumentu oraz agenta kontekstowego przeszukującego pliki, e-maile, zadania, Deck i Forms.
+- Federacja kalendarza z odczytem/zapisem między instancjami oraz lepsza delegacja.
+- Obsługa nowych typów plików (.HIF, .TOML, .OVPN) i rejestrowanie czasu utworzenia.
+- Bezpieczeństwo: jednorazowe kody QR logowania włączone domyślnie.
 
 **Uwaga**
 
-- Usunięto obsługę Oracle 11 oraz uporządkowano przestarzałe API i stary JavaScript; niektóre nieutrzymywane aplikacje zewnętrzne mogą wymagać aktualizacji.
+- Usunięto jQuery i jQuery UI; niektóre nieutrzymywane aplikacje zewnętrzne mogą wymagać aktualizacji.
 - Wymaga PHP 8.2+, dostarczanego z tym pakietem, więc nie trzeba nic robić.
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Met à jour Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+    fr_FR: `Met à jour Nextcloud vers 34.0.0 (Hub 26 Spring), une version majeure.
 
 **Nouveautés**
 
-- Prise en charge du Markdown dans les commentaires et partages de dossiers fédérés.
-- Assistant de configuration LDAP réécrit avec cache local et délégation d'administration étendue.
-- Aperçus plus rapides pour les gros fichiers distants et migration des aperçus à la demande.
-- Sécurité : limitation de débit plus flexible et meilleurs réglages par défaut du double facteur.
+- Euro-Office rejoint la suite Nextcloud Office, avec un traitement local pour une édition plus rapide et réactive.
+- Interface plus légère et raffinée avec un nouveau lanceur d'applications en gaufre.
+- L'Assistant gagne un chat dans la barre latérale des documents et un agent de contexte qui cherche dans les fichiers, e-mails, tâches, Deck et Forms.
+- Fédération de calendrier en lecture/écriture entre instances et délégation améliorée.
+- Prise en charge de nouveaux types de fichiers (.HIF, .TOML, .OVPN) et suivi de l'heure de création.
+- Sécurité : codes QR de connexion à usage unique activés par défaut.
 
 **À noter**
 
-- Suppression de la prise en charge d'Oracle 11 et nettoyage des API obsolètes et du JavaScript hérité ; certaines applications tierces non maintenues peuvent nécessiter une mise à jour.
+- jQuery et jQuery UI sont supprimés ; certaines applications tierces non maintenues peuvent nécessiter une mise à jour.
 - Nécessite PHP 8.2+, fourni avec ce paquet, aucune action requise.
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
