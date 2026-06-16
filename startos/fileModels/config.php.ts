@@ -112,7 +112,6 @@ export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
     return '<?php\n$CONFIG = ' + toPhpString(dataIn) + ';'
   },
   (rawData) => {
-    console.log('rawData = ', rawData)
     const { parse } = require('./php-parser.js')
     return parse(rawData)
   },
