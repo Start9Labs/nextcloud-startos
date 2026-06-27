@@ -202,41 +202,51 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.0:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updated Nextcloud to 34.0.0 (Hub 26 Spring), a major release.
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
+- File list filtering in the top bar and file search by creation/upload time
+- One-time login QR codes enabled by default and improved OAuth2 token rotation
+- Calendar federation now supports read/write, delegated calendar sharing, and Talk meeting conversations
+- New AI "reformat paragraphs" task type and workflow-engine runtime operations
+- Nextcloud only upgrades one major version at a time; this build moves you from 33.x to 34.x
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+    es_ES: `Se actualizó Nextcloud a 34.0.0 (Hub 26 Spring), una versión mayor.
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
+- Filtrado de la lista de archivos en la barra superior y búsqueda de archivos por fecha de creación/subida
+- Códigos QR de inicio de sesión de un solo uso activados de forma predeterminada y mejor rotación de tokens OAuth2
+- La federación de calendarios ahora admite lectura/escritura, calendarios delegados y conversaciones de reuniones de Talk
+- Nuevo tipo de tarea de IA «reformatear párrafos» y operaciones en tiempo de ejecución del motor de flujos de trabajo
+- Nextcloud solo se actualiza una versión mayor a la vez; esta compilación te lleva de 33.x a 34.x
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+    de_DE: `Nextcloud auf 34.0.0 (Hub 26 Spring) aktualisiert, eine Hauptversion.
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
+- Filterung der Dateiliste in der oberen Leiste und Dateisuche nach Erstellungs-/Uploadzeit
+- Einmalige Login-QR-Codes standardmäßig aktiviert und verbesserte OAuth2-Token-Rotation
+- Kalenderföderation unterstützt jetzt Lesen/Schreiben, delegierte Kalenderfreigaben und Talk-Besprechungen
+- Neuer KI-Aufgabentyp „Absätze umformulieren" und Laufzeitoperationen der Workflow-Engine
+- Nextcloud aktualisiert nur eine Hauptversion auf einmal; dieser Build bringt dich von 33.x auf 34.x
 
 Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+    pl_PL: `Zaktualizowano Nextcloud do 34.0.0 (Hub 26 Spring), wydanie główne.
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
+- Filtrowanie listy plików w górnym pasku i wyszukiwanie plików według czasu utworzenia/przesłania
+- Jednorazowe kody QR logowania włączone domyślnie i ulepszona rotacja tokenów OAuth2
+- Federacja kalendarzy obsługuje teraz odczyt/zapis, udostępnianie delegowanych kalendarzy oraz rozmowy spotkań w Talk
+- Nowy typ zadania AI „przeformatuj akapity" oraz operacje wykonawcze silnika przepływów pracy
+- Nextcloud aktualizuje tylko jedną wersję główną naraz; ta kompilacja przenosi cię z 33.x na 34.x
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+    fr_FR: `Mise à jour de Nextcloud vers 34.0.0 (Hub 26 Spring), une version majeure.
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
+- Filtrage de la liste des fichiers dans la barre supérieure et recherche de fichiers par date de création/téléversement
+- Codes QR de connexion à usage unique activés par défaut et meilleure rotation des jetons OAuth2
+- La fédération de calendriers prend désormais en charge la lecture/écriture, les calendriers délégués et les conversations de réunion Talk
+- Nouveau type de tâche IA « reformuler les paragraphes » et opérations d'exécution du moteur de flux de travail
+- Nextcloud ne met à niveau qu'une version majeure à la fois ; cette build vous fait passer de 33.x à 34.x
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
