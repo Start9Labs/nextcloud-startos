@@ -202,41 +202,41 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.0:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updated Nextcloud to 34.0.0 (Hub 26 Spring), a major release.
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
+- Euro-Office: a new browser-based office suite (documents, spreadsheets, presentations, PDF) with real-time collaboration
+- Assistant gains a document-sidebar chat and a Context Agent that searches across Files, Mail, Tasks, Deck, and Forms
+- Lighter interface, faster Files core, and a refreshed app launcher
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+    es_ES: `Se actualizó Nextcloud a 34.0.0 (Hub 26 Spring), una versión mayor.
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
+- Euro-Office: una nueva suite ofimática en el navegador (documentos, hojas de cálculo, presentaciones, PDF) con colaboración en tiempo real
+- Assistant incorpora un chat en la barra lateral del documento y un Context Agent que busca en Archivos, Correo, Tareas, Deck y Formularios
+- Interfaz más ligera, núcleo de Archivos más rápido y un lanzador de aplicaciones renovado
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+    de_DE: `Nextcloud auf 34.0.0 (Hub 26 Spring) aktualisiert, eine Hauptversion.
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
+- Euro-Office: eine neue browserbasierte Office-Suite (Dokumente, Tabellen, Präsentationen, PDF) mit Echtzeit-Zusammenarbeit
+- Assistant erhält einen Chat in der Dokument-Seitenleiste und einen Context Agent, der Dateien, Mail, Aufgaben, Deck und Formulare durchsucht
+- Leichtere Oberfläche, schnellerer Files-Kern und ein überarbeiteter App-Launcher
 
 Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+    pl_PL: `Zaktualizowano Nextcloud do 34.0.0 (Hub 26 Spring), wydanie główne.
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
+- Euro-Office: nowy pakiet biurowy w przeglądarce (dokumenty, arkusze, prezentacje, PDF) ze współpracą w czasie rzeczywistym
+- Assistant zyskuje czat na pasku bocznym dokumentu oraz Context Agent przeszukujący Pliki, Pocztę, Zadania, Deck i Formularze
+- Lżejszy interfejs, szybszy rdzeń Plików i odświeżony program uruchamiający aplikacje
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+    fr_FR: `Mise à jour de Nextcloud vers 34.0.0 (Hub 26 Spring), une version majeure.
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
+- Euro-Office : une nouvelle suite bureautique dans le navigateur (documents, feuilles de calcul, présentations, PDF) avec collaboration en temps réel
+- Assistant gagne un chat dans la barre latérale du document et un Context Agent qui recherche dans Fichiers, Mail, Tâches, Deck et Formulaires
+- Interface plus légère, cœur Fichiers plus rapide et lanceur d'applications repensé
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
