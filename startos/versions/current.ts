@@ -202,41 +202,41 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.0:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updated Nextcloud to 34.0.0 (Hub 26 Spring), a major release.
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
+- New app menu "waffle" launcher and an app store rebuilt on Vue 3 / TypeScript
+- Support for .HIF image previews and improved network diagnostics
+- File locking (files_lock) now ships in core, plus expanded admin delegation controls
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+    es_ES: `Se actualizó Nextcloud a 34.0.0 (Hub 26 Spring), una versión mayor.
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
+- Nuevo lanzador de menú de aplicaciones "waffle" y una tienda de aplicaciones reconstruida con Vue 3 / TypeScript
+- Compatibilidad con vistas previas de imágenes .HIF y diagnósticos de red mejorados
+- El bloqueo de archivos (files_lock) ahora se incluye en el núcleo, además de mayores controles de delegación de administración
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+    de_DE: `Nextcloud auf 34.0.0 (Hub 26 Spring) aktualisiert, eine Hauptversion.
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
+- Neuer „Waffle"-App-Menü-Starter und ein auf Vue 3 / TypeScript neu aufgebauter App-Store
+- Unterstützung für .HIF-Bildvorschauen und verbesserte Netzwerkdiagnose
+- Dateisperren (files_lock) ist jetzt im Kern enthalten, dazu erweiterte Admin-Delegationssteuerungen
 
 Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+    pl_PL: `Zaktualizowano Nextcloud do 34.0.0 (Hub 26 Spring), wydanie główne.
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
+- Nowy launcher menu aplikacji „waffle" oraz sklep z aplikacjami przebudowany na Vue 3 / TypeScript
+- Obsługa podglądów obrazów .HIF i ulepszona diagnostyka sieci
+- Blokowanie plików (files_lock) jest teraz częścią rdzenia, a także rozszerzone kontrole delegowania uprawnień administratora
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+    fr_FR: `Mise à jour de Nextcloud vers 34.0.0 (Hub 26 Spring), une version majeure.
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
+- Nouveau lanceur de menu d'applications « waffle » et une boutique d'applications reconstruite sur Vue 3 / TypeScript
+- Prise en charge des aperçus d'images .HIF et diagnostics réseau améliorés
+- Le verrouillage de fichiers (files_lock) est désormais intégré au cœur, ainsi que des contrôles de délégation d'administration étendus
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
