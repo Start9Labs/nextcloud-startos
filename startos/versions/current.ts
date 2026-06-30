@@ -202,41 +202,41 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.0:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updated Nextcloud to 34.0.0 (Hub 26 Spring), a major anniversary release.
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
+- Refined UI with a new app menu launcher and improved navigation
+- Expanded TaskProcessing AI capabilities and LDAP user-sync improvements
+- Performance optimizations in previews, recommendations, and scanning
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+    es_ES: `Se actualizó Nextcloud a 34.0.0 (Hub 26 Spring), una versión mayor de aniversario.
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
+- Interfaz mejorada con un nuevo lanzador de menú de aplicaciones y navegación mejorada
+- Capacidades de IA de TaskProcessing ampliadas y mejoras en la sincronización de usuarios LDAP
+- Optimizaciones de rendimiento en vistas previas, recomendaciones y escaneo
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+    de_DE: `Nextcloud auf 34.0.0 (Hub 26 Spring) aktualisiert, eine große Jubiläumsversion.
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
+- Überarbeitete Oberfläche mit neuem App-Menü-Launcher und verbesserter Navigation
+- Erweiterte TaskProcessing-KI-Funktionen und Verbesserungen bei der LDAP-Benutzersynchronisierung
+- Leistungsoptimierungen bei Vorschauen, Empfehlungen und Scans
 
 Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+    pl_PL: `Zaktualizowano Nextcloud do 34.0.0 (Hub 26 Spring), główne wydanie rocznicowe.
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
+- Odświeżony interfejs z nowym launcherem menu aplikacji i ulepszoną nawigacją
+- Rozszerzone możliwości AI TaskProcessing oraz ulepszenia synchronizacji użytkowników LDAP
+- Optymalizacje wydajności podglądów, rekomendacji i skanowania
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+    fr_FR: `Mise à jour de Nextcloud vers 34.0.0 (Hub 26 Spring), une version majeure anniversaire.
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
+- Interface affinée avec un nouveau lanceur de menu d'applications et une navigation améliorée
+- Capacités d'IA TaskProcessing étendues et améliorations de la synchronisation des utilisateurs LDAP
+- Optimisations des performances pour les aperçus, les recommandations et l'analyse
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
