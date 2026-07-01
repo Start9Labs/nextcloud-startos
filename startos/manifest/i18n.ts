@@ -16,5 +16,5 @@ export const long = {
   pl_PL:
     'Uzyskuj dostęp i udostępniaj pliki, kalendarze, kontakty, pocztę i więcej z dowolnego urządzenia, na własnych warunkach.',
   fr_FR:
-    'Accédez et partagez vos fichiers, calendriers, contacts, courriers et plus depuis n\'importe quel appareil, selon vos conditions.',
+    "Accédez et partagez vos fichiers, calendriers, contacts, courriers et plus depuis n'importe quel appareil, selon vos conditions.",
 }
