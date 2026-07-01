@@ -5,8 +5,7 @@ export const manifest = setupManifest({
   id: 'nextcloud',
   title: 'Nextcloud',
   license: 'gpl',
-  packageRepo:
-    'https://github.com/Start9Labs/nextcloud-startos',
+  packageRepo: 'https://github.com/Start9Labs/nextcloud-startos',
   upstreamRepo: 'https://github.com/nextcloud/docker',
   marketingUrl: 'https://nextcloud.com/',
   donationUrl: null,

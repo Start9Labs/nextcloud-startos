@@ -52,9 +52,7 @@ export function getPostgresEnv() {
   }
 }
 
-export function getNextcloudEnv(
-  postgresEnv: Record<string, string>,
-) {
+export function getNextcloudEnv(postgresEnv: Record<string, string>) {
   return {
     ...postgresEnv,
     PHP_MEMORY_LIMIT: '1024M',

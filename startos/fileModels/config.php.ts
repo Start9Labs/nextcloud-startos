@@ -44,9 +44,7 @@ const shape = z.object({
   'updater.server.url': z
     .literal('nextcloud.startos')
     .catch('nextcloud.startos'),
-  datadirectory: z
-    .literal('/var/www/html/data')
-    .catch('/var/www/html/data'),
+  datadirectory: z.literal('/var/www/html/data').catch('/var/www/html/data'),
   'overwrite.cli.url': z.string().optional().catch(undefined),
   'htaccess.RewriteBase': z.string().optional().catch(undefined),
   skeletondirectory: z.string().optional().catch(undefined),
