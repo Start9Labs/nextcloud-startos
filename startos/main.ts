@@ -252,75 +252,94 @@ export const main = sdk.setupMain(async ({ effects }) => {
           //     is a no-op — the two upgrades can never overlap; and
           //   - `occ upgrade` then runs exactly as the manual recovery does,
           //     with apache up serving the maintenance page while it works.
-          // We fail OPEN: any error is logged/notified and we return, so a
-          // failed migration leaves the UI reachable (fixable by hand) rather
-          // than wedging startup. `occ upgrade` is idempotent, so a redundant
-          // run is harmless.
-          if (abort.aborted) return null
+          // `occ upgrade` is idempotent, so a redundant run is harmless.
+          //
+          // We fail OPEN: the whole body is wrapped so nothing thrown here can
+          // reject the oneshot. A rejected oneshot fn never reaches
+          // EXIT_SUCCESS, which would (a) block the `long-running-tasks`
+          // oneshot gated on us from ever starting and (b) make the SDK
+          // re-invoke this fn on a backoff — re-running `occ upgrade` in a
+          // loop. The web daemon is independent and stays up regardless, so on
+          // any error we just log/notify and leave the UI reachable (fixable
+          // by hand).
+          const notifyFailed = (data: string | null) =>
+            sdk.notification
+              .create(effects, {
+                level: 'error',
+                title: i18n('Update Could Not Be Completed'),
+                message: i18n(
+                  'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").',
+                ),
+                data,
+              })
+              .catch(() => null)
 
-          const status = await subc
-            .exec(['php', 'occ', 'status', '--output=json'], {
-              user: 'www-data',
-            })
-            .catch(() => null)
-          const out = `${status?.stdout?.toString() ?? ''}\n${status?.stderr?.toString() ?? ''}`
-          // Match both the JSON ("needsDbUpgrade":true) and human
-          // (needsDbUpgrade: true) shapes, plus occ's "… require upgrade"
-          // banner — so detection doesn't hinge on --output=json taking effect.
-          if (
-            !/needsDbUpgrade["']?\s*:\s*true/i.test(out) &&
-            !/requires? upgrade/i.test(out)
-          ) {
-            return null
-          }
+          try {
+            if (abort.aborted) return null
 
-          console.info(i18n('Completing an interrupted Nextcloud upgrade...'))
-          const child = await subc.spawn(
-            ['php', 'occ', 'upgrade', '--no-interaction'],
-            { user: 'www-data', stdio: 'pipe' },
-          )
-          if (abort.aborted) {
-            child.kill('SIGKILL')
-            return null
-          }
-          abort.addEventListener('abort', () => child.kill('SIGKILL'), {
-            once: true,
-          })
-          child.stdout?.on('data', (c: Buffer) => process.stdout.write(c))
-          child.stderr?.on('data', (c: Buffer) => process.stderr.write(c))
-          const { code } = await new Promise<{ code: number | null }>((res) =>
-            child.on('exit', (code) => res({ code })),
-          )
-          if (abort.aborted) return null
-
-          if (code === 0) {
-            // The upgrade toggles maintenance mode while it runs and normally
-            // clears it; ensure it's off in case this run resumed one that was
-            // interrupted with the flag already set.
-            await subc
-              .exec(['php', 'occ', 'maintenance:mode', '--off'], {
+            const status = await subc
+              .exec(['php', 'occ', 'status', '--output=json'], {
                 user: 'www-data',
               })
               .catch(() => null)
-            await sdk.notification.create(effects, {
-              level: 'success',
-              title: i18n('Update Completed'),
-              message: i18n(
-                'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.',
-              ),
-              data: null,
-            })
-          } else {
-            await sdk.notification.create(effects, {
-              level: 'error',
-              title: i18n('Update Could Not Be Completed'),
-              message: i18n(
-                'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").',
-              ),
-              data: null,
-            })
+            const out = `${status?.stdout?.toString() ?? ''}\n${status?.stderr?.toString() ?? ''}`
+            // Match both the JSON ("needsDbUpgrade":true) and human
+            // (needsDbUpgrade: true) shapes, plus occ's "… require upgrade"
+            // banner — so detection doesn't hinge on --output=json taking effect.
+            if (
+              !/needsDbUpgrade["']?\s*:\s*true/i.test(out) &&
+              !/requires? upgrade/i.test(out)
+            ) {
+              return null
+            }
+
+            console.info(i18n('Completing an interrupted Nextcloud upgrade...'))
+            const result = await spawnOcc(subc, abort, [
+              'upgrade',
+              '--no-interaction',
+            ])
+            if (result == null) return null // aborted mid-upgrade; resumes next start
+
+            if (result.code === 0) {
+              // The upgrade toggles maintenance mode while it runs and normally
+              // clears it; ensure it's off in case this run resumed one that was
+              // interrupted with the flag already set.
+              await subc
+                .exec(['php', 'occ', 'maintenance:mode', '--off'], {
+                  user: 'www-data',
+                })
+                .catch(() => null)
+              await sdk.notification
+                .create(effects, {
+                  level: 'success',
+                  title: i18n('Update Completed'),
+                  message: i18n(
+                    'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.',
+                  ),
+                  data: null,
+                })
+                .catch(() => null)
+            } else {
+              await notifyFailed(
+                logDetails(
+                  i18n('Update Could Not Be Completed'),
+                  result,
+                  result.tail,
+                ),
+              )
+            }
+            return null
+          } catch (e) {
+            // Only reached by a genuinely unexpected throw (the detection exec,
+            // both notifications, and maintenance:mode are individually
+            // guarded), e.g. spawnOcc failing to launch the child.
+            console.error(
+              'finish-upgrade: unexpected error; leaving the UI reachable',
+              e,
+            )
+            await notifyFailed(null)
+            return null
           }
-          return null
         },
       },
       requires: ['nextcloud'],
@@ -414,29 +433,26 @@ export const main = sdk.setupMain(async ({ effects }) => {
 })
 
 /**
- * Run a long-running `php occ` command for action `id` as www-data, streaming
- * output to StartOS service logs. On exit — success or failure — posts a
- * completion notification to the StartOS notifications panel (see TASK_NOTICE):
- * the task's health check vanishes on the next chain rebuild, so this is the
- * user's only durable signal that the work finished. Returns Date.now() and
- * the caller writes it to `actions.completed[id]` in store.json so the next
- * chain build sees the task as done. On abort (service stop or chain rebuild),
- * the child is SIGKILLed and we return null — no completed timestamp is
- * written and no notification is posted, so the work resumes on next start.
- * The Recognize/Memories commands are idempotent on resume.
+ * Spawn `php occ <args>` as www-data, mirror its combined stdout/stderr to the
+ * StartOS service logs in real time, and resolve with the exit code, the
+ * terminating signal, and the last LOG_TAIL_LINES lines of output (for a
+ * failure notification's details body). Resolves null on abort (service stop
+ * or chain rebuild): the child is SIGKILLed and the caller writes no
+ * completion marker, so the work resumes on next start (occ commands are
+ * idempotent on resume).
  *
- * On non-zero exit we still record a completed timestamp so the chain doesn't
- * loop indefinitely; the error-level notification carries the tail of the
- * task's output in its details body and prompts the user to re-invoke the
- * action (which writes a newer pending timestamp) to retry.
+ * Shared by runOcc (long-running tasks) and the finish-upgrade oneshot.
  */
-async function runOcc(
+async function spawnOcc(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
   abort: AbortSignal,
-  effects: T.Effects,
-  id: ActionId,
-): Promise<number | null> {
-  const child = await subc.spawn(['php', 'occ', ...OCC_ARGS[id]], {
+  args: string[],
+): Promise<{
+  code: number | null
+  signal: NodeJS.Signals | null
+  tail: string
+} | null> {
+  const child = await subc.spawn(['php', 'occ', ...args], {
     user: 'www-data',
     stdio: 'pipe',
   })
@@ -451,14 +467,14 @@ async function runOcc(
   // run's notification details. Both streams feed one buffer; if a stderr
   // write splits a stdout line the snippet is slightly garbled, which is
   // harmless for triage and rare (occ writes whole lines).
-  let logBuf = ''
+  let tail = ''
   const capture = (
     stream: NodeJS.ReadableStream | null,
     mirror: NodeJS.WritableStream,
   ) => {
     stream?.on('data', (chunk: Buffer) => {
       mirror.write(chunk)
-      logBuf = (logBuf + chunk.toString())
+      tail = (tail + chunk.toString())
         .split('\n')
         .slice(-(LOG_TAIL_LINES + 1))
         .join('\n')
@@ -472,14 +488,43 @@ async function runOcc(
     signal: NodeJS.Signals | null
   }>((resolve) => child.on('exit', (code, signal) => resolve({ code, signal })))
   if (abort.aborted) return null
+  return { ...exit, tail }
+}
 
-  const failed = exit.code !== 0
+/**
+ * Run a long-running `php occ` command for action `id` as www-data, streaming
+ * output to StartOS service logs. On exit — success or failure — posts a
+ * completion notification to the StartOS notifications panel (see TASK_NOTICE):
+ * the task's health check vanishes on the next chain rebuild, so this is the
+ * user's only durable signal that the work finished. Returns Date.now() and
+ * the caller writes it to `actions.completed[id]` in store.json so the next
+ * chain build sees the task as done. On abort (service stop or chain rebuild),
+ * spawnOcc SIGKILLs the child and returns null; we then return null too — no
+ * completed timestamp is written and no notification is posted, so the work
+ * resumes on next start. The Recognize/Memories commands are idempotent on
+ * resume.
+ *
+ * On non-zero exit we still record a completed timestamp so the chain doesn't
+ * loop indefinitely; the error-level notification carries the tail of the
+ * task's output in its details body and prompts the user to re-invoke the
+ * action (which writes a newer pending timestamp) to retry.
+ */
+async function runOcc(
+  subc: Awaited<ReturnType<typeof getNextcloudSub>>,
+  abort: AbortSignal,
+  effects: T.Effects,
+  id: ActionId,
+): Promise<number | null> {
+  const result = await spawnOcc(subc, abort, OCC_ARGS[id])
+  if (result == null) return null
+
+  const failed = result.code !== 0
   const notice = failed ? TASK_NOTICE[id].failed : TASK_NOTICE[id].ok
   await sdk.notification.create(effects, {
     level: failed ? 'error' : 'success',
     title: notice.title,
     message: notice.message,
-    data: failed ? logDetails(notice.title, exit, logBuf) : null,
+    data: failed ? logDetails(notice.title, result, result.tail) : null,
   })
 
   const ts = Date.now()
