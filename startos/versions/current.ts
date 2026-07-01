@@ -202,41 +202,46 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:0',
+  version: '34.0.1:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updated Nextcloud to 34.0.1 (Hub 26 Spring), a major release.
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
+- Refreshed, lighter interface with a redesigned app switcher and sidebar
+- Nextcloud Office gains a second default suite option and an in-document AI chat sidebar (Nextcloud Assistant)
+- Assistant adds new agent tools with finer admin control over which AI models run and where
+- Maturing federation for smoother cross-organization sharing, plus end-to-end encryption refinements
 
 Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+    es_ES: `Se actualizó Nextcloud a 34.0.1 (Hub 26 Spring), una versión mayor.
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
+- Interfaz renovada y más ligera con un selector de aplicaciones y una barra lateral rediseñados
+- Nextcloud Office incorpora una segunda suite predeterminada y una barra lateral de chat con IA dentro del documento (Nextcloud Assistant)
+- Assistant añade nuevas herramientas de agente con un control de administración más preciso sobre qué modelos de IA se ejecutan y dónde
+- Federación más madura para compartir entre organizaciones con mayor fluidez, además de mejoras en el cifrado de extremo a extremo
 
 Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+    de_DE: `Nextcloud auf 34.0.1 (Hub 26 Spring) aktualisiert, eine Hauptversion.
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
+- Aufgefrischte, leichtere Oberfläche mit überarbeitetem App-Umschalter und Seitenleiste
+- Nextcloud Office erhält eine zweite Standard-Suite und eine KI-Chat-Seitenleiste im Dokument (Nextcloud Assistant)
+- Assistant bietet neue Agent-Werkzeuge mit feinerer Admin-Kontrolle darüber, welche KI-Modelle wo laufen
+- Ausgereiftere Föderation für reibungsloseres organisationsübergreifendes Teilen sowie Verbesserungen bei der Ende-zu-Ende-Verschlüsselung
 
 Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+    pl_PL: `Zaktualizowano Nextcloud do 34.0.1 (Hub 26 Spring), wydanie główne.
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
+- Odświeżony, lżejszy interfejs z przeprojektowanym przełącznikiem aplikacji i panelem bocznym
+- Nextcloud Office zyskuje drugą domyślną suitę oraz panel czatu AI w dokumencie (Nextcloud Assistant)
+- Assistant dodaje nowe narzędzia agenta z dokładniejszą kontrolą administratora nad tym, które modele AI działają i gdzie
+- Dojrzewająca federacja dla płynniejszego udostępniania między organizacjami oraz udoskonalenia szyfrowania end-to-end
 
 Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+    fr_FR: `Mise à jour de Nextcloud vers 34.0.1 (Hub 26 Spring), une version majeure.
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
+- Interface rafraîchie et plus légère avec un sélecteur d'applications et une barre latérale repensés
+- Nextcloud Office gagne une deuxième suite par défaut et une barre latérale de discussion IA dans le document (Nextcloud Assistant)
+- Assistant ajoute de nouveaux outils d'agent avec un contrôle administrateur plus fin sur les modèles d'IA exécutés et leur emplacement
+- Fédération plus mature pour un partage inter-organisations plus fluide, ainsi que des améliorations du chiffrement de bout en bout
 
 Journal des modifications complet : https://nextcloud.com/changelog/`,
   },
