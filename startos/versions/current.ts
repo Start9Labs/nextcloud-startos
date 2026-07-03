@@ -202,48 +202,88 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:1',
+  version: '33.0.6:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Updated Nextcloud to 33.0.6, a maintenance release with security fixes and bug fixes.
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
-- An update interrupted partway (e.g. by a restart) now finishes automatically on the next start, and the web interface shows as "starting" rather than "failed" while an update runs
+**Security**
 
-Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+- Refreshed the code-signing revocation list
+- Hardened LDAP group-member search against filter injection
+- More robust handling of encryption fallback errors
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
-- Una actualización interrumpida a medias (por ejemplo, por un reinicio) ahora se completa automáticamente en el siguiente inicio, y la interfaz web aparece como «iniciando» en lugar de «fallida» mientras se ejecuta una actualización
+**Fixes**
 
-Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+- CalDAV no longer crashes when a scheduled event has no organizer
+- One-time QR code two-factor login now works correctly
+- Restored drag-and-drop upload in Chromium-based browsers
+- Sharing and ephemeral-session expiry corrections
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
-- Eine teilweise unterbrochene Aktualisierung (z. B. durch einen Neustart) wird jetzt beim nächsten Start automatisch abgeschlossen, und die Weboberfläche wird während einer Aktualisierung als „wird gestartet" statt als „fehlgeschlagen" angezeigt
+Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    es_ES: `Se actualizó Nextcloud a 33.0.6, una versión de mantenimiento con correcciones de seguridad y de errores.
 
-Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+**Seguridad**
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
-- Aktualizacja przerwana w trakcie (np. przez ponowne uruchomienie) jest teraz automatycznie kończona przy następnym uruchomieniu, a interfejs webowy podczas aktualizacji jest oznaczany jako „uruchamianie" zamiast „błąd"
+- Se actualizó la lista de revocación de firma de código
+- Búsqueda de miembros de grupo LDAP protegida contra inyección de filtros
+- Manejo más robusto de errores de reserva de cifrado
 
-Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+**Correcciones**
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
-- Une mise à jour interrompue en cours de route (par exemple par un redémarrage) se termine maintenant automatiquement au prochain démarrage, et l'interface web est indiquée comme « démarrage » plutôt que « échec » pendant une mise à jour
+- CalDAV ya no falla cuando un evento programado no tiene organizador
+- El inicio de sesión de dos factores con código QR de un solo uso ahora funciona correctamente
+- Se restauró la subida arrastrando y soltando en navegadores basados en Chromium
+- Correcciones en el uso compartido y en la expiración de sesiones efímeras
 
-Journal des modifications complet : https://nextcloud.com/changelog/`,
+Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    de_DE: `Nextcloud auf 33.0.6 aktualisiert, eine Wartungsversion mit Sicherheits- und Fehlerkorrekturen.
+
+**Sicherheit**
+
+- Aktualisierte Sperrliste für Code-Signaturen
+- LDAP-Gruppenmitgliedersuche gegen Filter-Injection abgesichert
+- Robusteres Handling von Verschlüsselungs-Fallback-Fehlern
+
+**Fehlerbehebungen**
+
+- CalDAV stürzt nicht mehr ab, wenn ein geplanter Termin keinen Organisator hat
+- Die Zwei-Faktor-Anmeldung per Einmal-QR-Code funktioniert jetzt korrekt
+- Drag-and-Drop-Upload in Chromium-basierten Browsern wiederhergestellt
+- Korrekturen bei Freigaben und beim Ablauf kurzlebiger Sitzungen
+
+Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    pl_PL: `Zaktualizowano Nextcloud do 33.0.6, wydanie konserwacyjne z poprawkami bezpieczeństwa i błędów.
+
+**Bezpieczeństwo**
+
+- Zaktualizowano listę unieważnień podpisów kodu
+- Wyszukiwanie członków grup LDAP zabezpieczone przed wstrzyknięciem filtra
+- Bardziej niezawodna obsługa błędów awaryjnego szyfrowania
+
+**Poprawki**
+
+- CalDAV nie ulega już awarii, gdy zaplanowane wydarzenie nie ma organizatora
+- Logowanie dwuskładnikowe za pomocą jednorazowego kodu QR działa teraz poprawnie
+- Przywrócono przesyłanie metodą przeciągnij i upuść w przeglądarkach opartych na Chromium
+- Poprawki dotyczące udostępniania i wygasania sesji tymczasowych
+
+Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    fr_FR: `Mise à jour de Nextcloud vers 33.0.6, une version de maintenance avec des correctifs de sécurité et de bogues.
+
+**Sécurité**
+
+- Mise à jour de la liste de révocation des signatures de code
+- Recherche des membres de groupe LDAP renforcée contre l'injection de filtres
+- Gestion plus robuste des erreurs de repli du chiffrement
+
+**Corrections**
+
+- CalDAV ne plante plus lorsqu'un événement planifié n'a pas d'organisateur
+- La connexion à deux facteurs par code QR à usage unique fonctionne désormais correctement
+- Rétablissement du téléversement par glisser-déposer dans les navigateurs basés sur Chromium
+- Corrections du partage et de l'expiration des sessions éphémères
+
+Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
   },
   migrations: {
     up: async ({ effects }) => {
