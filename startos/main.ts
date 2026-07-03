@@ -1,4 +1,10 @@
+import { manifest as filebrowserManifest } from 'filebrowser-startos/startos/manifest'
 import { T } from '@start9labs/start-sdk'
+import {
+  EXTERNAL_STORAGE_SOURCES,
+  ExternalStorageSource,
+  externalStorageMeta,
+} from './externalStorage'
 import { configPhp } from './fileModels/config.php'
 import {
   ACTION_IDS,
@@ -124,18 +130,18 @@ export const main = sdk.setupMain(async ({ effects }) => {
    */
   console.info(i18n('Starting Nextcloud...'))
 
-  // get interface details
-  const hostnameInfo = await sdk.serviceInterface
-    .getOwn(
-      effects,
-      'ui',
-      (u) =>
-        u?.addressInfo
-          ?.filter({
-            exclude: { kind: ['link-local', 'bridge'] },
-          })
-          .format('hostname-info') || [],
-    )
+  // get interface details — the UI interface's hostnames, for trusted_domains
+  const hostnameInfo = await sdk.host
+    .getOwn(effects, 'main', (host) => {
+      if (!host) return []
+      const ui = Object.values(host.bindings)
+        .flatMap((b) => Object.values(b.interfaces))
+        .find((i) => i.id === 'ui')
+      if (!ui) return []
+      return ui.addressInfo
+        .filter({ exclude: { kind: ['link-local', 'bridge'] } })
+        .format('hostname-info')
+    })
     .const()
 
   await configPhp.merge(effects, {
@@ -157,7 +163,43 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // the chain — re-reading inside the loop keeps our view current.
   const completed = (await storeJson.read().once())?.actions.completed ?? {}
 
-  const nextcloudSub = await getNextcloudSub(effects)
+  // External Storage: DESIRED sources read reactively (selecting/clearing the
+  // `external-storage` action rebuilds the chain to mount/unmount the source),
+  // CONFIGURED sources read non-reactively (the reconcile oneshot writes it; we
+  // don't want that write to rebuild — same split as actions.pending vs
+  // actions.completed above).
+  const sources =
+    (await storeJson.read((s) => s.externalStorages).const(effects)) ?? []
+  const users =
+    (await storeJson.read((s) => s.externalStorageUsers).const(effects)) ?? {}
+  const configured =
+    (await storeJson.read().once())?.externalStoragesConfigured ?? ''
+
+  // Mount each selected source's volume into Nextcloud's container, read-write.
+  // `idmap` remaps the source's on-disk uid to www-data (33) across the userns
+  // boundary, so Nextcloud simply OWNS the mounted tree — it traverses, reads,
+  // writes and MOVES files with no permission machinery, and files it creates
+  // land back on disk as the source's uid so the source can manage them too.
+  let mounts = nextcloudMount
+  if (sources.includes('filebrowser')) {
+    mounts = mounts.mountDependency<typeof filebrowserManifest>({
+      dependencyId: 'filebrowser',
+      volumeId: 'data',
+      subpath: null,
+      mountpoint: externalStorageMeta.filebrowser.mountpoint,
+      readonly: false,
+      // File Browser writes files as uid 1000 (`user`) → www-data (33). Files
+      // other services drop into FB's volume under a different uid surface as
+      // `nobody` until those services idmap their FB mount to 1000 as well.
+      idmap: [{ fromId: 1000, toId: 33 }],
+    })
+  }
+  const nextcloudSub = sdk.SubContainer.of(
+    effects,
+    { imageId: 'nextcloud' },
+    mounts,
+    'nextcloud-sub',
+  )
   const valkeySub = await getValkeySub(effects)
   const postgresEnv = getPostgresEnv()
 
@@ -183,253 +225,278 @@ export const main = sdk.setupMain(async ({ effects }) => {
   /**
    * ======================== Daemons ========================
    */
-  return getBaseDaemons(
-    effects,
-    await getPostgresSub(effects),
-    nextcloudSub,
-    valkeySub,
-    postgresEnv,
-  )
-    .addDaemon('nextcloud', {
-      subcontainer: nextcloudSub,
-      exec: {
-        command: sdk.useEntrypoint(),
-        env: getNextcloudEnv(postgresEnv),
-      },
-      ready: {
-        display: i18n('Web Interface'),
-        fn: () =>
-          sdk.healthCheck.checkPortListening(effects, uiPort, {
-            successMessage: i18n('The web interface is ready'),
-            errorMessage: i18n('The web interface is not ready'),
-          }),
-        // The stock image's entrypoint runs `occ upgrade` BEFORE it binds the
-        // port, so the UI is legitimately down for the whole migration. Treat
-        // that window as "starting", not "failed", so the status page doesn't
-        // bait a restart mid-upgrade (which is what corrupts it). This is only
-        // display polish — the `finish-upgrade` oneshot below is the real safety
-        // net if a migration is interrupted anyway.
-        gracePeriod: 300_000,
-      },
-      requires: ['chown', 'postgres', 'valkey'],
-    })
-    .addDaemon('cron', {
-      subcontainer: await sdk.SubContainer.of(
-        effects,
-        { imageId: 'nextcloud' },
-        nextcloudMount,
-        'nextcloud-cron',
-      ),
-      exec: {
-        command: ['/cron.sh'],
-        env: getNextcloudEnv(postgresEnv),
-      },
-      ready: {
-        display: null,
-        fn: async () => ({ result: 'success', message: null }),
-      },
-      requires: ['nextcloud'],
-    })
-    .addOneshot('finish-upgrade', {
-      subcontainer: nextcloudSub,
-      exec: {
-        fn: async (subc, abort) => {
-          // Auto-complete an upgrade the stock image's entrypoint left unfinished.
-          //
-          // That entrypoint runs `occ upgrade` only when the deployed code is
-          // behind the image — it never re-checks the version the DB has
-          // acknowledged. So an upgrade interrupted after the file sync but
-          // before the migration completed (e.g. the service was restarted
-          // mid-upgrade) strands the instance permanently: the code is new, the
-          // DB still records the old version, every later start skips the
-          // upgrade, and the UI serves "Update needed — use the command line
-          // updater".
-          //
-          // Running here, AFTER the web daemon is ready (requires:
-          // ['nextcloud']), is what makes this safe:
-          //   - in the normal case the entrypoint has already upgraded by the
-          //     time the daemon is ready, so `needsDbUpgrade` is false and this
-          //     is a no-op — the two upgrades can never overlap; and
-          //   - `occ upgrade` then runs exactly as the manual recovery does,
-          //     with apache up serving the maintenance page while it works.
-          // `occ upgrade` is idempotent, so a redundant run is harmless.
-          //
-          // We fail OPEN: the whole body is wrapped so nothing thrown here can
-          // reject the oneshot. A rejected oneshot fn never reaches
-          // EXIT_SUCCESS, which would (a) block the `long-running-tasks`
-          // oneshot gated on us from ever starting and (b) make the SDK
-          // re-invoke this fn on a backoff — re-running `occ upgrade` in a
-          // loop. The web daemon is independent and stays up regardless, so on
-          // any error we just log/notify and leave the UI reachable (fixable
-          // by hand).
-          const notifyFailed = (data: string | null) =>
-            sdk.notification
-              .create(effects, {
-                level: 'error',
-                title: i18n('Update Could Not Be Completed'),
-                message: i18n(
-                  'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").',
-                ),
-                data,
-              })
-              .catch(() => null)
+  return (
+    getBaseDaemons(
+      effects,
+      await getPostgresSub(effects),
+      nextcloudSub,
+      valkeySub,
+      postgresEnv,
+    )
+      .addDaemon('nextcloud', {
+        subcontainer: nextcloudSub,
+        exec: {
+          command: sdk.useEntrypoint(),
+          env: getNextcloudEnv(postgresEnv),
+        },
+        ready: {
+          display: i18n('Web Interface'),
+          fn: () =>
+            sdk.healthCheck.checkPortListening(effects, uiPort, {
+              successMessage: i18n('The web interface is ready'),
+              errorMessage: i18n('The web interface is not ready'),
+            }),
+          // The stock image's entrypoint runs `occ upgrade` BEFORE it binds the
+          // port, so the UI is legitimately down for the whole migration. Treat
+          // that window as "starting", not "failed", so the status page doesn't
+          // bait a restart mid-upgrade (which is what corrupts it). This is only
+          // display polish — the `finish-upgrade` oneshot below is the real safety
+          // net if a migration is interrupted anyway.
+          gracePeriod: 300_000,
+        },
+        requires: ['chown', 'postgres', 'valkey'],
+      })
+      .addDaemon('cron', {
+        subcontainer: sdk.SubContainer.of(
+          effects,
+          { imageId: 'nextcloud' },
+          mounts,
+          'nextcloud-cron',
+        ),
+        exec: {
+          command: ['/cron.sh'],
+          env: getNextcloudEnv(postgresEnv),
+        },
+        ready: {
+          display: null,
+          fn: async () => ({ result: 'success', message: null }),
+        },
+        requires: ['nextcloud'],
+      })
+      .addOneshot('finish-upgrade', {
+        subcontainer: nextcloudSub,
+        exec: {
+          fn: async (subc, abort) => {
+            // Auto-complete an upgrade the stock image's entrypoint left unfinished.
+            //
+            // That entrypoint runs `occ upgrade` only when the deployed code is
+            // behind the image — it never re-checks the version the DB has
+            // acknowledged. So an upgrade interrupted after the file sync but
+            // before the migration completed (e.g. the service was restarted
+            // mid-upgrade) strands the instance permanently: the code is new, the
+            // DB still records the old version, every later start skips the
+            // upgrade, and the UI serves "Update needed — use the command line
+            // updater".
+            //
+            // Running here, AFTER the web daemon is ready (requires:
+            // ['nextcloud']), is what makes this safe:
+            //   - in the normal case the entrypoint has already upgraded by the
+            //     time the daemon is ready, so `needsDbUpgrade` is false and this
+            //     is a no-op — the two upgrades can never overlap; and
+            //   - `occ upgrade` then runs exactly as the manual recovery does,
+            //     with apache up serving the maintenance page while it works.
+            // `occ upgrade` is idempotent, so a redundant run is harmless.
+            //
+            // We fail OPEN: the whole body is wrapped so nothing thrown here can
+            // reject the oneshot. A rejected oneshot fn never reaches
+            // EXIT_SUCCESS, which would (a) block the `long-running-tasks`
+            // oneshot gated on us from ever starting and (b) make the SDK
+            // re-invoke this fn on a backoff — re-running `occ upgrade` in a
+            // loop. The web daemon is independent and stays up regardless, so on
+            // any error we just log/notify and leave the UI reachable (fixable
+            // by hand).
+            const notifyFailed = (data: string | null) =>
+              sdk.notification
+                .create(effects, {
+                  level: 'error',
+                  title: i18n('Update Could Not Be Completed'),
+                  message: i18n(
+                    'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").',
+                  ),
+                  data,
+                })
+                .catch(() => null)
 
-          try {
-            if (abort.aborted) return null
+            try {
+              if (abort.aborted) return null
 
-            const status = await subc
-              .exec(['php', 'occ', 'status', '--output=json'], {
-                user: 'www-data',
-              })
-              .catch(() => null)
-            const out = `${status?.stdout?.toString() ?? ''}\n${status?.stderr?.toString() ?? ''}`
-            // Match both the JSON ("needsDbUpgrade":true) and human
-            // (needsDbUpgrade: true) shapes, plus occ's "… require upgrade"
-            // banner — so detection doesn't hinge on --output=json taking effect.
-            if (
-              !/needsDbUpgrade["']?\s*:\s*true/i.test(out) &&
-              !/requires? upgrade/i.test(out)
-            ) {
-              return null
-            }
-
-            console.info(i18n('Completing an interrupted Nextcloud upgrade...'))
-            const result = await spawnOcc(subc, abort, [
-              'upgrade',
-              '--no-interaction',
-            ])
-            if (result == null) return null // aborted mid-upgrade; resumes next start
-
-            if (result.code === 0) {
-              // The upgrade toggles maintenance mode while it runs and normally
-              // clears it; ensure it's off in case this run resumed one that was
-              // interrupted with the flag already set.
-              await subc
-                .exec(['php', 'occ', 'maintenance:mode', '--off'], {
+              const status = await subc
+                .exec(['php', 'occ', 'status', '--output=json'], {
                   user: 'www-data',
                 })
                 .catch(() => null)
-              await sdk.notification
-                .create(effects, {
-                  level: 'success',
-                  title: i18n('Update Completed'),
-                  message: i18n(
-                    'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.',
-                  ),
-                  data: null,
-                })
-                .catch(() => null)
-            } else {
-              await notifyFailed(
-                logDetails(
-                  i18n('Update Could Not Be Completed'),
-                  result,
-                  result.tail,
-                ),
+              const out = `${status?.stdout?.toString() ?? ''}\n${status?.stderr?.toString() ?? ''}`
+              // Match both the JSON ("needsDbUpgrade":true) and human
+              // (needsDbUpgrade: true) shapes, plus occ's "… require upgrade"
+              // banner — so detection doesn't hinge on --output=json taking effect.
+              if (
+                !/needsDbUpgrade["']?\s*:\s*true/i.test(out) &&
+                !/requires? upgrade/i.test(out)
+              ) {
+                return null
+              }
+
+              console.info(
+                i18n('Completing an interrupted Nextcloud upgrade...'),
               )
+              const result = await spawnOcc(subc, abort, [
+                'upgrade',
+                '--no-interaction',
+              ])
+              if (result == null) return null // aborted mid-upgrade; resumes next start
+
+              if (result.code === 0) {
+                // The upgrade toggles maintenance mode while it runs and normally
+                // clears it; ensure it's off in case this run resumed one that was
+                // interrupted with the flag already set.
+                await subc
+                  .exec(['php', 'occ', 'maintenance:mode', '--off'], {
+                    user: 'www-data',
+                  })
+                  .catch(() => null)
+                await sdk.notification
+                  .create(effects, {
+                    level: 'success',
+                    title: i18n('Update Completed'),
+                    message: i18n(
+                      'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.',
+                    ),
+                    data: null,
+                  })
+                  .catch(() => null)
+              } else {
+                await notifyFailed(
+                  logDetails(
+                    i18n('Update Could Not Be Completed'),
+                    result,
+                    result.tail,
+                  ),
+                )
+              }
+              return null
+            } catch (e) {
+              // Only reached by a genuinely unexpected throw (the detection exec,
+              // both notifications, and maintenance:mode are individually
+              // guarded), e.g. spawnOcc failing to launch the child.
+              console.error(
+                'finish-upgrade: unexpected error; leaving the UI reachable',
+                e,
+              )
+              await notifyFailed(null)
+              return null
+            }
+          },
+        },
+        requires: ['nextcloud'],
+      })
+      .addOneshot('long-running-tasks', {
+        subcontainer: nextcloudSub,
+        exec: {
+          fn: async (subc, abort) => {
+            // Walk pending in declared order. Each successful runOcc writes a
+            // `completed[id]` timestamp into store.json. Chain rebuild on
+            // completion is suppressed by the mapped subscription — it's the
+            // pending bag, not completed, that's watched.
+            const localCompleted = { ...completed }
+            for (const id of ACTION_IDS) {
+              if (abort.aborted) break
+              if (!isPending(pending, localCompleted, id)) continue
+              const ts = await runOcc(subc, abort, effects, id)
+              if (ts != null) localCompleted[id] = ts
             }
             return null
-          } catch (e) {
-            // Only reached by a genuinely unexpected throw (the detection exec,
-            // both notifications, and maintenance:mode are individually
-            // guarded), e.g. spawnOcc failing to launch the child.
-            console.error(
-              'finish-upgrade: unexpected error; leaving the UI reachable',
-              e,
+          },
+        },
+        // Behind finish-upgrade so a recovery migration never runs occ commands
+        // concurrently with a task (which would hit maintenance mode).
+        requires: ['nextcloud', 'finish-upgrade'],
+      })
+      // Reconcile Nextcloud's files_external entries to match the selected
+      // sources: create/enable for newly selected sources, delete for cleared
+      // ones, then record the actual state. Always present; a no-op when
+      // desired == configured.
+      .addOneshot('external-storage', {
+        subcontainer: nextcloudSub,
+        exec: {
+          fn: async (subc, _abort) => {
+            await reconcileExternalStorage(
+              subc,
+              _abort,
+              effects,
+              sources,
+              users,
+              configured,
             )
-            await notifyFailed(null)
             return null
-          }
+          },
         },
-      },
-      requires: ['nextcloud'],
-    })
-    .addOneshot('long-running-tasks', {
-      subcontainer: nextcloudSub,
-      exec: {
-        fn: async (subc, abort) => {
-          // Walk pending in declared order. Each successful runOcc writes a
-          // `completed[id]` timestamp into store.json. Chain rebuild on
-          // completion is suppressed by the mapped subscription — it's the
-          // pending bag, not completed, that's watched.
-          const localCompleted = { ...completed }
-          for (const id of ACTION_IDS) {
-            if (abort.aborted) break
-            if (!isPending(pending, localCompleted, id)) continue
-            const ts = await runOcc(subc, abort, effects, id)
-            if (ts != null) localCompleted[id] = ts
-          }
-          return null
-        },
-      },
-      // Behind finish-upgrade so a recovery migration never runs occ commands
-      // concurrently with a task (which would hit maintenance mode).
-      requires: ['nextcloud', 'finish-upgrade'],
-    })
-    .addHealthCheck('recognize-models', () =>
-      isPending(pending, completed, 'downloadModels')
-        ? {
-            ready: {
-              display: i18n('Recognize Model Download'),
-              fn: taskHealth(
-                'downloadModels',
-                i18n('Downloading machine learning models...'),
-              ),
-            },
-            requires: ['nextcloud'] as const,
-          }
-        : null,
-    )
-    .addHealthCheck('memories-indexing', () =>
-      isPending(pending, completed, 'indexMemories')
-        ? {
-            ready: {
-              display: i18n('Memories Indexing'),
-              fn: taskHealth(
-                'indexMemories',
-                i18n('Indexing photos for the Memories app...'),
-              ),
-            },
-            requires: ['nextcloud'] as const,
-          }
-        : null,
-    )
-    .addHealthCheck('memories-map-setup', () =>
-      isPending(pending, completed, 'indexPlaces')
-        ? {
-            ready: {
-              display: i18n('Memories Map Setup'),
-              fn: taskHealth(
-                'indexPlaces',
-                i18n('Setting up map data for the Memories app...'),
-              ),
-            },
-            requires: ['nextcloud'] as const,
-          }
-        : null,
-    )
-    .addHealthCheck('scan-files', () =>
-      isPending(pending, completed, 'scanFiles')
-        ? {
-            ready: {
-              display: i18n('File Scan'),
-              fn: taskHealth('scanFiles', i18n('Scanning files...')),
-            },
-            requires: ['nextcloud'] as const,
-          }
-        : null,
-    )
-    .addHealthCheck('repair', () =>
-      isPending(pending, completed, 'repair')
-        ? {
-            ready: {
-              display: i18n('Repair'),
-              fn: taskHealth('repair', i18n('Repairing Nextcloud...')),
-            },
-            requires: ['nextcloud'] as const,
-          }
-        : null,
-    )
+        requires: ['nextcloud'],
+      })
+      .addHealthCheck('recognize-models', () =>
+        isPending(pending, completed, 'downloadModels')
+          ? {
+              ready: {
+                display: i18n('Recognize Model Download'),
+                fn: taskHealth(
+                  'downloadModels',
+                  i18n('Downloading machine learning models...'),
+                ),
+              },
+              requires: ['nextcloud'] as const,
+            }
+          : null,
+      )
+      .addHealthCheck('memories-indexing', () =>
+        isPending(pending, completed, 'indexMemories')
+          ? {
+              ready: {
+                display: i18n('Memories Indexing'),
+                fn: taskHealth(
+                  'indexMemories',
+                  i18n('Indexing photos for the Memories app...'),
+                ),
+              },
+              requires: ['nextcloud'] as const,
+            }
+          : null,
+      )
+      .addHealthCheck('memories-map-setup', () =>
+        isPending(pending, completed, 'indexPlaces')
+          ? {
+              ready: {
+                display: i18n('Memories Map Setup'),
+                fn: taskHealth(
+                  'indexPlaces',
+                  i18n('Setting up map data for the Memories app...'),
+                ),
+              },
+              requires: ['nextcloud'] as const,
+            }
+          : null,
+      )
+      .addHealthCheck('scan-files', () =>
+        isPending(pending, completed, 'scanFiles')
+          ? {
+              ready: {
+                display: i18n('File Scan'),
+                fn: taskHealth('scanFiles', i18n('Scanning files...')),
+              },
+              requires: ['nextcloud'] as const,
+            }
+          : null,
+      )
+      .addHealthCheck('repair', () =>
+        isPending(pending, completed, 'repair')
+          ? {
+              ready: {
+                display: i18n('Repair'),
+                fn: taskHealth('repair', i18n('Repairing Nextcloud...')),
+              },
+              requires: ['nextcloud'] as const,
+            }
+          : null,
+      )
+  )
 })
 
 /**
@@ -572,4 +639,208 @@ function logDetails(
       : i18n('The command produced no output before exiting.'),
     ...(tail ? ['', '```', tail, '```'] : []),
   ].join('\n')
+}
+
+type OccMount = {
+  mount_id: number | string
+  mount_point: string
+  applicable_users?: string[]
+}
+
+const normMountPoint = (s: string) => s.replace(/^\/+/, '')
+
+const sameUsers = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((v, i) => v === b[i])
+
+/**
+ * Bring Nextcloud's `files_external` entries in line with the selected sources
+ * and each source's chosen applicable users. For each selected source it
+ * ensures a `files_external` mount exists and that its applicable-users set
+ * matches that source's selection (empty = all users); for each KNOWN-but-
+ * unselected source it deletes any matching mount. State is tracked by an
+ * opaque signature of (sources + per-source users): if it already matches,
+ * nothing runs; otherwise the full reconcile runs and — only if every
+ * structural step (enable/create/delete) succeeded — the new signature is
+ * recorded, so a failure retries on the next chain build. Failures are logged
+ * rather than thrown, so one bad source never takes down the whole service.
+ */
+async function reconcileExternalStorage(
+  subc: Awaited<ReturnType<typeof getNextcloudSub>>,
+  abort: AbortSignal,
+  effects: T.Effects,
+  desired: ExternalStorageSource[],
+  usersBySource: Record<string, string[]>,
+  configured: string,
+): Promise<void> {
+  const enabled = [...desired].sort()
+  // The applicable-user signature for a source (sorted, de-duped; [] = all).
+  const usersFor = (id: ExternalStorageSource): string[] =>
+    [...new Set(usersBySource[id] ?? [])].sort()
+  // `v` bumps whenever the applied semantics change, so an existing install
+  // re-reconciles once on upgrade even if the selection itself is unchanged
+  // (v2: fixed applicable-users handling — see applyApplicable).
+  const desiredSig = JSON.stringify({
+    v: 2,
+    sources: enabled,
+    users: Object.fromEntries(enabled.map((id) => [id, usersFor(id)])),
+  })
+  // Treat a never-written signature ('') as "nothing selected" so a fresh
+  // install with no selection short-circuits with zero occ calls (and never
+  // touches a /FileBrowser mount a user may have created by hand).
+  const emptySig = JSON.stringify({ v: 2, sources: [], users: {} })
+  if (desiredSig === (configured || emptySig)) return
+
+  const occ = (args: string[]) =>
+    subc.exec(['php', 'occ', ...args], { user: 'www-data' })
+
+  const listMounts = async (): Promise<OccMount[]> => {
+    const res = await occ(['files_external:list', '--output=json'])
+    if (res.exitCode !== 0) return []
+    try {
+      return JSON.parse(res.stdout.toString()) as OccMount[]
+    } catch {
+      return []
+    }
+  }
+  const matchingMounts = (mounts: OccMount[], ncMountPoint: string) =>
+    mounts.filter(
+      (x) =>
+        normMountPoint(String(x.mount_point ?? '')) ===
+        normMountPoint(ncMountPoint),
+    )
+
+  // Bring a mount's applicable users in line with `desiredUsers`.
+  //
+  // Nextcloud semantics: a system mount with NO applicable users (and no
+  // group/global entry) is available to ALL users; adding any user entry
+  // restricts it to exactly those users. So:
+  //   - empty desiredUsers  -> remove every currently-applicable user, leaving
+  //                            it empty == available to all.
+  //   - non-empty           -> `--remove-all` first (it clears the global flag
+  //                            AND every existing user/group entry), THEN add
+  //                            every desired user. We must re-add ALL of them,
+  //                            including ones that were already in `current`,
+  //                            because --remove-all just dropped them. (Skipping
+  //                            "already-current" users was the cross-source bug:
+  //                            a kept user got wiped and never re-added, so the
+  //                            mount fell back to "available to everyone".)
+  // Per-user `--add-user` calls keep this resilient to a user deleted in
+  // Nextcloud since the selection was made (only that user's call fails).
+  const applyApplicable = async (
+    mountId: string,
+    current: string[],
+    desiredUsers: string[],
+  ) => {
+    const applicable = (...args: string[]) =>
+      occ(['files_external:applicable', mountId, ...args])
+
+    if (desiredUsers.length === 0) {
+      // Available to all users == no specific applicable users.
+      for (const u of current) await applicable('--remove-user', u)
+    } else {
+      // Restrict to exactly `desiredUsers`.
+      await applicable('--remove-all')
+      for (const u of desiredUsers) {
+        const r = await applicable('--add-user', u)
+        if (r.exitCode !== 0) {
+          console.error(
+            `external-storage: could not grant mount ${mountId} to user "${u}" (deleted in Nextcloud?): ${r.stderr.toString()}`,
+          )
+        }
+      }
+    }
+  }
+
+  let allOk = true
+
+  if (desired.length > 0) {
+    // files_external ships disabled on a fresh install; enabling an
+    // already-enabled app is a no-op.
+    const en = await occ(['app:enable', 'files_external'])
+    if (en.exitCode !== 0) {
+      allOk = false
+      console.error(
+        `external-storage: could not enable files_external app: ${en.stderr.toString()}`,
+      )
+    }
+  }
+
+  // Walk every KNOWN source so removals are handled without remembering the
+  // previous selection: selected → ensure + set applicable; unselected → delete.
+  for (const id of EXTERNAL_STORAGE_SOURCES) {
+    if (abort.aborted) return
+    const { ncMountPoint, mountpoint } = externalStorageMeta[id]
+    try {
+      if (desired.includes(id)) {
+        let mount = matchingMounts(await listMounts(), ncMountPoint)[0]
+        if (!mount) {
+          const create = await occ([
+            'files_external:create',
+            ncMountPoint,
+            'local',
+            'null::null',
+            '-c',
+            `datadir=${mountpoint}`,
+          ])
+          if (create.exitCode !== 0) {
+            allOk = false
+            console.error(
+              `external-storage: failed to create ${ncMountPoint}: ${create.stdout.toString()} ${create.stderr.toString()}`,
+            )
+            continue
+          }
+          mount = matchingMounts(await listMounts(), ncMountPoint)[0]
+        }
+        if (!mount) {
+          allOk = false
+          console.error(
+            `external-storage: created ${ncMountPoint} but could not resolve its mount id`,
+          )
+          continue
+        }
+        const mountId = String(mount.mount_id)
+        const wanted = usersFor(id)
+        await applyApplicable(mountId, mount.applicable_users ?? [], wanted)
+        console.info(
+          `external-storage: ${ncMountPoint} (mount ${mountId}) available to ${
+            wanted.length ? wanted.join(', ') : 'all users'
+          }`,
+        )
+        // Rescan on access so out-of-band writes by the source service appear
+        // in Nextcloud without a manual file scan.
+        await occ([
+          'files_external:option',
+          mountId,
+          'filesystem_check_changes',
+          '1',
+        ])
+      } else {
+        for (const m of matchingMounts(await listMounts(), ncMountPoint)) {
+          const del = await occ([
+            'files_external:delete',
+            String(m.mount_id),
+            '--yes',
+          ])
+          if (del.exitCode !== 0) {
+            allOk = false
+            console.error(
+              `external-storage: failed to delete ${ncMountPoint} (id ${m.mount_id}): ${del.stderr.toString()}`,
+            )
+          }
+        }
+      }
+    } catch (e) {
+      allOk = false
+      console.error(`external-storage: error reconciling ${id}: ${String(e)}`)
+    }
+  }
+
+  if (abort.aborted) return
+  // Record the new signature only if every structural step succeeded, so a
+  // failure retries next build. Written non-reactively (setupMain reads
+  // externalStorages / externalStorageUsers, not this field, reactively) so the
+  // write never rebuilds the chain. Plain string → merge replaces it wholesale.
+  if (allOk) {
+    await storeJson.merge(effects, { externalStoragesConfigured: desiredSig })
+  }
 }

@@ -204,84 +204,49 @@ const migrateNextcloud = async (effects: T.Effects) => {
 export const current = VersionInfo.of({
   version: '33.0.6:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.6, a maintenance release with security fixes and bug fixes.
+    en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.6 — upstream security and bug fixes).
 
-**Security**
+**External Storage**
 
-- Refreshed the code-signing revocation list
-- Hardened LDAP group-member search against filter injection
-- More robust handling of encryption fallback errors
+- New action to surface File Browser's shared storage as a folder in your Files, scoped per Nextcloud user — so you can move files into Nextcloud.
 
-**Fixes**
-
-- CalDAV no longer crashes when a scheduled event has no organizer
-- One-time QR code two-factor login now works correctly
-- Restored drag-and-drop upload in Chromium-based browsers
-- Sharing and ephemeral-session expiry corrections
+Internal updates (start-sdk 2.0).
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    es_ES: `Se actualizó Nextcloud a 33.0.6, una versión de mantenimiento con correcciones de seguridad y de errores.
+    es_ES: `Añade la integración de Almacenamiento externo de File Browser y reempaqueta Nextcloud sobre start-sdk 2.0 (imagen incluida actualizada a Nextcloud 33.0.6 — correcciones de seguridad y de errores upstream).
 
-**Seguridad**
+**Almacenamiento externo**
 
-- Se actualizó la lista de revocación de firma de código
-- Búsqueda de miembros de grupo LDAP protegida contra inyección de filtros
-- Manejo más robusto de errores de reserva de cifrado
+- Nueva acción para mostrar el almacenamiento compartido de File Browser como una carpeta en tus Archivos, por usuario de Nextcloud, para que puedas mover archivos a Nextcloud.
 
-**Correcciones**
-
-- CalDAV ya no falla cuando un evento programado no tiene organizador
-- El inicio de sesión de dos factores con código QR de un solo uso ahora funciona correctamente
-- Se restauró la subida arrastrando y soltando en navegadores basados en Chromium
-- Correcciones en el uso compartido y en la expiración de sesiones efímeras
+Actualizaciones internas (start-sdk 2.0).
 
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    de_DE: `Nextcloud auf 33.0.6 aktualisiert, eine Wartungsversion mit Sicherheits- und Fehlerkorrekturen.
+    de_DE: `Fügt die File-Browser-Integration „Externer Speicher" hinzu und stellt Nextcloud auf start-sdk 2.0 um (mitgeliefertes Image auf Nextcloud 33.0.6 aktualisiert — Sicherheits- und Fehlerkorrekturen im Upstream).
 
-**Sicherheit**
+**Externer Speicher**
 
-- Aktualisierte Sperrliste für Code-Signaturen
-- LDAP-Gruppenmitgliedersuche gegen Filter-Injection abgesichert
-- Robusteres Handling von Verschlüsselungs-Fallback-Fehlern
+- Neue Aktion, um den gemeinsamen Speicher von File Browser als Ordner in Dateien anzuzeigen — pro Nextcloud-Benutzer, sodass Sie Dateien nach Nextcloud verschieben können.
 
-**Fehlerbehebungen**
-
-- CalDAV stürzt nicht mehr ab, wenn ein geplanter Termin keinen Organisator hat
-- Die Zwei-Faktor-Anmeldung per Einmal-QR-Code funktioniert jetzt korrekt
-- Drag-and-Drop-Upload in Chromium-basierten Browsern wiederhergestellt
-- Korrekturen bei Freigaben und beim Ablauf kurzlebiger Sitzungen
+Interne Aktualisierungen (start-sdk 2.0).
 
 Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.6, wydanie konserwacyjne z poprawkami bezpieczeństwa i błędów.
+    pl_PL: `Dodaje integrację Magazynu zewnętrznego z File Browser i przenosi Nextcloud na start-sdk 2.0 (dołączony obraz zaktualizowany do Nextcloud 33.0.6 — poprawki bezpieczeństwa i błędów w upstreamie).
 
-**Bezpieczeństwo**
+**Magazyn zewnętrzny**
 
-- Zaktualizowano listę unieważnień podpisów kodu
-- Wyszukiwanie członków grup LDAP zabezpieczone przed wstrzyknięciem filtra
-- Bardziej niezawodna obsługa błędów awaryjnego szyfrowania
+- Nowa akcja udostępniająca współdzieloną przestrzeń File Browser jako folder w aplikacji Pliki, per użytkownik Nextcloud, dzięki czemu możesz przenosić pliki do Nextcloud.
 
-**Poprawki**
-
-- CalDAV nie ulega już awarii, gdy zaplanowane wydarzenie nie ma organizatora
-- Logowanie dwuskładnikowe za pomocą jednorazowego kodu QR działa teraz poprawnie
-- Przywrócono przesyłanie metodą przeciągnij i upuść w przeglądarkach opartych na Chromium
-- Poprawki dotyczące udostępniania i wygasania sesji tymczasowych
+Aktualizacje wewnętrzne (start-sdk 2.0).
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.6, une version de maintenance avec des correctifs de sécurité et de bogues.
+    fr_FR: `Ajoute l'intégration Stockage externe de File Browser et repackage Nextcloud sur start-sdk 2.0 (image fournie mise à jour vers Nextcloud 33.0.6 — correctifs de sécurité et de bogues en amont).
 
-**Sécurité**
+**Stockage externe**
 
-- Mise à jour de la liste de révocation des signatures de code
-- Recherche des membres de groupe LDAP renforcée contre l'injection de filtres
-- Gestion plus robuste des erreurs de repli du chiffrement
+- Nouvelle action pour afficher le stockage partagé de File Browser comme un dossier dans Fichiers, par utilisateur Nextcloud, afin de pouvoir déplacer des fichiers vers Nextcloud.
 
-**Corrections**
-
-- CalDAV ne plante plus lorsqu'un événement planifié n'a pas d'organisateur
-- La connexion à deux facteurs par code QR à usage unique fonctionne désormais correctement
-- Rétablissement du téléversement par glisser-déposer dans les navigateurs basés sur Chromium
-- Corrections du partage et de l'expiration des sessions éphémères
+Mises à jour internes (start-sdk 2.0).
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
   },

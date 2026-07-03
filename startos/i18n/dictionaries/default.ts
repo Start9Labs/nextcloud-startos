@@ -176,6 +176,18 @@ const dict = {
   'An interrupted Nextcloud update was detected and finished automatically. The web interface is available again.': 118,
   'Update Could Not Be Completed': 119,
   'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").': 120,
+  // externalStorage.ts: External Storage action + File Browser source
+  'External Storage': 121,
+  'Each selected service is mounted into Nextcloud and added to Files. File Browser is mounted read-write, so you can move its files into Nextcloud. Clear a selection to remove it.': 122,
+  'File Browser': 123,
+  "Show other StartOS services' files as folders in Nextcloud Files, via the built-in External Storage app.": 124,
+  'Available to Users': 125,
+  'Which Nextcloud users see the selected storage in their Files. Leave empty to make it available to all users.': 126,
+  'Available to Users — ${source}': 127,
+  'Not mounted': 128,
+  'Available to all users': 129,
+  'Available to specific users': 130,
+  Users: 131,
 } as const
 
 /**

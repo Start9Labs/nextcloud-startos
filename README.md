@@ -145,6 +145,16 @@ Both interfaces share the same origin. SSL is terminated by StartOS and forwarde
 
 Basic settings for locale, phone region, and maintenance window timing. Available when running or stopped.
 
+### External Storage
+
+Surfaces another StartOS service's storage as a folder in Nextcloud's Files, using Nextcloud's built-in External Storage app (`files_external`). The form is built dynamically from `effects.getInstalledPackages()` — it shows **one dropdown per supported source whose service is actually installed**, so uninstalled services never appear. The only supported source today is **File Browser** → `/FileBrowser` (the registry in `startos/externalStorage.ts` is built to take more — File Browser is intended as the single shared-storage hub that other services route through, but adding a service's own volume as a direct source is a one-entry change). Each dropdown has three choices:
+
+- **Not mounted** (default) — the source is not mounted/surfaced.
+- **Available to all users** — mounted **read-write** at `/mnt/<source>` and surfaced to everyone.
+- **Available to specific users** — mounted, and reveals a user picker (populated live from `occ user:list`); only the chosen users see it.
+
+So each source is scoped independently (mirroring Nextcloud's per-mount "Available to" model), and a source's user picker only appears when you choose "specific users". Because the pickers read the live user list, this action is available only while the service is **running**. Under the hood the dropdowns are translated into the same `externalStorages` + `externalStorageUsers` state in `store.json`, and the mounts are reconciled on the next chain build. See [Dependencies](#dependencies) for the full mechanism (idmap ownership).
+
 ### Reset Admin Password
 
 Generates a new 24-character random password for a selected admin user. Displays the new credentials. Requires service to be running.
@@ -201,7 +211,25 @@ Hidden action that runs once after initial install as a critical task. Retrieves
 
 ## Dependencies
 
-None. Nextcloud on StartOS is fully self-contained with its own database and cache.
+Nextcloud is self-contained (its own PostgreSQL and Valkey). It has a single **optional** dependency, used only by the **External Storage** action:
+
+| Dependency | Kind | When | Why |
+|------------|------|------|-----|
+| File Browser | `exists` (`>=2.63.2:0`) | Only while "File Browser" is selected in the External Storage action | Nextcloud mounts File Browser's `data` volume and surfaces it as a folder in Files |
+
+The dependency is declared optional and requested dynamically — `setupDependencies` reads the selection from `store.json`, so with nothing selected Nextcloud has no dependencies at all.
+
+### How the External Storage integration works
+
+Each source's files live on a host-backed volume (real files on disk, not a live cross-namespace mount), so they can be shared end-to-end in package code alone. File Browser is StartOS's shared storage hub — other services write into its `data` volume — and is the only source wired up today; the mechanism below is written to be identical for any future source. When you select a source in the External Storage action:
+
+1. **Mount** — `setupMain` mounts File Browser's `data` volume into Nextcloud's container at `/mnt/filebrowser`, **read-write**. The cron container gets the same mount so background jobs see it.
+2. **Ownership (idmap)** — StartOS runs each service in its own user namespace, so the source's on-disk uid and Nextcloud's `www-data` don't line up. The mount declares `idmap: [{ fromId: 1000, toId: 33 }]`, mapping File Browser's on-disk uid (`1000`, its `user`) to `www-data` (`33`) inside Nextcloud's namespace — so Nextcloud simply **owns** the mounted tree. It can traverse, read, write, and — the headline use case — **move** files out, with no permission machinery, no `chmod` pass, and no lag. Files Nextcloud creates land back on disk as uid `1000`, so File Browser can manage them too; edits work in both directions. (Requires StartOS 0.4.0-beta.10+, where `idmap` on dependency mounts is functional.)
+3. **Register** — an `external-storage` oneshot runs `occ files_external:create "/FileBrowser" local null::null -c datadir=/mnt/filebrowser`, makes it applicable to that source's chosen Nextcloud users (`--add-user`, or `--add-all` when none are specified), and sets `filesystem_check_changes 1` so out-of-band writes by other services appear on access. Clearing the selection runs `occ files_external:delete`. Each source's applicable-users set is reconciled independently whenever the selection changes.
+
+The selection lives in `store.json` (`externalStorages` + `externalStorageUsers`); the last-applied configuration is recorded separately as an opaque signature at `externalStoragesConfigured`, so the reconcile oneshot does `occ` work only when the desired and applied signatures differ, and its write does not rebuild the daemon chain — the same desired/actual split the long-running task actions use (`actions.pending` vs `actions.completed`).
+
+**Other services' files.** Files File Browser itself writes (uid `1000`) map cleanly to `www-data`, so moving them into **and** out of Nextcloud works in both directions, instantly. Files that *other* services drop into File Browser's volume under a *different* on-disk uid surface as `nobody` inside Nextcloud until those services idmap their own File Browser mount to `1000` as well — a fleet-wide SDK 2.0 follow-up.
 
 ---
 
@@ -217,6 +245,7 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 **NOT included in backup:**
 
 - `db` volume — Not rsynced directly; database is captured via `pg_dump`
+- **External Storage sources** (e.g. File Browser, via the External Storage action) — the mounted files live on the *source* service's own volume (surfaced inside Nextcloud at `/mnt/filebrowser`), which is never one of the synced paths above, so they are not duplicated here; the source service backs up its own data. Only the external-mount **configuration** and filecache index are captured (in the `pg_dump`), and the selection itself rides along in `store.json` on the `main` volume — so on restore the mount re-links automatically (once the source service is present)
 
 **Restore behavior:**
 
@@ -251,7 +280,7 @@ The CLI Tools actions that depend on a Nextcloud app (Recognize for model downlo
 
 ## Limitations and Differences
 
-1. **No external storage mounts** — You cannot mount arbitrary host directories. External storage must be configured through Nextcloud's built-in external storage app.
+1. **No arbitrary host directory mounts** — You cannot mount arbitrary host paths. You *can* surface another StartOS service's storage with the **External Storage** action (currently File Browser; see [Dependencies](#dependencies)), and you can attach remote storage (S3, SMB, WebDAV, etc.) through Nextcloud's built-in External Storage app.
 2. **No built-in SMTP** — Mail must be configured through Nextcloud Admin Settings > Basic settings > Email server.
 3. **Collaborative editing** — OnlyOffice/Collabora integration requires additional setup and may not work in all configurations.
 4. **App compatibility** — Most Nextcloud apps work, but some that require system-level access or additional services may not function in the containerized environment.
@@ -297,7 +326,8 @@ volumes:
 ports:
   ui: 80
   webdav: 80
-dependencies: none
+dependencies:
+  filebrowser: optional, exists >=2.63.2:0 (only while selected in the External Storage action; mounted read-write at /mnt/filebrowser)
 startos_managed_env_vars:
   - PHP_MEMORY_LIMIT
   - PHP_UPLOAD_LIMIT
@@ -307,6 +337,7 @@ startos_managed_env_vars:
   - PGDATA
 actions:
   - set-config
+  - external-storage
   - reset-admin
   - disable-maintenance
   - disable-unstable-apps

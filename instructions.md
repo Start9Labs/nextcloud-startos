@@ -34,6 +34,7 @@ Point a Nextcloud desktop or mobile client (or any WebDAV client) at the **WebDA
 ### Actions
 
 - **Configure** — set the default locale, default phone region, the UTC start hour of Nextcloud's nightly maintenance window for background jobs, and a toggle to stop seeding new user accounts with Nextcloud's default skeleton files (sample documents, photos, README).
+- **External Storage** — surface another StartOS service's storage as a folder in your Nextcloud **Files**, using Nextcloud's built-in External Storage app. The action lists a dropdown for each supported service **you have installed** (today just **File Browser** → a `/FileBrowser` folder). Each dropdown is **Not mounted** (off), **Available to all users**, or **Available to specific users** (which then lets you pick exactly which Nextcloud users see it). The folder is read-write, so you can **move files out of it into Nextcloud**. Nextcloud must be **running** to run this action (it reads your live user list). Files other services add to File Browser appear automatically when you open the folder — so File Browser acts as the shared hub: point any service that should be visible in Nextcloud at File Browser.
 - **Reset Admin Password** — pick an admin user and generate a new random password. Use this if the admin password is lost or you want to rotate it.
 - **Disable Maintenance Mode** (Maintenance group) — runs `occ maintenance:mode --off`. Brief maintenance mode after an update or restart is normal — wait at least 15 minutes before resorting to this. An update interrupted partway (for example by a restart) now finishes automatically the next time the service starts, so you should rarely need this.
 - **Disable Non-default Apps** (Maintenance group) — disables every non-default Nextcloud app. Use this if a third-party app has broken the UI with an Internal Server Error. Stable apps must then be re-enabled individually from the Nextcloud Apps page.
@@ -45,6 +46,6 @@ Point a Nextcloud desktop or mobile client (or any WebDAV client) at the **WebDA
 
 ## Limitations
 
-- **No external storage mounts from the host.** Use Nextcloud's built-in External Storage app to attach remote storage (S3, WebDAV, SMB, etc.); StartOS does not expose arbitrary host directories to the container.
+- **No arbitrary host directory mounts.** You can surface another StartOS service's files with the **External Storage** action (currently File Browser), and you can attach remote storage (S3, WebDAV, SMB, etc.) through Nextcloud's built-in External Storage app. StartOS does not expose arbitrary host directories to the container.
 - **No built-in SMTP.** Configure email under Nextcloud's **Administration settings → Basic settings → Email server**.
 - **PHP memory limit is 1024 MB and the per-file upload limit is 20 GB.** These are not user-configurable.
