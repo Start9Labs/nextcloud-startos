@@ -6,7 +6,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@start9labs/start-sdk": "2.0.1",
+    "@start9labs/start-sdk": "2.0.3",
     "filebrowser-startos": "github:Start9Labs/filebrowser-startos#next"
   },
   "devDependencies": {
