@@ -210,6 +210,10 @@ export const current = VersionInfo.of({
 
 - New action to surface File Browser's shared storage as a folder in your Files, scoped per Nextcloud user — so you can move files into Nextcloud.
 
+**Upgrades**
+
+- Nextcloud version upgrades now run during the update step, so a failed upgrade rolls back cleanly instead of leaving the app in need of manual recovery.
+
 Internal updates (start-sdk 2.0).
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
@@ -218,6 +222,10 @@ Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.
 **Almacenamiento externo**
 
 - Nueva acción para mostrar el almacenamiento compartido de File Browser como una carpeta en tus Archivos, por usuario de Nextcloud, para que puedas mover archivos a Nextcloud.
+
+**Actualizaciones de versión**
+
+- Las actualizaciones de versión de Nextcloud ahora se ejecutan durante el paso de actualización, de modo que una actualización fallida se revierte limpiamente en lugar de dejar la aplicación en un estado que requiere recuperación manual.
 
 Actualizaciones internas (start-sdk 2.0).
 
@@ -228,6 +236,10 @@ Registro de cambios completo: https://github.com/nextcloud-releases/server/relea
 
 - Neue Aktion, um den gemeinsamen Speicher von File Browser als Ordner in Dateien anzuzeigen — pro Nextcloud-Benutzer, sodass Sie Dateien nach Nextcloud verschieben können.
 
+**Versions-Upgrades**
+
+- Nextcloud-Versions-Upgrades laufen jetzt während des Update-Schritts, sodass ein fehlgeschlagenes Upgrade sauber zurückgerollt wird, statt die App in einem Zustand zu hinterlassen, der manuelle Wiederherstellung erfordert.
+
 Interne Aktualisierungen (start-sdk 2.0).
 
 Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
@@ -237,6 +249,10 @@ Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/rele
 
 - Nowa akcja udostępniająca współdzieloną przestrzeń File Browser jako folder w aplikacji Pliki, per użytkownik Nextcloud, dzięki czemu możesz przenosić pliki do Nextcloud.
 
+**Aktualizacje wersji**
+
+- Aktualizacje wersji Nextcloud są teraz wykonywane podczas kroku aktualizacji, dzięki czemu nieudana aktualizacja jest czysto wycofywana, zamiast pozostawiać aplikację w stanie wymagającym ręcznego przywracania.
+
 Aktualizacje wewnętrzne (start-sdk 2.0).
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
@@ -245,6 +261,10 @@ Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag
 **Stockage externe**
 
 - Nouvelle action pour afficher le stockage partagé de File Browser comme un dossier dans Fichiers, par utilisateur Nextcloud, afin de pouvoir déplacer des fichiers vers Nextcloud.
+
+**Mises à niveau de version**
+
+- Les mises à niveau de version de Nextcloud s'exécutent désormais pendant l'étape de mise à jour, de sorte qu'une mise à niveau échouée est annulée proprement au lieu de laisser l'application dans un état nécessitant une récupération manuelle.
 
 Mises à jour internes (start-sdk 2.0).
 

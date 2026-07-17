@@ -246,12 +246,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
               successMessage: i18n('The web interface is ready'),
               errorMessage: i18n('The web interface is not ready'),
             }),
-          // The stock image's entrypoint runs `occ upgrade` BEFORE it binds the
-          // port, so the UI is legitimately down for the whole migration. Treat
-          // that window as "starting", not "failed", so the status page doesn't
-          // bait a restart mid-upgrade (which is what corrupts it). This is only
-          // display polish — the `finish-upgrade` oneshot below is the real safety
-          // net if a migration is interrupted anyway.
+          // A version upgrade normally runs during init now (see
+          // bootstrapNextcloud), but restoring an older backup can still leave
+          // the entrypoint to run `occ upgrade` before it binds the port, with
+          // the UI legitimately down for the migration. Treat that window as
+          // "starting", not "failed", so the status page doesn't bait a restart
+          // mid-upgrade (which is what corrupts it). This is only display polish
+          // — the `finish-upgrade` oneshot below is the real safety net.
           gracePeriod: 300_000,
         },
         requires: ['chown', 'postgres', 'valkey'],
@@ -277,7 +278,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
         subcontainer: nextcloudSub,
         exec: {
           fn: async (subc, abort) => {
-            // Auto-complete an upgrade the stock image's entrypoint left unfinished.
+            // Fallback safety net: auto-complete an upgrade the stock image's
+            // entrypoint left unfinished. Version upgrades now run during init
+            // (bootstrapNextcloud), snapshot-protected — but restoring an older
+            // backup can still trigger an at-start upgrade, and this catches one
+            // that gets interrupted.
             //
             // That entrypoint runs `occ upgrade` only when the deployed code is
             // behind the image — it never re-checks the version the DB has
