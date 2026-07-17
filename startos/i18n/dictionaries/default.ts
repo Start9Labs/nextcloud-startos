@@ -188,6 +188,10 @@ const dict = {
   'Available to all users': 129,
   'Available to specific users': 130,
   Users: 131,
+
+  // bootstrapNextcloud.ts: init progress phases
+  'Installing Nextcloud': 132,
+  'Upgrading Nextcloud': 133,
 } as const
 
 /**

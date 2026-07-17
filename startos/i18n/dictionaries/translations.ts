@@ -134,6 +134,8 @@ export default {
     129: 'Disponible para todos los usuarios',
     130: 'Disponible para usuarios específicos',
     131: 'Usuarios',
+    132: 'Instalando Nextcloud',
+    133: 'Actualizando Nextcloud',
   },
   de_DE: {
     0: 'Starte Nextcloud...',
@@ -268,6 +270,8 @@ export default {
     129: 'Für alle Benutzer verfügbar',
     130: 'Für bestimmte Benutzer verfügbar',
     131: 'Benutzer',
+    132: 'Nextcloud wird installiert',
+    133: 'Nextcloud wird aktualisiert',
   },
   pl_PL: {
     0: 'Uruchamianie Nextcloud...',
@@ -402,6 +406,8 @@ export default {
     129: 'Dostępne dla wszystkich użytkowników',
     130: 'Dostępne dla określonych użytkowników',
     131: 'Użytkownicy',
+    132: 'Instalowanie Nextcloud',
+    133: 'Aktualizowanie Nextcloud',
   },
   fr_FR: {
     0: 'Démarrage de Nextcloud...',
@@ -536,5 +542,7 @@ export default {
     129: 'Disponible pour tous les utilisateurs',
     130: 'Disponible pour des utilisateurs spécifiques',
     131: 'Utilisateurs',
+    132: 'Installation de Nextcloud',
+    133: 'Mise à niveau de Nextcloud',
   },
 } satisfies Record<string, LangDict>

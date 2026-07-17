@@ -19,71 +19,87 @@ import {
 // back instead of hanging forever.
 const UPGRADE_TIMEOUT = 1_800_000
 
-export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
-  if (kind === 'install') {
-    const adminPassword = getRandomPassword()
-    const postgresPassword = getRandomPassword()
+// Minimal structural view of the init FullProgressTracker (not exported from
+// the SDK); we only start and complete a named phase.
+type InitProgress = {
+  addPhase(
+    name: string,
+    contribution?: number | null,
+  ): { start(): void; complete(): void }
+}
 
-    const nextcloudSub = await getNextcloudSub(effects)
-    const valkeySub = await getValkeySub(effects)
-    const postgresEnv = getPostgresEnv()
+export const bootstrapNextcloud = sdk.setupOnInit(
+  async (effects, kind, progress) => {
+    if (kind === 'install') {
+      const installing = progress.addPhase(i18n('Installing Nextcloud'))
+      installing.start()
 
-    await getBaseDaemons(
-      effects,
-      await getPostgresSub(effects),
-      nextcloudSub,
-      valkeySub,
-      { ...postgresEnv, POSTGRES_PASSWORD: postgresPassword },
-    )
-      .addDaemon('nextcloud', {
-        subcontainer: nextcloudSub,
-        exec: {
-          command: sdk.useEntrypoint(),
-          env: {
-            ...getNextcloudEnv(postgresEnv),
-            POSTGRES_PASSWORD: postgresPassword,
-            NEXTCLOUD_ADMIN_USER: 'admin',
-            NEXTCLOUD_ADMIN_PASSWORD: adminPassword,
+      const adminPassword = getRandomPassword()
+      const postgresPassword = getRandomPassword()
+
+      const nextcloudSub = await getNextcloudSub(effects)
+      const valkeySub = await getValkeySub(effects)
+      const postgresEnv = getPostgresEnv()
+
+      await getBaseDaemons(
+        effects,
+        await getPostgresSub(effects),
+        nextcloudSub,
+        valkeySub,
+        { ...postgresEnv, POSTGRES_PASSWORD: postgresPassword },
+      )
+        .addDaemon('nextcloud', {
+          subcontainer: nextcloudSub,
+          exec: {
+            command: sdk.useEntrypoint(),
+            env: {
+              ...getNextcloudEnv(postgresEnv),
+              POSTGRES_PASSWORD: postgresPassword,
+              NEXTCLOUD_ADMIN_USER: 'admin',
+              NEXTCLOUD_ADMIN_PASSWORD: adminPassword,
+            },
           },
-        },
-        ready: {
-          display: null,
-          fn: async () => {
-            const status = await nextcloudSub.execFail(
-              ['php', 'occ', 'status'],
-              {
-                user: 'www-data',
-              },
-            )
+          ready: {
+            display: null,
+            fn: async () => {
+              const status = await nextcloudSub.execFail(
+                ['php', 'occ', 'status'],
+                {
+                  user: 'www-data',
+                },
+              )
 
-            if (status.stdout.includes('installed: true')) {
-              return {
-                result: 'success',
-                message: null,
+              if (status.stdout.includes('installed: true')) {
+                return {
+                  result: 'success',
+                  message: null,
+                }
+              } else {
+                return {
+                  result: 'failure',
+                  message: null,
+                }
               }
-            } else {
-              return {
-                result: 'failure',
-                message: null,
-              }
-            }
+            },
           },
-        },
-        requires: ['chown', 'postgres', 'valkey'],
+          requires: ['chown', 'postgres', 'valkey'],
+        })
+        .runUntilSuccess(300_000)
+
+      installing.complete()
+
+      await storeJson.merge(effects, { adminPassword })
+
+      await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
+        reason: i18n(
+          'Display your admin password so you can administer your Nextcloud instance',
+        ),
       })
-      .runUntilSuccess(300_000)
-
-    await storeJson.merge(effects, { adminPassword })
-
-    await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-      reason: i18n(
-        'Display your admin password so you can administer your Nextcloud instance',
-      ),
-    })
-  } else if (kind === 'update') {
-    await upgradeNextcloud(effects)
-  }
-})
+    } else if (kind === 'update') {
+      await upgradeNextcloud(effects, progress)
+    }
+  },
+)
 
 /**
  * Run the upstream image's own version upgrade (sync new code → `occ upgrade` →
@@ -98,7 +114,7 @@ export const bootstrapNextcloud = sdk.setupOnInit(async (effects, kind) => {
  * completion, then tears everything down. On failure or timeout it throws,
  * which fails init and triggers the snapshot rollback.
  */
-async function upgradeNextcloud(effects: T.Effects) {
+async function upgradeNextcloud(effects: T.Effects, progress: InitProgress) {
   // Read the installed (on-volume) and image Nextcloud versions first.
   // version.php on the volume is still the installed version — the entrypoint
   // syncs new code only once the upgrade runs.
@@ -146,6 +162,9 @@ async function upgradeNextcloud(effects: T.Effects) {
     )
   }
 
+  const upgrading = progress.addPhase(i18n('Upgrading Nextcloud'))
+  upgrading.start()
+
   const nextcloudSub = await getNextcloudSub(effects)
   const valkeySub = await getValkeySub(effects)
   const postgresEnv = getPostgresEnv()
@@ -166,6 +185,8 @@ async function upgradeNextcloud(effects: T.Effects) {
       requires: ['chown', 'postgres', 'valkey'],
     })
     .runUntilSuccess(UPGRADE_TIMEOUT)
+
+  upgrading.complete()
 }
 
 // Compare dotted version tuples element-wise: negative if a < b, 0 if equal,
