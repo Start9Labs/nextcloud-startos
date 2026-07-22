@@ -130,24 +130,34 @@ export const main = sdk.setupMain(async ({ effects }) => {
    */
   console.info(i18n('Starting Nextcloud...'))
 
-  // get interface details — the UI interface's hostnames, for trusted_domains
-  const hostnameInfo = await sdk.host
+  // trusted_domains for config.php — the UI interface's hostnames. The mapper
+  // reduces all the way to the deduped, sorted string array so the .const()
+  // rebuilds the chain only when a hostname actually appears or disappears.
+  // Mapping to the raw hostname-info objects instead subscribes to fields we
+  // never use (assigned ports, ssl variants, an mDNS entry's gateway list) —
+  // OS-side churn in those restarted the whole service in a loop.
+  const trustedDomains = await sdk.host
     .getOwn(effects, 'main', (host) => {
       if (!host) return []
       const ui = Object.values(host.bindings)
         .flatMap((b) => Object.values(b.interfaces))
         .find((i) => i.id === 'ui')
       if (!ui) return []
-      return ui.addressInfo
-        .filter({ exclude: { kind: ['link-local', 'bridge'] } })
-        .format('hostname-info')
+      return [
+        ...new Set(
+          ui.addressInfo
+            .filter({ exclude: { kind: ['link-local', 'bridge'] } })
+            .format('hostname-info')
+            .map((h) =>
+              h.metadata.kind === 'ipv6' ? `[${h.hostname}]` : h.hostname,
+            ),
+        ),
+      ].sort()
     })
     .const()
 
   await configPhp.merge(effects, {
-    trusted_domains: hostnameInfo.map((h) =>
-      h.metadata.kind === 'ipv6' ? `[${h.hostname}]` : h.hostname,
-    ),
+    trusted_domains: trustedDomains,
   })
 
   // Subscribe to `actions.pending` ONLY. The mapped value is the pending

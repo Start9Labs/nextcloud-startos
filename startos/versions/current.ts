@@ -214,6 +214,10 @@ export const current = VersionInfo.of({
 
 - Nextcloud version upgrades now run during the update step, so a failed upgrade rolls back cleanly instead of leaving the app in need of manual recovery.
 
+**Fixes**
+
+- Fixed a bug where background network changes on the server could put Nextcloud into a restart loop.
+
 Internal updates (start-sdk 2.0).
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
@@ -226,6 +230,10 @@ Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.
 **Actualizaciones de versión**
 
 - Las actualizaciones de versión de Nextcloud ahora se ejecutan durante el paso de actualización, de modo que una actualización fallida se revierte limpiamente en lugar de dejar la aplicación en un estado que requiere recuperación manual.
+
+**Correcciones**
+
+- Corregido un error por el que cambios de red en segundo plano en el servidor podían poner Nextcloud en un bucle de reinicios.
 
 Actualizaciones internas (start-sdk 2.0).
 
@@ -240,6 +248,10 @@ Registro de cambios completo: https://github.com/nextcloud-releases/server/relea
 
 - Nextcloud-Versions-Upgrades laufen jetzt während des Update-Schritts, sodass ein fehlgeschlagenes Upgrade sauber zurückgerollt wird, statt die App in einem Zustand zu hinterlassen, der manuelle Wiederherstellung erfordert.
 
+**Fehlerkorrekturen**
+
+- Ein Fehler wurde behoben, durch den Netzwerkänderungen im Hintergrund auf dem Server Nextcloud in eine Neustart-Schleife versetzen konnten.
+
 Interne Aktualisierungen (start-sdk 2.0).
 
 Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
@@ -253,6 +265,10 @@ Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/rele
 
 - Aktualizacje wersji Nextcloud są teraz wykonywane podczas kroku aktualizacji, dzięki czemu nieudana aktualizacja jest czysto wycofywana, zamiast pozostawiać aplikację w stanie wymagającym ręcznego przywracania.
 
+**Poprawki**
+
+- Naprawiono błąd, przez który zmiany sieci w tle na serwerze mogły wprowadzić Nextcloud w pętlę restartów.
+
 Aktualizacje wewnętrzne (start-sdk 2.0).
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
@@ -265,6 +281,10 @@ Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag
 **Mises à niveau de version**
 
 - Les mises à niveau de version de Nextcloud s'exécutent désormais pendant l'étape de mise à jour, de sorte qu'une mise à niveau échouée est annulée proprement au lieu de laisser l'application dans un état nécessitant une récupération manuelle.
+
+**Correctifs**
+
+- Correction d'un bogue où des changements réseau en arrière-plan sur le serveur pouvaient placer Nextcloud dans une boucle de redémarrages.
 
 Mises à jour internes (start-sdk 2.0).
 
