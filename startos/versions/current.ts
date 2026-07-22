@@ -202,48 +202,93 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.5:1',
+  version: '33.0.6:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.5 (Hub 26 Winter), a major release.
+    en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.6 — upstream security and bug fixes).
 
-- New \`/metrics\` OpenMetrics/Prometheus endpoint (localhost-only by default)
-- Faster internal HTTP client (HTTP/2, brotli) and authoritative mount-provider APIs
-- PostgreSQL 13 and PHP 8.1 are no longer supported upstream (the bundled image already ships a supported PHP, and this package ships PostgreSQL 17)
-- An update interrupted partway (e.g. by a restart) now finishes automatically on the next start, and the web interface shows as "starting" rather than "failed" while an update runs
+**External Storage**
 
-Full changelog: https://nextcloud.com/changelog/`,
-    es_ES: `Se actualizó Nextcloud a 33.0.5 (Hub 26 Winter), una versión mayor.
+- New action to surface File Browser's shared storage as a folder in your Files, scoped per Nextcloud user — so you can move files into Nextcloud.
 
-- Nuevo endpoint \`/metrics\` OpenMetrics/Prometheus (solo localhost de forma predeterminada)
-- Cliente HTTP interno más rápido (HTTP/2, brotli) y nuevas APIs de proveedores de montaje autoritativos
-- PostgreSQL 13 y PHP 8.1 ya no son compatibles upstream (la imagen incluida ya trae un PHP compatible y este paquete usa PostgreSQL 17)
-- Una actualización interrumpida a medias (por ejemplo, por un reinicio) ahora se completa automáticamente en el siguiente inicio, y la interfaz web aparece como «iniciando» en lugar de «fallida» mientras se ejecuta una actualización
+**Upgrades**
 
-Registro de cambios completo: https://nextcloud.com/changelog/`,
-    de_DE: `Nextcloud auf 33.0.5 (Hub 26 Winter) aktualisiert, eine Hauptversion.
+- Nextcloud version upgrades now run during the update step, so a failed upgrade rolls back cleanly instead of leaving the app in need of manual recovery.
 
-- Neuer \`/metrics\`-Endpunkt für OpenMetrics/Prometheus (standardmäßig nur localhost)
-- Schnellerer interner HTTP-Client (HTTP/2, brotli) und neue APIs für autoritative Mount-Provider
-- PostgreSQL 13 und PHP 8.1 werden upstream nicht mehr unterstützt (das mitgelieferte Image enthält bereits ein unterstütztes PHP, und dieses Paket nutzt PostgreSQL 17)
-- Eine teilweise unterbrochene Aktualisierung (z. B. durch einen Neustart) wird jetzt beim nächsten Start automatisch abgeschlossen, und die Weboberfläche wird während einer Aktualisierung als „wird gestartet" statt als „fehlgeschlagen" angezeigt
+**Fixes**
 
-Vollständige Änderungsliste: https://nextcloud.com/changelog/`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.5 (Hub 26 Winter), wydanie główne.
+- Fixed a bug where background network changes on the server could put Nextcloud into a restart loop.
 
-- Nowy punkt końcowy \`/metrics\` OpenMetrics/Prometheus (domyślnie tylko localhost)
-- Szybszy wewnętrzny klient HTTP (HTTP/2, brotli) oraz nowe API dostawców montowania autorytatywnego
-- PostgreSQL 13 i PHP 8.1 nie są już wspierane upstream (dołączony obraz zawiera już wspierane PHP, a ten pakiet używa PostgreSQL 17)
-- Aktualizacja przerwana w trakcie (np. przez ponowne uruchomienie) jest teraz automatycznie kończona przy następnym uruchomieniu, a interfejs webowy podczas aktualizacji jest oznaczany jako „uruchamianie" zamiast „błąd"
+Internal updates (start-sdk 2.0).
 
-Pełny dziennik zmian: https://nextcloud.com/changelog/`,
-    fr_FR: `Mise à jour de Nextcloud vers 33.0.5 (Hub 26 Winter), une version majeure.
+Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    es_ES: `Añade la integración de Almacenamiento externo de File Browser y reempaqueta Nextcloud sobre start-sdk 2.0 (imagen incluida actualizada a Nextcloud 33.0.6 — correcciones de seguridad y de errores upstream).
 
-- Nouveau point de terminaison \`/metrics\` OpenMetrics/Prometheus (localhost uniquement par défaut)
-- Client HTTP interne plus rapide (HTTP/2, brotli) et nouvelles API de fournisseurs de montage autoritatifs
-- PostgreSQL 13 et PHP 8.1 ne sont plus pris en charge en amont (l'image fournie embarque déjà un PHP pris en charge et ce paquet utilise PostgreSQL 17)
-- Une mise à jour interrompue en cours de route (par exemple par un redémarrage) se termine maintenant automatiquement au prochain démarrage, et l'interface web est indiquée comme « démarrage » plutôt que « échec » pendant une mise à jour
+**Almacenamiento externo**
 
-Journal des modifications complet : https://nextcloud.com/changelog/`,
+- Nueva acción para mostrar el almacenamiento compartido de File Browser como una carpeta en tus Archivos, por usuario de Nextcloud, para que puedas mover archivos a Nextcloud.
+
+**Actualizaciones de versión**
+
+- Las actualizaciones de versión de Nextcloud ahora se ejecutan durante el paso de actualización, de modo que una actualización fallida se revierte limpiamente en lugar de dejar la aplicación en un estado que requiere recuperación manual.
+
+**Correcciones**
+
+- Corregido un error por el que cambios de red en segundo plano en el servidor podían poner Nextcloud en un bucle de reinicios.
+
+Actualizaciones internas (start-sdk 2.0).
+
+Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    de_DE: `Fügt die File-Browser-Integration „Externer Speicher" hinzu und stellt Nextcloud auf start-sdk 2.0 um (mitgeliefertes Image auf Nextcloud 33.0.6 aktualisiert — Sicherheits- und Fehlerkorrekturen im Upstream).
+
+**Externer Speicher**
+
+- Neue Aktion, um den gemeinsamen Speicher von File Browser als Ordner in Dateien anzuzeigen — pro Nextcloud-Benutzer, sodass Sie Dateien nach Nextcloud verschieben können.
+
+**Versions-Upgrades**
+
+- Nextcloud-Versions-Upgrades laufen jetzt während des Update-Schritts, sodass ein fehlgeschlagenes Upgrade sauber zurückgerollt wird, statt die App in einem Zustand zu hinterlassen, der manuelle Wiederherstellung erfordert.
+
+**Fehlerkorrekturen**
+
+- Ein Fehler wurde behoben, durch den Netzwerkänderungen im Hintergrund auf dem Server Nextcloud in eine Neustart-Schleife versetzen konnten.
+
+Interne Aktualisierungen (start-sdk 2.0).
+
+Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    pl_PL: `Dodaje integrację Magazynu zewnętrznego z File Browser i przenosi Nextcloud na start-sdk 2.0 (dołączony obraz zaktualizowany do Nextcloud 33.0.6 — poprawki bezpieczeństwa i błędów w upstreamie).
+
+**Magazyn zewnętrzny**
+
+- Nowa akcja udostępniająca współdzieloną przestrzeń File Browser jako folder w aplikacji Pliki, per użytkownik Nextcloud, dzięki czemu możesz przenosić pliki do Nextcloud.
+
+**Aktualizacje wersji**
+
+- Aktualizacje wersji Nextcloud są teraz wykonywane podczas kroku aktualizacji, dzięki czemu nieudana aktualizacja jest czysto wycofywana, zamiast pozostawiać aplikację w stanie wymagającym ręcznego przywracania.
+
+**Poprawki**
+
+- Naprawiono błąd, przez który zmiany sieci w tle na serwerze mogły wprowadzić Nextcloud w pętlę restartów.
+
+Aktualizacje wewnętrzne (start-sdk 2.0).
+
+Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+    fr_FR: `Ajoute l'intégration Stockage externe de File Browser et repackage Nextcloud sur start-sdk 2.0 (image fournie mise à jour vers Nextcloud 33.0.6 — correctifs de sécurité et de bogues en amont).
+
+**Stockage externe**
+
+- Nouvelle action pour afficher le stockage partagé de File Browser comme un dossier dans Fichiers, par utilisateur Nextcloud, afin de pouvoir déplacer des fichiers vers Nextcloud.
+
+**Mises à niveau de version**
+
+- Les mises à niveau de version de Nextcloud s'exécutent désormais pendant l'étape de mise à jour, de sorte qu'une mise à niveau échouée est annulée proprement au lieu de laisser l'application dans un état nécessitant une récupération manuelle.
+
+**Correctifs**
+
+- Correction d'un bogue où des changements réseau en arrière-plan sur le serveur pouvaient placer Nextcloud dans une boucle de redémarrages.
+
+Mises à jour internes (start-sdk 2.0).
+
+Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
   },
   migrations: {
     up: async ({ effects }) => {

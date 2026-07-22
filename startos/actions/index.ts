@@ -1,4 +1,5 @@
 import { sdk } from '../sdk'
+import { externalStorage } from './externalStorage'
 import { downloadModels } from './app-commands/downloadModels'
 import { indexMemories } from './app-commands/indexMemories'
 import { indexPlaces } from './app-commands/indexPlaces'
@@ -12,6 +13,7 @@ import { setConfig } from './setConfig'
 
 export const actions = sdk.Actions.of()
   .addAction(setConfig)
+  .addAction(externalStorage)
   .addAction(resetAdmin)
   .addAction(disableMaintenanceMode)
   .addAction(disableUnstableApps)

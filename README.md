@@ -45,7 +45,7 @@ This package runs **four containers** as subcontainers:
 
 Architectures: x86_64, aarch64.
 
-**Startup order:** A `chown` one-shot runs first alongside `postgres` and `valkey`. The `nextcloud` container waits until all three are ready before starting. The `cron` container waits for `nextcloud` to be ready. After `nextcloud` is ready, a `finish-upgrade` one-shot completes any upstream upgrade that was interrupted (see [Health Checks](#health-checks)), and the `long-running-tasks` one-shot runs after it.
+**Startup order:** A `chown` one-shot runs first alongside `postgres` and `valkey`. The `nextcloud` container waits until all three are ready before starting. The `cron` container waits for `nextcloud` to be ready. Version upgrades run earlier, during init (see [Installation and First-Run Flow](#installation-and-first-run-flow)); after `nextcloud` is ready, a `finish-upgrade` one-shot completes any interrupted upstream upgrade as a fallback (see [Health Checks](#health-checks)), and the `long-running-tasks` one-shot runs after it.
 
 **ffmpeg:** The nextcloud image is built locally (extends `nextcloud:<version>-apache`) to install `ffmpeg`, which Nextcloud's preview providers shell out to for video thumbnails.
 
@@ -84,6 +84,8 @@ Valkey runs without a mounted volume — its cache is ephemeral and rebuilds on 
 2. Valkey cache starts
 3. Nextcloud auto-installs with generated admin credentials
 4. A **critical task** prompts you to retrieve the admin credentials before proceeding
+
+**Nextcloud version upgrades:** When the package is updated to a newer Nextcloud release, the upstream upgrade (sync new code → `occ upgrade` → app bookkeeping) runs during init in `setupOnInit`'s `update` branch, before the service starts. It invokes the stock image's entrypoint in headless `NEXTCLOUD_UPDATE=1` mode with a no-op command, alongside temporary `postgres` and `valkey` daemons, via `runUntilSuccess`. Because init runs inside StartOS's update snapshot, a failed upgrade rolls back cleanly instead of stranding the instance. Nextcloud only supports upgrading one major version at a time; a larger jump is detected up front and rejected with a clear error before any change is made. The `finish-upgrade` one-shot (see [Health Checks](#health-checks)) remains as a fallback for an upgrade triggered by restoring an older backup.
 
 **Upgrade from StartOS 0.3.x:** The migration handles PostgreSQL data directory relocation (Debian path to Docker canonical path), `config.yaml` to `config.php` migration, and admin password migration to the new store format. Users must have run the previous Nextcloud version on 0.3.5x at least once (to complete the PG 15 to 17 upgrade) before upgrading.
 
@@ -145,6 +147,16 @@ Both interfaces share the same origin. SSL is terminated by StartOS and forwarde
 
 Basic settings for locale, phone region, and maintenance window timing. Available when running or stopped.
 
+### External Storage
+
+Surfaces another StartOS service's storage as a folder in Nextcloud's Files, using Nextcloud's built-in External Storage app (`files_external`). The form is built dynamically from `effects.getInstalledPackages()` — it shows **one dropdown per supported source whose service is actually installed**, so uninstalled services never appear. The only supported source today is **File Browser** → `/FileBrowser` (the registry in `startos/externalStorage.ts` is built to take more — File Browser is intended as the single shared-storage hub that other services route through, but adding a service's own volume as a direct source is a one-entry change). Each dropdown has three choices:
+
+- **Not mounted** (default) — the source is not mounted/surfaced.
+- **Available to all users** — mounted **read-write** at `/mnt/<source>` and surfaced to everyone.
+- **Available to specific users** — mounted, and reveals a user picker (populated live from `occ user:list`); only the chosen users see it.
+
+So each source is scoped independently (mirroring Nextcloud's per-mount "Available to" model), and a source's user picker only appears when you choose "specific users". Because the pickers read the live user list, this action is available only while the service is **running**. Under the hood the dropdowns are translated into the same `externalStorages` + `externalStorageUsers` state in `store.json`, and the mounts are reconciled on the next chain build. See [Dependencies](#dependencies) for the full mechanism (idmap ownership).
+
 ### Reset Admin Password
 
 Generates a new 24-character random password for a selected admin user. Displays the new credentials. Requires service to be running.
@@ -201,7 +213,25 @@ Hidden action that runs once after initial install as a critical task. Retrieves
 
 ## Dependencies
 
-None. Nextcloud on StartOS is fully self-contained with its own database and cache.
+Nextcloud is self-contained (its own PostgreSQL and Valkey). It has a single **optional** dependency, used only by the **External Storage** action:
+
+| Dependency | Kind | When | Why |
+|------------|------|------|-----|
+| File Browser | `exists` (`^2.62.2:1`) | Only while "File Browser" is selected in the External Storage action | Nextcloud mounts File Browser's `data` volume and surfaces it as a folder in Files |
+
+The dependency is declared optional and requested dynamically — `setupDependencies` reads the selection from `store.json`, so with nothing selected Nextcloud has no dependencies at all.
+
+### How the External Storage integration works
+
+Each source's files live on a host-backed volume (real files on disk, not a live cross-namespace mount), so they can be shared end-to-end in package code alone. File Browser is StartOS's shared storage hub — other services write into its `data` volume — and is the only source wired up today; the mechanism below is written to be identical for any future source. When you select a source in the External Storage action:
+
+1. **Mount** — `setupMain` mounts File Browser's `data` volume into Nextcloud's container at `/mnt/filebrowser`, **read-write**. The cron container gets the same mount so background jobs see it.
+2. **Ownership (idmap)** — StartOS runs each service in its own user namespace, so the source's on-disk uid and Nextcloud's `www-data` don't line up. The mount declares `idmap: [{ fromId: 1000, toId: 33 }]`, mapping File Browser's on-disk uid (`1000`, its `user`) to `www-data` (`33`) inside Nextcloud's namespace — so Nextcloud simply **owns** the mounted tree. It can traverse, read, write, and — the headline use case — **move** files out, with no permission machinery, no `chmod` pass, and no lag. Files Nextcloud creates land back on disk as uid `1000`, so File Browser can manage them too; edits work in both directions. (Requires StartOS 0.4.0-beta.10+, where `idmap` on dependency mounts is functional.)
+3. **Register** — an `external-storage` oneshot runs `occ files_external:create "/FileBrowser" local null::null -c datadir=/mnt/filebrowser`, makes it applicable to that source's chosen Nextcloud users (`--add-user`, or `--add-all` when none are specified), and sets `filesystem_check_changes 1` so out-of-band writes by other services appear on access. Clearing the selection runs `occ files_external:delete`. Each source's applicable-users set is reconciled independently whenever the selection changes.
+
+The selection lives in `store.json` (`externalStorages` + `externalStorageUsers`); the last-applied configuration is recorded separately as an opaque signature at `externalStoragesConfigured`, so the reconcile oneshot does `occ` work only when the desired and applied signatures differ, and its write does not rebuild the daemon chain — the same desired/actual split the long-running task actions use (`actions.pending` vs `actions.completed`).
+
+**Other services' files.** Files File Browser itself writes (uid `1000`) map cleanly to `www-data`, so moving them into **and** out of Nextcloud works in both directions, instantly. Files that *other* services drop into File Browser's volume under a *different* on-disk uid surface as `nobody` inside Nextcloud until those services idmap their own File Browser mount to `1000` as well — a fleet-wide SDK 2.0 follow-up.
 
 ---
 
@@ -217,6 +247,7 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 **NOT included in backup:**
 
 - `db` volume — Not rsynced directly; database is captured via `pg_dump`
+- **External Storage sources** (e.g. File Browser, via the External Storage action) — the mounted files live on the *source* service's own volume (surfaced inside Nextcloud at `/mnt/filebrowser`), which is never one of the synced paths above, so they are not duplicated here; the source service backs up its own data. Only the external-mount **configuration** and filecache index are captured (in the `pg_dump`), and the selection itself rides along in `store.json` on the `main` volume — so on restore the mount re-links automatically (once the source service is present)
 
 **Restore behavior:**
 
@@ -241,9 +272,11 @@ None. Nextcloud on StartOS is fully self-contained with its own database and cac
 
 The Nextcloud daemon will not start until PostgreSQL and Valkey are both confirmed ready. Each long-running CLI action (Download Models, Index Memories, Setup Map) writes its identifier into `store.json` at `actions.pending.<id>` with `Date.now()` as the value. The `long-running-tasks` oneshot in `setupMain` walks the three known IDs in declared order and runs the underlying `occ` command for any whose `pending` timestamp is newer than its `completed` timestamp (or whose `completed` is absent). When the `occ` child exits — whether it succeeded or failed — `runOcc` posts a completion notification to the StartOS notifications panel (success-level, or error-level on a non-zero exit, whose "View Details" body shows the exit code or terminating signal plus the last `LOG_TAIL_LINES` lines of the command's combined stdout/stderr) and writes a fresh timestamp into `actions.completed.<id>` so a failed run doesn't loop. On abort (service stop or chain rebuild), the child is SIGKILLed and neither the notification nor the `completed` timestamp is written, so the work resumes on next start (occ commands are idempotent). Output streams to the service logs in real time; `runOcc` retains only the last `LOG_TAIL_LINES` lines of it in memory, which become the failure notification's tail.
 
-**Finishing an interrupted upgrade:** The upstream image's entrypoint runs `occ upgrade` only when the deployed code is behind the image — it does not re-check the version the database has acknowledged. So an upgrade interrupted after the file sync but before the migration completes (for example, the service restarted mid-upgrade) strands the instance: new code, old DB version, and every subsequent start skips the upgrade while the UI serves "Update needed — use the command line updater". The `finish-upgrade` one-shot (`requires: ['nextcloud']`, so it runs after the web daemon is ready) detects this via `occ status` and runs `occ upgrade` to completion, then clears maintenance mode and posts a notification. In the normal case the entrypoint has already upgraded by the time the daemon is ready, so the check is a no-op and the two upgrades never overlap. It fails open — any error is logged and notified, never thrown — so a failed migration leaves the UI reachable rather than wedging startup, and `occ upgrade` is idempotent so a redundant run is harmless. The `long-running-tasks` one-shot is ordered behind it (`requires: ['nextcloud', 'finish-upgrade']`) so a recovery migration never runs `occ` concurrently with a task.
+**Finishing an interrupted upgrade (fallback):** Version upgrades normally run during init (see [Installation and First-Run Flow](#installation-and-first-run-flow)), but restoring an older backup can still leave the deployed code ahead of the database at start. The upstream image's entrypoint runs `occ upgrade` only when the deployed code is behind the image — it does not re-check the version the database has acknowledged. So such an upgrade, if interrupted after the file sync but before the migration completes (for example, the service restarted mid-upgrade), strands the instance: new code, old DB version, and every subsequent start skips the upgrade while the UI serves "Update needed — use the command line updater". The `finish-upgrade` one-shot (`requires: ['nextcloud']`, so it runs after the web daemon is ready) detects this via `occ status` and runs `occ upgrade` to completion, then clears maintenance mode and posts a notification. When the init upgrade already ran (the usual case), the database is current by the time the daemon is ready, so the check is a no-op and the upgrades never overlap. It fails open — any error is logged and notified, never thrown — so a failed migration leaves the UI reachable rather than wedging startup, and `occ upgrade` is idempotent so a redundant run is harmless. The `long-running-tasks` one-shot is ordered behind it (`requires: ['nextcloud', 'finish-upgrade']`) so a recovery migration never runs `occ` concurrently with a task.
 
-Reactivity is armed at chain build via `storeJson.read((s) => s.actions.pending).const(effects)`. The mapped subscription only watches the `pending` bag — writes to `actions.completed` produce the same mapped value, so the SDK's eq check dedups them and **no chain rebuild fires on task completion**. Triggering a new action does change `actions.pending` (a new timestamp), so the chain rebuilds immediately, the in-flight `occ` (if any) is aborted, and the new chain's oneshot scans the pending bag from scratch — including any task it just killed, which gets re-run from the start. Re-invoking the same action while it's queued or running short-circuits in the action body (it sees its own `pending > completed` and returns "Already in Progress" without writing anything), so no rebuild fires.
+Reactivity is armed at chain build via `storeJson.read((s) => s.actions.pending).const(effects)`. The mapped subscription only watches the `pending` bag — writes to `actions.completed` produce the same mapped value, so the SDK's eq check dedups them and **no chain rebuild fires on task completion**.
+
+The host subscription in `setupMain` is narrowed the same way: the `sdk.host.getOwn` selector maps all the way down to the deduped, sorted `trusted_domains` string array, so the chain rebuilds only when a hostname actually appears or disappears. Subscribing to the raw hostname-info objects instead would watch fields the package never uses (assigned ports, SSL variants, an mDNS entry's gateway list), and OS-side churn in those has restarted the service in a loop. Triggering a new action does change `actions.pending` (a new timestamp), so the chain rebuilds immediately, the in-flight `occ` (if any) is aborted, and the new chain's oneshot scans the pending bag from scratch — including any task it just killed, which gets re-run from the start. Re-invoking the same action while it's queued or running short-circuits in the action body (it sees its own `pending > completed` and returns "Already in Progress" without writing anything), so no rebuild fires.
 
 The CLI Tools actions that depend on a Nextcloud app (Recognize for model download, Memories for indexing/map setup) are always shown as enabled. When invoked, they check for the prerequisite app's files under `apps/` or `custom_apps/` on the volume and throw an "Install the X app in Nextcloud first." error if missing. (Action visibility is exported only at install/update time and not reactively refreshed when an app is installed from the Nextcloud admin UI, so disabled-with-reason was unreliable — the run-time check is authoritative.)
 
@@ -251,7 +284,7 @@ The CLI Tools actions that depend on a Nextcloud app (Recognize for model downlo
 
 ## Limitations and Differences
 
-1. **No external storage mounts** — You cannot mount arbitrary host directories. External storage must be configured through Nextcloud's built-in external storage app.
+1. **No arbitrary host directory mounts** — You cannot mount arbitrary host paths. You *can* surface another StartOS service's storage with the **External Storage** action (currently File Browser; see [Dependencies](#dependencies)), and you can attach remote storage (S3, SMB, WebDAV, etc.) through Nextcloud's built-in External Storage app.
 2. **No built-in SMTP** — Mail must be configured through Nextcloud Admin Settings > Basic settings > Email server.
 3. **Collaborative editing** — OnlyOffice/Collabora integration requires additional setup and may not work in all configurations.
 4. **App compatibility** — Most Nextcloud apps work, but some that require system-level access or additional services may not function in the containerized environment.
@@ -297,7 +330,8 @@ volumes:
 ports:
   ui: 80
   webdav: 80
-dependencies: none
+dependencies:
+  filebrowser: optional, exists ^2.62.2:1 (only while selected in the External Storage action; mounted read-write at /mnt/filebrowser)
 startos_managed_env_vars:
   - PHP_MEMORY_LIMIT
   - PHP_UPLOAD_LIMIT
@@ -307,6 +341,7 @@ startos_managed_env_vars:
   - PGDATA
 actions:
   - set-config
+  - external-storage
   - reset-admin
   - disable-maintenance
   - disable-unstable-apps

@@ -112,7 +112,7 @@ export const disableUnstableApps = sdk.Action.withoutInput(
     return {
       version: '1',
       title: i18n('Success'),
-      message: `${i18n('The following apps have been disabled:')} <ul>${disabledApps.map((app) => `<li>${app}</li>`)}</ul>`,
+      message: `${i18n('The following apps have been disabled:')} <ul>${disabledApps.map((app) => `<li>${app}</li>`).join('')}</ul>`,
       result: null,
     }
   },
