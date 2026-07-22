@@ -217,7 +217,7 @@ Nextcloud is self-contained (its own PostgreSQL and Valkey). It has a single **o
 
 | Dependency | Kind | When | Why |
 |------------|------|------|-----|
-| File Browser | `exists` (`>=2.63.2:0`) | Only while "File Browser" is selected in the External Storage action | Nextcloud mounts File Browser's `data` volume and surfaces it as a folder in Files |
+| File Browser | `exists` (`^2.62.2:1`) | Only while "File Browser" is selected in the External Storage action | Nextcloud mounts File Browser's `data` volume and surfaces it as a folder in Files |
 
 The dependency is declared optional and requested dynamically — `setupDependencies` reads the selection from `store.json`, so with nothing selected Nextcloud has no dependencies at all.
 
@@ -331,7 +331,7 @@ ports:
   ui: 80
   webdav: 80
 dependencies:
-  filebrowser: optional, exists >=2.63.2:0 (only while selected in the External Storage action; mounted read-write at /mnt/filebrowser)
+  filebrowser: optional, exists ^2.62.2:1 (only while selected in the External Storage action; mounted read-write at /mnt/filebrowser)
 startos_managed_env_vars:
   - PHP_MEMORY_LIMIT
   - PHP_UPLOAD_LIMIT

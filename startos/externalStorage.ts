@@ -43,7 +43,12 @@ export type ExternalStorageMeta = {
    * the Nextcloud Files UI. Also used to find the entry again for deletion.
    */
   ncMountPoint: string
-  /** Minimum version of the source's StartOS package. */
+  /**
+   * Version range the source's StartOS package must satisfy. Floor it at the
+   * release whose on-disk layout this integration mounts (volume id, file
+   * ownership), with a caret so a future major restructure isn't silently
+   * claimed compatible.
+   */
   versionRange: string
 }
 
@@ -56,6 +61,8 @@ export const externalStorageMeta: Record<
     label: 'File Browser',
     mountpoint: '/mnt/filebrowser',
     ncMountPoint: '/FileBrowser',
-    versionRange: '>=2.63.17:1',
+    // 2.62.2:1 restructured the volumes (`data` volume, files owned by uid
+    // 1000) — everything the idmap mount in main.ts relies on.
+    versionRange: '^2.62.2:1',
   },
 }
