@@ -202,7 +202,7 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.6:1',
+  version: '33.0.6:2',
   releaseNotes: {
     en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.6 — upstream security and bug fixes).
 

@@ -6,7 +6,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@start9labs/start-sdk": "2.0.7",
+    "@start9labs/start-sdk": "2.0.9",
     "filebrowser-startos": "github:Start9Labs/filebrowser-startos#next"
   },
   "devDependencies": {
@@ -20,5 +20,8 @@
     "tabWidth": 2,
     "semi": false,
     "singleQuote": true
+  },
+  "overrides": {
+    "@start9labs/start-sdk": "$@start9labs/start-sdk"
   }
 }
