@@ -36,12 +36,12 @@
 
 This package runs **four containers** as subcontainers:
 
-| Container | Image | Purpose |
-|-----------|-------|---------|
-| nextcloud | `nextcloud` (Apache variant, extended with ffmpeg) | Nextcloud application with Apache and PHP-FPM |
-| postgres | `postgres` (Alpine) | PostgreSQL database |
-| valkey | `valkey/valkey` (Alpine) | Redis-compatible in-memory cache |
-| cron | Same image as nextcloud | Runs `/cron.sh` (busybox crond) to trigger Nextcloud background jobs every 5 minutes |
+| Container | Image                                              | Purpose                                                                              |
+| --------- | -------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| nextcloud | `nextcloud` (Apache variant, extended with ffmpeg) | Nextcloud application with Apache and PHP-FPM                                        |
+| postgres  | `postgres` (Alpine)                                | PostgreSQL database                                                                  |
+| valkey    | `valkey/valkey` (Alpine)                           | Redis-compatible in-memory cache                                                     |
+| cron      | Same image as nextcloud                            | Runs `/cron.sh` (busybox crond) to trigger Nextcloud background jobs every 5 minutes |
 
 Architectures: x86_64, aarch64.
 
@@ -55,11 +55,11 @@ Architectures: x86_64, aarch64.
 
 ## Volume and Data Layout
 
-| Volume | Mount Point | Purpose | Backed Up |
-|--------|-------------|---------|-----------|
-| `main` | N/A (host) | StartOS metadata, `store.json` (admin password) | Yes |
-| `nextcloud` | `/var/www/html` | Application code, user files, `config/config.php` | Yes |
-| `db` | `/var/lib/postgresql` | PostgreSQL data directory (`data/`) | Yes |
+| Volume      | Mount Point           | Purpose                                           | Backed Up |
+| ----------- | --------------------- | ------------------------------------------------- | --------- |
+| `main`      | N/A (host)            | StartOS metadata, `store.json` (admin password)   | Yes       |
+| `nextcloud` | `/var/www/html`       | Application code, user files, `config/config.php` | Yes       |
+| `db`        | `/var/lib/postgresql` | PostgreSQL data directory (`data/`)               | Yes       |
 
 Valkey runs without a mounted volume — its cache is ephemeral and rebuilds on start.
 
@@ -69,14 +69,14 @@ Valkey runs without a mounted volume — its cache is ephemeral and rebuilds on 
 
 ## Installation and First-Run Flow
 
-| Step | Upstream | StartOS |
-|------|----------|---------|
-| Installation | `docker-compose up -d` or snap/bare-metal install | Install from marketplace or sideload `.s9pk` |
-| Database setup | Manual: create user/database, configure credentials | Automatic: PostgreSQL initializes with `nextcloud` database |
-| Admin account | Set via env vars or web installer | Auto-generated 24-character password |
-| Caching | Manual: install and configure Redis/Memcached | Automatic: Valkey starts and `config.php` is pre-configured |
-| Trusted domains | Manual: edit `config.php` or set env vars | Automatic: populated from StartOS interface hostnames |
-| SSL/TLS | Manual: reverse proxy or Let's Encrypt | Automatic: StartOS terminates SSL |
+| Step            | Upstream                                            | StartOS                                                     |
+| --------------- | --------------------------------------------------- | ----------------------------------------------------------- |
+| Installation    | `docker-compose up -d` or snap/bare-metal install   | Install from marketplace or sideload `.s9pk`                |
+| Database setup  | Manual: create user/database, configure credentials | Automatic: PostgreSQL initializes with `nextcloud` database |
+| Admin account   | Set via env vars or web installer                   | Auto-generated 24-character password                        |
+| Caching         | Manual: install and configure Redis/Memcached       | Automatic: Valkey starts and `config.php` is pre-configured |
+| Trusted domains | Manual: edit `config.php` or set env vars           | Automatic: populated from StartOS interface hostnames       |
+| SSL/TLS         | Manual: reverse proxy or Let's Encrypt              | Automatic: StartOS terminates SSL                           |
 
 **Install sequence:**
 
@@ -97,19 +97,19 @@ Valkey runs without a mounted volume — its cache is ephemeral and rebuilds on 
 
 These settings are enforced on every startup. If they are changed through the Nextcloud admin interface or by editing `config.php` directly, they will be reset:
 
-| Setting | Value | Why |
-|---------|-------|-----|
-| `trusted_proxies` | `['10.0.3.0/24']` | StartOS internal network |
-| `trusted_domains` | Interface hostnames | All assigned addresses (LAN, Tor, custom) |
-| `memcache.local` | `\OC\Memcache\APCu` | Local PHP opcode caching |
-| `memcache.distributed` | `\OC\Memcache\Redis` | Distributed caching via Valkey |
-| `memcache.locking` | `\OC\Memcache\Redis` | Transactional file locking via Valkey |
-| `filelocking.enabled` | `true` | Prevents file corruption from concurrent edits |
-| `redis.host` | `localhost` | Valkey runs as a local subcontainer |
-| `redis.port` | `6379` | Standard Redis/Valkey port |
-| `updatechecker` | `false` | Updates are managed by StartOS, not Nextcloud's built-in checker |
-| `check_for_working_wellknown_setup` | `true` | Enables CalDAV/CardDAV/.well-known URL discovery checks |
-| `integrity.check.disabled` | `true` | Suppresses false integrity warnings caused by repackaging |
+| Setting                             | Value                | Why                                                              |
+| ----------------------------------- | -------------------- | ---------------------------------------------------------------- |
+| `trusted_proxies`                   | `['10.0.3.0/24']`    | StartOS internal network                                         |
+| `trusted_domains`                   | Interface hostnames  | All assigned addresses (LAN, Tor, custom)                        |
+| `memcache.local`                    | `\OC\Memcache\APCu`  | Local PHP opcode caching                                         |
+| `memcache.distributed`              | `\OC\Memcache\Redis` | Distributed caching via Valkey                                   |
+| `memcache.locking`                  | `\OC\Memcache\Redis` | Transactional file locking via Valkey                            |
+| `filelocking.enabled`               | `true`               | Prevents file corruption from concurrent edits                   |
+| `redis.host`                        | `localhost`          | Valkey runs as a local subcontainer                              |
+| `redis.port`                        | `6379`               | Standard Redis/Valkey port                                       |
+| `updatechecker`                     | `false`              | Updates are managed by StartOS, not Nextcloud's built-in checker |
+| `check_for_working_wellknown_setup` | `true`               | Enables CalDAV/CardDAV/.well-known URL discovery checks          |
+| `integrity.check.disabled`          | `true`               | Suppresses false integrity warnings caused by repackaging        |
 
 **How this differs from upstream:** In a standard deployment, you manually configure caching, file locking, trusted proxies, and SSL termination. On StartOS, these are all pre-configured and enforced automatically. You cannot accidentally break caching or lock yourself out by misconfiguring trusted domains.
 
@@ -117,12 +117,12 @@ These settings are enforced on every startup. If they are changed through the Ne
 
 The **Configure** action exposes:
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Default locale | `en_US` | Display language for public pages (login, shared items) |
-| Default phone region | `US` | Phone number formatting region |
-| Maintenance window start | `24` (disabled) | UTC hour (0-23) for background job scheduling; `24` = no preference |
-| Disable skeleton files for new accounts | `false` | When enabled, sets `skeletondirectory` to `''` so new user accounts are not seeded with Nextcloud's default sample documents, photos, and README. Existing accounts are unaffected. |
+| Setting                                 | Default         | Description                                                                                                                                                                         |
+| --------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default locale                          | `en_US`         | Display language for public pages (login, shared items)                                                                                                                             |
+| Default phone region                    | `US`            | Phone number formatting region                                                                                                                                                      |
+| Maintenance window start                | `24` (disabled) | UTC hour (0-23) for background job scheduling; `24` = no preference                                                                                                                 |
+| Disable skeleton files for new accounts | `false`         | When enabled, sets `skeletondirectory` to `''` so new user accounts are not seeded with Nextcloud's default sample documents, photos, and README. Existing accounts are unaffected. |
 
 All other Nextcloud settings (mail, apps, users, sharing, etc.) are managed through the Nextcloud admin interface after login.
 
@@ -130,10 +130,10 @@ All other Nextcloud settings (mail, apps, users, sharing, etc.) are managed thro
 
 ## Network Access and Interfaces
 
-| Interface | Port | Type | Path | Description |
-|-----------|------|------|------|-------------|
-| Web UI | 80 | ui | `/` | Main Nextcloud web interface |
-| WebDAV | 80 | api | `/remote.php/dav/` | File sync for desktop/mobile clients |
+| Interface | Port | Type | Path               | Description                          |
+| --------- | ---- | ---- | ------------------ | ------------------------------------ |
+| Web UI    | 80   | ui   | `/`                | Main Nextcloud web interface         |
+| WebDAV    | 80   | api  | `/remote.php/dav/` | File sync for desktop/mobile clients |
 
 Both interfaces share the same origin. SSL is terminated by StartOS and forwarded via X-Forwarded headers.
 
@@ -215,8 +215,8 @@ Hidden action that runs once after initial install as a critical task. Retrieves
 
 Nextcloud is self-contained (its own PostgreSQL and Valkey). It has a single **optional** dependency, used only by the **External Storage** action:
 
-| Dependency | Kind | When | Why |
-|------------|------|------|-----|
+| Dependency   | Kind                   | When                                                                 | Why                                                                                |
+| ------------ | ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | File Browser | `exists` (`^2.62.2:1`) | Only while "File Browser" is selected in the External Storage action | Nextcloud mounts File Browser's `data` volume and surfaces it as a folder in Files |
 
 The dependency is declared optional and requested dynamically — `setupDependencies` reads the selection from `store.json`, so with nothing selected Nextcloud has no dependencies at all.
@@ -231,7 +231,7 @@ Each source's files live on a host-backed volume (real files on disk, not a live
 
 The selection lives in `store.json` (`externalStorages` + `externalStorageUsers`); the last-applied configuration is recorded separately as an opaque signature at `externalStoragesConfigured`, so the reconcile oneshot does `occ` work only when the desired and applied signatures differ, and its write does not rebuild the daemon chain — the same desired/actual split the long-running task actions use (`actions.pending` vs `actions.completed`).
 
-**Other services' files.** Files File Browser itself writes (uid `1000`) map cleanly to `www-data`, so moving them into **and** out of Nextcloud works in both directions, instantly. Files that *other* services drop into File Browser's volume under a *different* on-disk uid surface as `nobody` inside Nextcloud until those services idmap their own File Browser mount to `1000` as well — a fleet-wide SDK 2.0 follow-up.
+**Other services' files.** Files File Browser itself writes (uid `1000`) map cleanly to `www-data`, so moving them into **and** out of Nextcloud works in both directions, instantly. Files that _other_ services drop into File Browser's volume under a _different_ on-disk uid surface as `nobody` inside Nextcloud until those services idmap their own File Browser mount to `1000` as well — a fleet-wide SDK 2.0 follow-up.
 
 ---
 
@@ -247,7 +247,7 @@ The selection lives in `store.json` (`externalStorages` + `externalStorageUsers`
 **NOT included in backup:**
 
 - `db` volume — Not rsynced directly; database is captured via `pg_dump`
-- **External Storage sources** (e.g. File Browser, via the External Storage action) — the mounted files live on the *source* service's own volume (surfaced inside Nextcloud at `/mnt/filebrowser`), which is never one of the synced paths above, so they are not duplicated here; the source service backs up its own data. Only the external-mount **configuration** and filecache index are captured (in the `pg_dump`), and the selection itself rides along in `store.json` on the `main` volume — so on restore the mount re-links automatically (once the source service is present)
+- **External Storage sources** (e.g. File Browser, via the External Storage action) — the mounted files live on the _source_ service's own volume (surfaced inside Nextcloud at `/mnt/filebrowser`), which is never one of the synced paths above, so they are not duplicated here; the source service backs up its own data. Only the external-mount **configuration** and filecache index are captured (in the `pg_dump`), and the selection itself rides along in `store.json` on the `main` volume — so on restore the mount re-links automatically (once the source service is present)
 
 **Restore behavior:**
 
@@ -261,14 +261,14 @@ The selection lives in `store.json` (`externalStorages` + `externalStorageUsers`
 
 ## Health Checks
 
-| Check | Method | Target | Display |
-|-------|--------|--------|---------|
-| Web Interface | Port listening | Port 80 | "The web interface is ready". A 5-minute `gracePeriod` reports `starting` rather than `failure` while the port is down, so an in-progress upgrade isn't shown as a fault. |
-| PostgreSQL | `pg_isready` | localhost | Internal only |
-| Valkey | `valkey-cli ping` | localhost | Internal only |
-| Recognize Model Download | Compares `actions.pending.downloadModels` vs `actions.completed.downloadModels` in `store.json` | n/a | `loading` while a queued download is running. Hidden otherwise. |
-| Memories Indexing | Compares `actions.pending.indexMemories` vs `actions.completed.indexMemories` in `store.json` | n/a | `loading` while a queued re-index is running. Hidden otherwise. |
-| Memories Map Setup | Compares `actions.pending.indexPlaces` vs `actions.completed.indexPlaces` in `store.json` | n/a | `loading` while a queued map setup is running. Hidden otherwise. |
+| Check                    | Method                                                                                          | Target    | Display                                                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web Interface            | Port listening                                                                                  | Port 80   | "The web interface is ready". A 5-minute `gracePeriod` reports `starting` rather than `failure` while the port is down, so an in-progress upgrade isn't shown as a fault. |
+| PostgreSQL               | `pg_isready`                                                                                    | localhost | Internal only                                                                                                                                                             |
+| Valkey                   | `valkey-cli ping`                                                                               | localhost | Internal only                                                                                                                                                             |
+| Recognize Model Download | Compares `actions.pending.downloadModels` vs `actions.completed.downloadModels` in `store.json` | n/a       | `loading` while a queued download is running. Hidden otherwise.                                                                                                           |
+| Memories Indexing        | Compares `actions.pending.indexMemories` vs `actions.completed.indexMemories` in `store.json`   | n/a       | `loading` while a queued re-index is running. Hidden otherwise.                                                                                                           |
+| Memories Map Setup       | Compares `actions.pending.indexPlaces` vs `actions.completed.indexPlaces` in `store.json`       | n/a       | `loading` while a queued map setup is running. Hidden otherwise.                                                                                                          |
 
 The Nextcloud daemon will not start until PostgreSQL and Valkey are both confirmed ready. Each long-running CLI action (Download Models, Index Memories, Setup Map) writes its identifier into `store.json` at `actions.pending.<id>` with `Date.now()` as the value. The `long-running-tasks` oneshot in `setupMain` walks the three known IDs in declared order and runs the underlying `occ` command for any whose `pending` timestamp is newer than its `completed` timestamp (or whose `completed` is absent). When the `occ` child exits — whether it succeeded or failed — `runOcc` posts a completion notification to the StartOS notifications panel (success-level, or error-level on a non-zero exit, whose "View Details" body shows the exit code or terminating signal plus the last `LOG_TAIL_LINES` lines of the command's combined stdout/stderr) and writes a fresh timestamp into `actions.completed.<id>` so a failed run doesn't loop. On abort (service stop or chain rebuild), the child is SIGKILLed and neither the notification nor the `completed` timestamp is written, so the work resumes on next start (occ commands are idempotent). Output streams to the service logs in real time; `runOcc` retains only the last `LOG_TAIL_LINES` lines of it in memory, which become the failure notification's tail.
 
@@ -284,7 +284,7 @@ The CLI Tools actions that depend on a Nextcloud app (Recognize for model downlo
 
 ## Limitations and Differences
 
-1. **No arbitrary host directory mounts** — You cannot mount arbitrary host paths. You *can* surface another StartOS service's storage with the **External Storage** action (currently File Browser; see [Dependencies](#dependencies)), and you can attach remote storage (S3, SMB, WebDAV, etc.) through Nextcloud's built-in External Storage app.
+1. **No arbitrary host directory mounts** — You cannot mount arbitrary host paths. You _can_ surface another StartOS service's storage with the **External Storage** action (currently File Browser; see [Dependencies](#dependencies)), and you can attach remote storage (S3, SMB, WebDAV, etc.) through Nextcloud's built-in External Storage app.
 2. **No built-in SMTP** — Mail must be configured through Nextcloud Admin Settings > Basic settings > Email server.
 3. **Collaborative editing** — OnlyOffice/Collabora integration requires additional setup and may not work in all configurations.
 4. **App compatibility** — Most Nextcloud apps work, but some that require system-level access or additional services may not function in the containerized environment.
@@ -311,7 +311,7 @@ The CLI Tools actions that depend on a Nextcloud app (Recognize for model downlo
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development workflow.
+Build and development workflow follow the StartOS packaging guide: <https://docs.start9.com/packaging>. Keep `README.md`, `instructions.md`, and `AGENTS.md` in sync with any change to user-visible behavior or package structure.
 
 ---
 

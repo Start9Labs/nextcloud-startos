@@ -664,9 +664,6 @@ type OccMount = {
 
 const normMountPoint = (s: string) => s.replace(/^\/+/, '')
 
-const sameUsers = (a: string[], b: string[]) =>
-  a.length === b.length && a.every((v, i) => v === b[i])
-
 /**
  * Bring Nextcloud's `files_external` entries in line with the selected sources
  * and each source's chosen applicable users. For each selected source it
