@@ -1,208 +1,8 @@
-import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
-import { readFile, rm, stat } from 'fs/promises'
-import { cp } from 'node:fs/promises'
-import { resetAdmin } from '../actions/maintenance/resetAdmin'
-import { configPhp } from '../fileModels/config.php'
-import { storeJson } from '../fileModels/store.json'
-import { i18n } from '../i18n'
-import { sdk } from '../sdk'
-import { NEXTCLOUD_PATH, PGDATA, POSTGRES_PATH, nextcloudMount } from '../utils'
-
-const POSTGRES_VOLUME_HOST = '/media/startos/volumes/db' as const
-
-// True when 0.3.5x left config.yaml on the main volume but no postgres cluster
-// was ever written — the user configured Nextcloud but never started it. In
-// that state relocatePostgres fails on the missing source (the "mv 17/main"
-// error) and migrateNextcloud fails on the empty app volume; there's nothing
-// to migrate, so we surface a clear "uninstall and reinstall" message instead.
-const isNeverStarted = async (): Promise<boolean> => {
-  for (const p of [
-    `${POSTGRES_VOLUME_HOST}/17/main`,
-    `${POSTGRES_VOLUME_HOST}/15/main`,
-    `${POSTGRES_VOLUME_HOST}/data`,
-  ]) {
-    if (
-      await stat(p).then(
-        () => true,
-        () => false,
-      )
-    )
-      return false
-  }
-  return true
-}
-
-const relocatePostgres = async (effects: T.Effects) => {
-  const pgMounts = sdk.Mounts.of().mountVolume({
-    volumeId: 'db',
-    mountpoint: POSTGRES_PATH,
-    readonly: false,
-    subpath: null,
-  })
-
-  await sdk.SubContainer.withTemp(
-    effects,
-    { imageId: 'postgres' },
-    pgMounts,
-    'pg-migrate',
-    async (sub) => {
-      // Relocate PG data from 0.3.5x Debian path (17/main) to Docker path (data).
-      // If a previous migration attempt succeeded here but failed later,
-      // data/ already exists and 17/main is gone. Skip the move in that case.
-      const { exitCode } = await sub.exec(['test', '-d', PGDATA])
-      if (exitCode !== 0) {
-        await sub.execFail(['mv', `${POSTGRES_PATH}/17/main`, PGDATA], {
-          user: 'root',
-        })
-        await sub.execFail(['rm', '-rf', `${POSTGRES_PATH}/17`], {
-          user: 'root',
-        })
-      }
-      await sub.execFail(['chown', '-R', 'postgres:postgres', POSTGRES_PATH], {
-        user: 'root',
-      })
-      await sub.exec(['rm', '-f', `${PGDATA}/postmaster.pid`], {
-        user: 'postgres',
-      })
-    },
-  )
-}
-
-type OldConfig = {
-  'default-locale': string
-  'default-phone-region': string
-  maintenance_window_start: number
-}
-
-const migrateConfig = async (effects: T.Effects, config: OldConfig) => {
-  await cp(configPhp.path, `${configPhp.path}.bak`)
-
-  await configPhp.merge(effects, {
-    default_locale: config['default-locale'],
-    default_phone_region: config['default-phone-region'],
-    maintenance_window_start: config.maintenance_window_start,
-    'overwrite.cli.url': undefined,
-    'htaccess.RewriteBase': undefined,
-  })
-
-  const adminPassword: string | undefined = (
-    await readFile(
-      '/media/startos/volumes/main/start9/password.dat',
-      'utf-8',
-    ).catch(() => undefined)
-  )?.trim()
-  if (adminPassword) {
-    await storeJson.merge(effects, { adminPassword })
-  } else {
-    await sdk.action.createOwnTask(effects, resetAdmin, 'critical', {
-      reason: i18n(
-        'Admin password could not be recovered from migration. Please reset it.',
-      ),
-    })
-  }
-}
-
-const migrateNextcloud = async (effects: T.Effects) => {
-  await sdk.SubContainer.withTemp(
-    effects,
-    { imageId: 'nextcloud' },
-    nextcloudMount,
-    'upgrade-sub',
-    async (sub) => {
-      // Fix permissions on Nextcloud app files (everything except data/).
-      // In 0.3.5.1, the upstream Docker entrypoint set group=root. In 0.4.0,
-      // the group is www-data. We need ug+rw so the owner and group can
-      // read/write, and o-rwx so other users (including dependent services
-      // not in the www-data group) cannot access app internals.
-      // The data/ directory is excluded here and handled separately below.
-      await sub.execFail(
-        [
-          'find',
-          NEXTCLOUD_PATH,
-          '-path',
-          `${NEXTCLOUD_PATH}/data`,
-          '-prune',
-          '-o',
-          '-exec',
-          'chmod',
-          'ug+rw,o-rwx',
-          '{}',
-          '+',
-        ],
-        { user: 'root' },
-      )
-      // occ must be executable for Nextcloud CLI operations
-      await sub.execFail(['chmod', 'u+x', `${NEXTCLOUD_PATH}/occ`], {
-        user: 'root',
-      })
-
-      // Fix permissions on user data files (data/).
-      //
-      // The data directory can be enormous (2TB+), so we cannot use a single
-      // recursive find or chmod -R — both accumulate inode metadata for the
-      // entire tree in memory and get OOM-killed (SIGKILL) in the
-      // memory-constrained migration subcontainer.
-      //
-      // Strategy: walk the directory tree from TypeScript, processing one
-      // directory at a time. For each directory:
-      //   1. find -maxdepth 1 -print0 | xargs -0 -n 5000 chmod ...
-      //      Streams the immediate children through xargs in batches of 5000,
-      //      so neither find nor chmod ever holds more than one directory's
-      //      listing in memory.
-      //   2. find -maxdepth 1 -mindepth 1 -type d -print0
-      //      Lists only the immediate subdirectories so we can recurse into
-      //      them one at a time. Uses -print0 / split('\0') to handle
-      //      filenames with spaces or special characters.
-      //
-      // This keeps peak memory proportional to the largest single directory,
-      // not the total file count.
-      let dirCount = 0
-      const chmodDir = async (dir: string) => {
-        dirCount++
-        if (dirCount % 100 === 0) {
-          console.info(
-            `chmod migration: processed ${dirCount} directories, current: ${dir}`,
-          )
-        }
-        await sub.execFail(
-          [
-            'sh',
-            '-c',
-            `find "$1" -maxdepth 1 -print0 | xargs -0 -n 5000 chmod ug+rw,o-rwx`,
-            '_',
-            dir,
-          ],
-          { user: 'root' },
-        )
-        const { stdout } = await sub.execFail(
-          [
-            'find',
-            dir,
-            '-maxdepth',
-            '1',
-            '-mindepth',
-            '1',
-            '-type',
-            'd',
-            '-print0',
-          ],
-          { user: 'root' },
-        )
-        const subdirs = stdout
-          .toString()
-          .split('\0')
-          .filter((s) => s.length > 0)
-        for (const subdir of subdirs) {
-          await chmodDir(subdir)
-        }
-      }
-      await chmodDir(`${NEXTCLOUD_PATH}/data`)
-    },
-  )
-}
+import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { migrateFrom035x } from './from035x'
 
 export const current = VersionInfo.of({
-  version: '33.0.6:2',
+  version: '33.0.6:3',
   releaseNotes: {
     en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.6 — upstream security and bug fixes).
 
@@ -217,6 +17,8 @@ export const current = VersionInfo.of({
 **Fixes**
 
 - Fixed a bug where background network changes on the server could put Nextcloud into a restart loop.
+- Fixed a bug in the StartOS 0.3.5.x migration that could skip relocating the PostgreSQL database while still reporting success — leaving Nextcloud unable to start, and the migration unable to run again. It now verifies the database before changing anything, and stops with a clear explanation if it cannot find one.
+- The update now reports progress while migrating an instance from StartOS 0.3.5.x. On a large instance that step walks every file to correct its permissions and can run for hours; it previously showed no movement at all, which looked like a hung update.
 
 Internal updates (start-sdk 2.0).
 
@@ -234,6 +36,8 @@ Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.
 **Correcciones**
 
 - Corregido un error por el que cambios de red en segundo plano en el servidor podían poner Nextcloud en un bucle de reinicios.
+- Corregido un error en la migración desde StartOS 0.3.5.x que podía omitir el traslado de la base de datos PostgreSQL informando aun así de que había funcionado, dejando Nextcloud sin poder arrancar y la migración sin poder volver a ejecutarse. Ahora se verifica la base de datos antes de modificar nada y se detiene con una explicación clara si no la encuentra.
+- La actualización ahora informa del progreso al migrar una instancia desde StartOS 0.3.5.x. En una instancia grande, ese paso recorre todos los archivos para corregir sus permisos y puede tardar horas; antes no mostraba ningún avance, lo que parecía una actualización bloqueada.
 
 Actualizaciones internas (start-sdk 2.0).
 
@@ -251,6 +55,8 @@ Registro de cambios completo: https://github.com/nextcloud-releases/server/relea
 **Fehlerkorrekturen**
 
 - Ein Fehler wurde behoben, durch den Netzwerkänderungen im Hintergrund auf dem Server Nextcloud in eine Neustart-Schleife versetzen konnten.
+- Ein Fehler in der Migration von StartOS 0.3.5.x wurde behoben, durch den das Verschieben der PostgreSQL-Datenbank übersprungen werden konnte, während trotzdem Erfolg gemeldet wurde — sodass Nextcloud nicht mehr starten konnte und die Migration nicht erneut lief. Sie prüft die Datenbank jetzt, bevor etwas geändert wird, und bricht mit einer klaren Erklärung ab, wenn keine gefunden wird.
+- Die Aktualisierung meldet jetzt den Fortschritt, während eine Instanz von StartOS 0.3.5.x migriert wird. Bei einer großen Instanz durchläuft dieser Schritt jede Datei, um ihre Berechtigungen zu korrigieren, und kann Stunden dauern; zuvor war überhaupt kein Fortschritt sichtbar, was wie eine hängende Aktualisierung wirkte.
 
 Interne Aktualisierungen (start-sdk 2.0).
 
@@ -268,6 +74,8 @@ Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/rele
 **Poprawki**
 
 - Naprawiono błąd, przez który zmiany sieci w tle na serwerze mogły wprowadzić Nextcloud w pętlę restartów.
+- Naprawiono błąd w migracji ze StartOS 0.3.5.x, który mógł pominąć przeniesienie bazy danych PostgreSQL, mimo to zgłaszając powodzenie — przez co Nextcloud nie mógł się uruchomić, a migracja nie mogła zostać powtórzona. Teraz baza danych jest weryfikowana przed jakąkolwiek zmianą, a w razie jej braku migracja zatrzymuje się z jasnym wyjaśnieniem.
+- Aktualizacja pokazuje teraz postęp podczas migracji instancji ze StartOS 0.3.5.x. W dużej instancji ten krok przechodzi przez każdy plik, aby poprawić jego uprawnienia, i może trwać godzinami; wcześniej nie pokazywał żadnego postępu, co wyglądało jak zawieszona aktualizacja.
 
 Aktualizacje wewnętrzne (start-sdk 2.0).
 
@@ -285,67 +93,15 @@ Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag
 **Correctifs**
 
 - Correction d'un bogue où des changements réseau en arrière-plan sur le serveur pouvaient placer Nextcloud dans une boucle de redémarrages.
+- Correction d'un bogue dans la migration depuis StartOS 0.3.5.x qui pouvait ignorer le déplacement de la base de données PostgreSQL tout en signalant une réussite — laissant Nextcloud incapable de démarrer et la migration incapable de s'exécuter à nouveau. Elle vérifie désormais la base de données avant toute modification et s'arrête avec une explication claire si elle n'en trouve pas.
+- La mise à jour indique désormais la progression lors de la migration d'une instance depuis StartOS 0.3.5.x. Sur une grande instance, cette étape parcourt chaque fichier pour corriger ses permissions et peut durer des heures ; auparavant elle n'affichait aucune progression, ce qui ressemblait à une mise à jour bloquée.
 
 Mises à jour internes (start-sdk 2.0).
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
   },
   migrations: {
-    up: async ({ effects }) => {
-      const start9Path = '/media/startos/volumes/main/start9'
-
-      // Only run 0.3.5x → 0.4.0 migration if config.yaml exists (0.3.5x marker)
-      const configYaml: OldConfig | undefined = await readFile(
-        `${start9Path}/config.yaml`,
-        'utf-8',
-      ).then(YAML.parse, () => undefined)
-
-      if (configYaml) {
-        if (await isNeverStarted()) {
-          throw new Error(
-            'This Nextcloud package was configured on StartOS 0.3.5x but never started, so there is no data to migrate to 0.4.0. Please uninstall the Nextcloud package and reinstall it to set up a fresh 0.4.0 install.',
-          )
-        }
-        await relocatePostgres(effects)
-        await migrateConfig(effects, configYaml)
-        await migrateNextcloud(effects)
-        await rm(start9Path, { recursive: true })
-        // Remove stale config.php keys from 0.3.5.1
-        await configPhp.merge(effects, {
-          'overwrite.cli.url': undefined,
-          'htaccess.RewriteBase': undefined,
-        })
-      }
-
-      // Previous 0.4.0 beta: relocate PGDATA (17/docker → data)
-      const OLD_PGDATA_HOST = '/media/startos/volumes/db/17/docker'
-      const oldPgdataExists = await stat(OLD_PGDATA_HOST).then(
-        () => true,
-        () => false,
-      )
-      if (oldPgdataExists) {
-        const pgMounts = sdk.Mounts.of().mountVolume({
-          volumeId: 'db',
-          subpath: null,
-          mountpoint: POSTGRES_PATH,
-          readonly: false,
-        })
-        await sdk.SubContainer.withTemp(
-          effects,
-          { imageId: 'postgres' },
-          pgMounts,
-          'pg-relocate',
-          async (sub) => {
-            await sub.execFail(['mv', `${POSTGRES_PATH}/17/docker`, PGDATA], {
-              user: 'root',
-            })
-            await sub.execFail(['rm', '-rf', `${POSTGRES_PATH}/17`], {
-              user: 'root',
-            })
-          },
-        )
-      }
-    },
+    up: ({ effects, progress }) => migrateFrom035x(effects, progress),
     down: IMPOSSIBLE,
   },
 })

@@ -5,7 +5,7 @@ export const uiPort = 80 as const
 export const NEXTCLOUD_PATH = '/var/www/html' as const
 export const POSTGRES_PATH = '/var/lib/postgresql' as const
 
-const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
+export const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
 
 /**
  * Throws `errorMessage` if a Nextcloud app's files are not present on the

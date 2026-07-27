@@ -136,6 +136,7 @@ export default {
     131: 'Usuarios',
     132: 'Instalando Nextcloud',
     133: 'Actualizando Nextcloud',
+    134: 'Actualizando permisos de archivos',
   },
   de_DE: {
     0: 'Starte Nextcloud...',
@@ -272,6 +273,7 @@ export default {
     131: 'Benutzer',
     132: 'Nextcloud wird installiert',
     133: 'Nextcloud wird aktualisiert',
+    134: 'Dateiberechtigungen werden aktualisiert',
   },
   pl_PL: {
     0: 'Uruchamianie Nextcloud...',
@@ -408,6 +410,7 @@ export default {
     131: 'Użytkownicy',
     132: 'Instalowanie Nextcloud',
     133: 'Aktualizowanie Nextcloud',
+    134: 'Aktualizowanie uprawnień plików',
   },
   fr_FR: {
     0: 'Démarrage de Nextcloud...',
@@ -544,5 +547,6 @@ export default {
     131: 'Utilisateurs',
     132: 'Installation de Nextcloud',
     133: 'Mise à niveau de Nextcloud',
+    134: 'Mise à jour des permissions des fichiers',
   },
 } satisfies Record<string, LangDict>
