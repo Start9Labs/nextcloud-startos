@@ -202,7 +202,7 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.6:2',
+  version: '33.0.6:3',
   releaseNotes: {
     en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.6 — upstream security and bug fixes).
 
@@ -217,6 +217,7 @@ export const current = VersionInfo.of({
 **Fixes**
 
 - Fixed a bug where background network changes on the server could put Nextcloud into a restart loop.
+- Fixed a bug where PostgreSQL could refuse to start after an unclean shutdown — a power loss, a forced stop, or a failed update — leaving Nextcloud stuck on "starting" or an update failing with a timeout. A stale database lock file is now cleared before PostgreSQL starts.
 
 Internal updates (start-sdk 2.0).
 
@@ -234,6 +235,7 @@ Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.
 **Correcciones**
 
 - Corregido un error por el que cambios de red en segundo plano en el servidor podían poner Nextcloud en un bucle de reinicios.
+- Corregido un error por el que PostgreSQL podía negarse a arrancar tras un apagado no limpio —un corte de energía, una parada forzada o una actualización fallida—, dejando Nextcloud atascado en «iniciando» o provocando que una actualización fallara por tiempo de espera agotado. Ahora se elimina el archivo de bloqueo obsoleto de la base de datos antes de iniciar PostgreSQL.
 
 Actualizaciones internas (start-sdk 2.0).
 
@@ -251,6 +253,7 @@ Registro de cambios completo: https://github.com/nextcloud-releases/server/relea
 **Fehlerkorrekturen**
 
 - Ein Fehler wurde behoben, durch den Netzwerkänderungen im Hintergrund auf dem Server Nextcloud in eine Neustart-Schleife versetzen konnten.
+- Ein Fehler wurde behoben, durch den PostgreSQL nach einem unsauberen Herunterfahren — einem Stromausfall, einem erzwungenen Stopp oder einer fehlgeschlagenen Aktualisierung — den Start verweigern konnte, sodass Nextcloud im Zustand „wird gestartet" hängen blieb oder eine Aktualisierung mit einer Zeitüberschreitung fehlschlug. Eine veraltete Sperrdatei der Datenbank wird jetzt vor dem Start von PostgreSQL entfernt.
 
 Interne Aktualisierungen (start-sdk 2.0).
 
@@ -268,6 +271,7 @@ Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/rele
 **Poprawki**
 
 - Naprawiono błąd, przez który zmiany sieci w tle na serwerze mogły wprowadzić Nextcloud w pętlę restartów.
+- Naprawiono błąd, przez który PostgreSQL mógł odmówić uruchomienia po nieczystym zamknięciu — awarii zasilania, wymuszonym zatrzymaniu lub nieudanej aktualizacji — pozostawiając Nextcloud w stanie „uruchamianie" lub powodując niepowodzenie aktualizacji z powodu przekroczenia limitu czasu. Nieaktualny plik blokady bazy danych jest teraz usuwany przed uruchomieniem PostgreSQL.
 
 Aktualizacje wewnętrzne (start-sdk 2.0).
 
@@ -285,6 +289,7 @@ Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag
 **Correctifs**
 
 - Correction d'un bogue où des changements réseau en arrière-plan sur le serveur pouvaient placer Nextcloud dans une boucle de redémarrages.
+- Correction d'un bogue où PostgreSQL pouvait refuser de démarrer après un arrêt brutal — une coupure de courant, un arrêt forcé ou une mise à jour échouée —, laissant Nextcloud bloqué sur « démarrage » ou faisant échouer une mise à jour par dépassement de délai. Un fichier de verrou de base de données obsolète est désormais supprimé avant le démarrage de PostgreSQL.
 
 Mises à jour internes (start-sdk 2.0).
 
