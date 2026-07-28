@@ -202,93 +202,113 @@ const migrateNextcloud = async (effects: T.Effects) => {
 }
 
 export const current = VersionInfo.of({
-  version: '33.0.6:2',
+  version: '34.0.2:0',
   releaseNotes: {
-    en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.6 — upstream security and bug fixes).
+    en_US: `Updated Nextcloud to 34.0.2 — the Nextcloud 34 major release, together with its 34.0.1 and 34.0.2 maintenance updates.
 
-**External Storage**
+**Highlights**
 
-- New action to surface File Browser's shared storage as a folder in your Files, scoped per Nextcloud user — so you can move files into Nextcloud.
+- Rebuilt App Store, with an update-all button and faster browsing.
+- Refreshed Files view: filters moved into the top bar, plus many drag-and-drop fixes.
+- Better federation: read and write support for external CalDAV/CardDAV, contact filtering by team, and federated user and group search when adding team members.
+- Security: one-time QR codes are on by default, and a setup check now warns when no second-factor provider is configured.
+- Storage hygiene: optional automatic expiry of old previews, and automatic cleanup of background job history after 60 days.
+- A lighter, faster interface — jQuery has been removed entirely.
 
-**Upgrades**
+**Before you update**
 
-- Nextcloud version upgrades now run during the update step, so a failed upgrade rolls back cleanly instead of leaving the app in need of manual recovery.
+- Nextcloud can only be updated one major version at a time. If this package is still on a 32.x release, update it to a 33.x release first — the update is checked up front and refused rather than leaving the instance in a broken state.
+- Nextcloud 34 removes several long-deprecated APIs, so some third-party apps may need an update of their own.
 
-**Fixes**
+**Known issue**
 
-- Fixed a bug where background network changes on the server could put Nextcloud into a restart loop.
+- Upstream has temporarily disabled ImageMagick-based previews, so thumbnails for HEIC and some other formats are unavailable.
 
-Internal updates (start-sdk 2.0).
+Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.2`,
+    es_ES: `Nextcloud actualizado a 34.0.2 — la versión principal Nextcloud 34, junto con sus actualizaciones de mantenimiento 34.0.1 y 34.0.2.
 
-Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    es_ES: `Añade la integración de Almacenamiento externo de File Browser y reempaqueta Nextcloud sobre start-sdk 2.0 (imagen incluida actualizada a Nextcloud 33.0.6 — correcciones de seguridad y de errores upstream).
+**Novedades destacadas**
 
-**Almacenamiento externo**
+- Tienda de aplicaciones rediseñada, con un botón para actualizar todo y navegación más rápida.
+- Vista de Archivos renovada: los filtros se han movido a la barra superior, además de numerosas correcciones de arrastrar y soltar.
+- Mejor federación: soporte de lectura y escritura para CalDAV/CardDAV externos, filtrado de contactos por equipo y búsqueda federada de usuarios y grupos al añadir miembros a un equipo.
+- Seguridad: los códigos QR de un solo uso están activados de forma predeterminada y una comprobación de configuración avisa cuando no hay ningún proveedor de segundo factor configurado.
+- Higiene del almacenamiento: caducidad automática opcional de vistas previas antiguas y limpieza automática del historial de trabajos en segundo plano tras 60 días.
+- Una interfaz más ligera y rápida: jQuery se ha eliminado por completo.
 
-- Nueva acción para mostrar el almacenamiento compartido de File Browser como una carpeta en tus Archivos, por usuario de Nextcloud, para que puedas mover archivos a Nextcloud.
+**Antes de actualizar**
 
-**Actualizaciones de versión**
+- Nextcloud solo puede actualizarse una versión principal a la vez. Si este paquete todavía está en una versión 32.x, actualícelo primero a una versión 33.x — la actualización se comprueba de antemano y se rechaza en lugar de dejar la instancia en un estado defectuoso.
+- Nextcloud 34 elimina varias API obsoletas desde hace tiempo, por lo que algunas aplicaciones de terceros pueden necesitar su propia actualización.
 
-- Las actualizaciones de versión de Nextcloud ahora se ejecutan durante el paso de actualización, de modo que una actualización fallida se revierte limpiamente en lugar de dejar la aplicación en un estado que requiere recuperación manual.
+**Problema conocido**
 
-**Correcciones**
+- Upstream ha deshabilitado temporalmente las vistas previas basadas en ImageMagick, por lo que las miniaturas de HEIC y de algunos otros formatos no están disponibles.
 
-- Corregido un error por el que cambios de red en segundo plano en el servidor podían poner Nextcloud en un bucle de reinicios.
+Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v34.0.2`,
+    de_DE: `Nextcloud auf 34.0.2 aktualisiert — die Hauptversion Nextcloud 34 zusammen mit ihren Wartungsversionen 34.0.1 und 34.0.2.
 
-Actualizaciones internas (start-sdk 2.0).
+**Höhepunkte**
 
-Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    de_DE: `Fügt die File-Browser-Integration „Externer Speicher" hinzu und stellt Nextcloud auf start-sdk 2.0 um (mitgeliefertes Image auf Nextcloud 33.0.6 aktualisiert — Sicherheits- und Fehlerkorrekturen im Upstream).
+- Neu gebauter App Store, mit einer Schaltfläche „Alle aktualisieren“ und schnellerer Navigation.
+- Überarbeitete Dateiansicht: Filter sind in die obere Leiste gewandert, dazu viele Korrekturen bei Drag-and-drop.
+- Bessere Föderation: Lese- und Schreibzugriff auf externe CalDAV/CardDAV-Quellen, Kontaktfilterung nach Team und föderierte Benutzer- und Gruppensuche beim Hinzufügen von Teammitgliedern.
+- Sicherheit: Einmal-QR-Codes sind standardmäßig aktiv, und eine Systemprüfung warnt, wenn kein Zweitfaktor-Anbieter eingerichtet ist.
+- Speicherhygiene: optionaler automatischer Ablauf alter Vorschaubilder und automatische Bereinigung des Verlaufs der Hintergrundaufgaben nach 60 Tagen.
+- Eine leichtere, schnellere Oberfläche — jQuery wurde vollständig entfernt.
 
-**Externer Speicher**
+**Vor der Aktualisierung**
 
-- Neue Aktion, um den gemeinsamen Speicher von File Browser als Ordner in Dateien anzuzeigen — pro Nextcloud-Benutzer, sodass Sie Dateien nach Nextcloud verschieben können.
+- Nextcloud lässt sich nur eine Hauptversion auf einmal aktualisieren. Wenn dieses Paket noch auf einer 32.x-Version läuft, aktualisieren Sie es zuerst auf eine 33.x-Version — die Aktualisierung wird vorab geprüft und abgelehnt, statt die Instanz in einem defekten Zustand zurückzulassen.
+- Nextcloud 34 entfernt mehrere seit Langem veraltete APIs, daher benötigen manche Apps von Drittanbietern eine eigene Aktualisierung.
 
-**Versions-Upgrades**
+**Bekanntes Problem**
 
-- Nextcloud-Versions-Upgrades laufen jetzt während des Update-Schritts, sodass ein fehlgeschlagenes Upgrade sauber zurückgerollt wird, statt die App in einem Zustand zu hinterlassen, der manuelle Wiederherstellung erfordert.
+- Upstream hat ImageMagick-basierte Vorschauen vorübergehend deaktiviert, daher sind Miniaturansichten für HEIC und einige andere Formate nicht verfügbar.
 
-**Fehlerkorrekturen**
+Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v34.0.2`,
+    pl_PL: `Zaktualizowano Nextcloud do 34.0.2 — główne wydanie Nextcloud 34 wraz z wydaniami konserwacyjnymi 34.0.1 i 34.0.2.
 
-- Ein Fehler wurde behoben, durch den Netzwerkänderungen im Hintergrund auf dem Server Nextcloud in eine Neustart-Schleife versetzen konnten.
+**Najważniejsze zmiany**
 
-Interne Aktualisierungen (start-sdk 2.0).
+- Przebudowany sklep z aplikacjami, z przyciskiem aktualizacji wszystkich aplikacji i szybszym przeglądaniem.
+- Odświeżony widok Plików: filtry przeniesiono na górny pasek, wraz z wieloma poprawkami przeciągania i upuszczania.
+- Lepsza federacja: odczyt i zapis dla zewnętrznych źródeł CalDAV/CardDAV, filtrowanie kontaktów według zespołu oraz federacyjne wyszukiwanie użytkowników i grup przy dodawaniu członków zespołu.
+- Bezpieczeństwo: jednorazowe kody QR są domyślnie włączone, a kontrola konfiguracji ostrzega, gdy nie skonfigurowano dostawcy drugiego składnika.
+- Porządek w magazynie: opcjonalne automatyczne wygasanie starych podglądów i automatyczne czyszczenie historii zadań w tle po 60 dniach.
+- Lżejszy i szybszy interfejs — jQuery zostało całkowicie usunięte.
 
-Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    pl_PL: `Dodaje integrację Magazynu zewnętrznego z File Browser i przenosi Nextcloud na start-sdk 2.0 (dołączony obraz zaktualizowany do Nextcloud 33.0.6 — poprawki bezpieczeństwa i błędów w upstreamie).
+**Przed aktualizacją**
 
-**Magazyn zewnętrzny**
+- Nextcloud można aktualizować tylko o jedną wersję główną naraz. Jeśli ten pakiet jest nadal w wersji 32.x, zaktualizuj go najpierw do wersji 33.x — aktualizacja jest sprawdzana z góry i odrzucana, zamiast pozostawiać instancję w uszkodzonym stanie.
+- Nextcloud 34 usuwa kilka dawno przestarzałych interfejsów API, więc niektóre aplikacje innych firm mogą wymagać własnej aktualizacji.
 
-- Nowa akcja udostępniająca współdzieloną przestrzeń File Browser jako folder w aplikacji Pliki, per użytkownik Nextcloud, dzięki czemu możesz przenosić pliki do Nextcloud.
+**Znany problem**
 
-**Aktualizacje wersji**
+- Upstream tymczasowo wyłączył podglądy oparte na ImageMagick, więc miniatury dla HEIC i niektórych innych formatów są niedostępne.
 
-- Aktualizacje wersji Nextcloud są teraz wykonywane podczas kroku aktualizacji, dzięki czemu nieudana aktualizacja jest czysto wycofywana, zamiast pozostawiać aplikację w stanie wymagającym ręcznego przywracania.
+Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v34.0.2`,
+    fr_FR: `Nextcloud mis à jour vers 34.0.2 — la version majeure Nextcloud 34, accompagnée de ses versions de maintenance 34.0.1 et 34.0.2.
 
-**Poprawki**
+**Points forts**
 
-- Naprawiono błąd, przez który zmiany sieci w tle na serwerze mogły wprowadzić Nextcloud w pętlę restartów.
+- Boutique d'applications reconstruite, avec un bouton « tout mettre à jour » et une navigation plus rapide.
+- Vue Fichiers rafraîchie : les filtres sont passés dans la barre supérieure, avec de nombreux correctifs du glisser-déposer.
+- Meilleure fédération : prise en charge en lecture et en écriture des sources CalDAV/CardDAV externes, filtrage des contacts par équipe et recherche fédérée d'utilisateurs et de groupes lors de l'ajout de membres d'équipe.
+- Sécurité : les codes QR à usage unique sont activés par défaut et une vérification de configuration avertit lorsqu'aucun fournisseur de second facteur n'est configuré.
+- Hygiène du stockage : expiration automatique facultative des anciens aperçus et nettoyage automatique de l'historique des tâches de fond après 60 jours.
+- Une interface plus légère et plus rapide — jQuery a été entièrement supprimé.
 
-Aktualizacje wewnętrzne (start-sdk 2.0).
+**Avant de mettre à jour**
 
-Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
-    fr_FR: `Ajoute l'intégration Stockage externe de File Browser et repackage Nextcloud sur start-sdk 2.0 (image fournie mise à jour vers Nextcloud 33.0.6 — correctifs de sécurité et de bogues en amont).
+- Nextcloud ne peut être mis à jour que d'une version majeure à la fois. Si ce paquet est encore sur une version 32.x, mettez-le d'abord à jour vers une version 33.x — la mise à jour est vérifiée en amont et refusée plutôt que de laisser l'instance dans un état défectueux.
+- Nextcloud 34 supprime plusieurs API obsolètes de longue date : certaines applications tierces peuvent nécessiter leur propre mise à jour.
 
-**Stockage externe**
+**Problème connu**
 
-- Nouvelle action pour afficher le stockage partagé de File Browser comme un dossier dans Fichiers, par utilisateur Nextcloud, afin de pouvoir déplacer des fichiers vers Nextcloud.
+- En amont, les aperçus basés sur ImageMagick ont été temporairement désactivés : les miniatures pour HEIC et certains autres formats sont indisponibles.
 
-**Mises à niveau de version**
-
-- Les mises à niveau de version de Nextcloud s'exécutent désormais pendant l'étape de mise à jour, de sorte qu'une mise à niveau échouée est annulée proprement au lieu de laisser l'application dans un état nécessitant une récupération manuelle.
-
-**Correctifs**
-
-- Correction d'un bogue où des changements réseau en arrière-plan sur le serveur pouvaient placer Nextcloud dans une boucle de redémarrages.
-
-Mises à jour internes (start-sdk 2.0).
-
-Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.6`,
+Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v34.0.2`,
   },
   migrations: {
     up: async ({ effects }) => {

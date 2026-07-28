@@ -169,7 +169,7 @@ Runs `occ maintenance:mode --off`. Use this if the web UI is stuck showing "Main
 
 ### Disable Non-default Apps
 
-Disables all user-installed apps (preserves ~48 Nextcloud defaults). Use when a broken app causes "Internal Server Error". After running, stable apps must be re-enabled individually.
+Disables all user-installed apps (preserves ~58 Nextcloud defaults). Use when a broken app causes "Internal Server Error". After running, stable apps must be re-enabled individually.
 
 **Warning:** Disables ALL non-default apps, not just the problematic one.
 
