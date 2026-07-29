@@ -15,4 +15,4 @@ Work this package's `TODO.md` from top to bottom. Keep `README.md` (architecture
 
 ## Inspecting a running install
 
-To run a command inside the service's container (read its generated config, grep app logs), use `start-cli package attach nextcloud -n <subcontainer-name> -- <cmd>`. This package has several subcontainers (`nextcloud`, `cron`, `postgres`, `valkey`), so a selector is **required** — select by **name** with `-n` (the name passed to `SubContainer.of` in `main.ts`, e.g. `-n nextcloud`) or by image with `-i`. Note: `-s/--subcontainer` matches the internal **Guid**, not the name.
+To run a command inside the service's container (read its generated config, grep app logs), use `start-cli package attach nextcloud -n <subcontainer-name> -- <cmd>`. This package has several subcontainers (`nextcloud-sub`, `nextcloud-cron`, `postgres-sub`, `valkey`), so a selector is **required** — select by **name** with `-n` (the name passed to `SubContainer.of`, e.g. `-n nextcloud-sub`) or by image with `-i`. Note the two nextcloud subcontainers share one image, so `-i nextcloud` is still ambiguous. Note: `-s/--subcontainer` matches the internal **Guid**, not the name.

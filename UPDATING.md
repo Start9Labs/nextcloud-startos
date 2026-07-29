@@ -22,7 +22,7 @@ curl -fsSL "https://hub.docker.com/v2/repositories/library/postgres/tags?page_si
   | jq -r '.results[].name' | grep -E '^17.*alpine' | head
 ```
 
-Current pin: `postgres:17-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`).
+Current pin: `postgres:17-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`). Changing the major also means changing `PG_MAJOR` in `startos/versions/from035x.ts`, which the 0.3.5x migration compares against the cluster's `PG_VERSION`.
 
 **Valkey** ([valkey/valkey](https://hub.docker.com/r/valkey/valkey) on Docker Hub):
 

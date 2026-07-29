@@ -3,9 +3,10 @@
  *
  * This is the **StartOS layout** migration: it converts what 0.3.5.1 left on
  * disk into the layout the 0.4.0 package expects — Postgres cluster location,
- * `config.yaml` → `config.php`, and file permissions. It is driven by the
- * package version graph and runs at most once, on the first update away from
- * `32.0.11:0`.
+ * `config.yaml` → `config.php`, and file permissions. The version graph invokes
+ * `migrations.up` on every update into the current version, from any older one;
+ * the `config.yaml` marker is what makes this a no-op on an instance that never
+ * ran on 0.3.5x.
  *
  * Do not confuse it with the **upstream application** upgrade in
  * [`../init/bootstrapNextcloud.ts`](../init/bootstrapNextcloud.ts), which runs
@@ -16,13 +17,14 @@
  * before the upstream upgrade starts.
  */
 
-import { T, YAML } from '@start9labs/start-sdk'
+import { SubContainer, T, YAML } from '@start9labs/start-sdk'
 import { readFile, rm, stat } from 'fs/promises'
 import { cp } from 'node:fs/promises'
 import { resetAdmin } from '../actions/maintenance/resetAdmin'
 import { configPhp } from '../fileModels/config.php'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
+import { manifest } from '../manifest'
 import { sdk } from '../sdk'
 import {
   NEXTCLOUD_PATH,
@@ -61,6 +63,21 @@ const exists = (p: string) =>
     () => false,
   )
 
+const PGDATA_NOT_EMPTY =
+  'Nextcloud cannot move its PostgreSQL database into place because the destination directory already holds files. Nothing has been changed and your data is still on disk. Please contact Start9 support. Do NOT uninstall the package — that would delete your files as well.'
+
+/**
+ * Remove the empty `PGDATA` shell the Postgres entrypoint leaves behind, so the
+ * `mv` that follows moves the cluster into place rather than inside it. Absent
+ * is the normal case; holding anything is not. `exec` does not throw and the
+ * two outcomes are indistinguishable from its exit code, so check directly.
+ */
+const clearPgdataShell = async (sub: SubContainer<typeof manifest>) => {
+  await sub.exec(['rmdir', PGDATA], { user: 'root' })
+  if (await exists(`${POSTGRES_VOLUME_HOST}/data`))
+    throw new Error(PGDATA_NOT_EMPTY)
+}
+
 /**
  * Where a Postgres cluster may be found, relative to the `db` volume root:
  * `data` if a previous run already relocated it, `17/main` or `15/main` if it
@@ -68,21 +85,36 @@ const exists = (p: string) =>
  */
 const PG_LOCATIONS = ['data', '17/main', '15/main'] as const
 
+/** Major version of the postgres image; see `PG_MAJOR` in UPDATING.md. */
+const PG_MAJOR = '17' as const
+
+/** 0.3.5x's own `pg_upgrade` 15 → 17 touched this only once it succeeded. */
+const PG_UPGRADE_MARKER = `${POSTGRES_VOLUME_HOST}/.pg17_upgrade_complete`
+
+type Cluster = { at: (typeof PG_LOCATIONS)[number]; major: string }
+
+/** Major version that wrote the cluster at `dir`, or '' if there isn't one. */
+const clusterVersion = (dir: string) =>
+  readFile(`${dir}/PG_VERSION`, 'utf-8').then(
+    (v) => v.trim(),
+    () => '',
+  )
+
 /**
- * The location of the real cluster, or `null` if there isn't one.
+ * The real cluster and the major version that wrote it, or `null` if there
+ * isn't one.
  *
  * Identified by `PG_VERSION`, never by the directory existing. The Postgres
  * entrypoint runs `mkdir -p "$PGDATA"` in `docker_create_db_directories`
  * *before* it checks whether the database is initialized and bails, so every
- * start against an unmigrated volume leaves an empty `data/` behind. Both
- * guards here used to test for the directory, so that empty directory read as
- * "already relocated": the move was skipped, the migration reported success,
- * and it deleted the 0.3.5x marker on its way out — disarming itself while the
- * cluster was never moved.
+ * start against an unmigrated volume leaves an empty `data/` behind, which used
+ * to read as "already relocated" — the move was skipped, the migration reported
+ * success, and it deleted the 0.3.5x marker on its way out.
  */
-const findCluster = async (): Promise<(typeof PG_LOCATIONS)[number] | null> => {
-  for (const loc of PG_LOCATIONS) {
-    if (await exists(`${POSTGRES_VOLUME_HOST}/${loc}/PG_VERSION`)) return loc
+const findCluster = async (): Promise<Cluster | null> => {
+  for (const at of PG_LOCATIONS) {
+    const major = await clusterVersion(`${POSTGRES_VOLUME_HOST}/${at}`)
+    if (major) return { at, major }
   }
   return null
 }
@@ -113,12 +145,7 @@ const relocatePostgresFrom035x = async (
       // Move the cluster from the 0.3.5x Debian layout to the canonical Docker
       // path. `from` is known to hold a real cluster, and PGDATA is known not
       // to — the caller established both via PG_VERSION.
-      //
-      // rmdir, not rm -rf: PGDATA here is the empty shell the Postgres
-      // entrypoint leaves behind, and rmdir refuses to remove a directory with
-      // anything in it. If some future state puts real content there, this
-      // fails loudly rather than deleting a database.
-      await sub.exec(['rmdir', PGDATA], { user: 'root' })
+      await clearPgdataShell(sub)
       await sub.execFail(['mv', `${POSTGRES_PATH}/${from}`, PGDATA], {
         user: 'root',
       })
@@ -293,8 +320,8 @@ const relocatePostgresFromBeta = async (effects: T.Effects) => {
   // the directory would both miss the real cluster and let `mv` run against an
   // existing PGDATA, which moves the source *inside* it (data/docker) rather
   // than into place.
-  if (!(await exists(`${POSTGRES_VOLUME_HOST}/17/docker/PG_VERSION`))) return
-  if (await exists(`${POSTGRES_VOLUME_HOST}/data/PG_VERSION`)) return
+  if (!(await clusterVersion(`${POSTGRES_VOLUME_HOST}/17/docker`))) return
+  if (await clusterVersion(`${POSTGRES_VOLUME_HOST}/data`)) return
 
   const pgMounts = sdk.Mounts.of().mountVolume({
     volumeId: 'db',
@@ -308,7 +335,7 @@ const relocatePostgresFromBeta = async (effects: T.Effects) => {
     pgMounts,
     'pg-relocate',
     async (sub) => {
-      await sub.exec(['rmdir', PGDATA], { user: 'root' })
+      await clearPgdataShell(sub)
       await sub.execFail(['mv', `${POSTGRES_PATH}/17/docker`, PGDATA], {
         user: 'root',
       })
@@ -348,7 +375,24 @@ export const migrateFrom035x = async (
           : 'This Nextcloud package was configured on StartOS 0.3.5x but never started, so there is no data to migrate to 0.4.0. Please uninstall the Nextcloud package and reinstall it to set up a fresh 0.4.0 install.',
       )
     }
-    await relocatePostgresFrom035x(effects, cluster)
+    // 0.3.5x upgraded its own cluster 15 → 17 in pg_upgrade's copy mode and
+    // reaped 15/main on the *next* launch, gated on the marker. So 15/main
+    // without the marker means that upgrade never finished, and any 17/main
+    // beside it is the empty initdb stub it left — which findCluster prefers.
+    if (
+      (await clusterVersion(`${POSTGRES_VOLUME_HOST}/15/main`)) &&
+      !(await exists(PG_UPGRADE_MARKER))
+    ) {
+      throw new Error(
+        `Nextcloud's PostgreSQL 15 to ${PG_MAJOR} upgrade never finished on StartOS 0.3.5.x, so its database cannot be migrated to 0.4.0. Nothing has been changed and your files and database are still on disk. Please contact Start9 support. Do NOT uninstall the package — that would delete your files as well.`,
+      )
+    }
+    if (cluster.major !== PG_MAJOR) {
+      throw new Error(
+        `Nextcloud found a PostgreSQL ${cluster.major} database, but this version of Nextcloud runs PostgreSQL ${PG_MAJOR}, so it cannot be migrated. Nothing has been changed and your files and database are still on disk. Please contact Start9 support. Do NOT uninstall the package — that would delete your files as well.`,
+      )
+    }
+    await relocatePostgresFrom035x(effects, cluster.at)
     await importConfigFrom035x(effects, configYaml)
     // Weighted far above the steps around it: on a large instance this walk
     // runs for hours while everything else here takes seconds. Without a phase
