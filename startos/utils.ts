@@ -5,7 +5,7 @@ export const uiPort = 80 as const
 export const NEXTCLOUD_PATH = '/var/www/html' as const
 export const POSTGRES_PATH = '/var/lib/postgresql' as const
 
-const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
+export const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
 
 /**
  * Throws `errorMessage` if a Nextcloud app's files are not present on the
@@ -138,6 +138,18 @@ export function getBaseDaemons(
       },
       requires: [],
     })
+    .addOneshot('pg-recover', {
+      subcontainer: postgresSub,
+      exec: {
+        // An unclean stop strands postmaster.pid, and Postgres aborts if the
+        // PID it names is alive — which, in a fresh PID namespace, is usually
+        // an unrelated process. As root, so ownership can never block the
+        // removal and wedge the chain on this oneshot.
+        command: ['rm', '-f', `${PGDATA}/postmaster.pid`],
+        user: 'root',
+      },
+      requires: [],
+    })
     .addDaemon('postgres', {
       subcontainer: postgresSub,
       exec: {
@@ -167,7 +179,7 @@ export function getBaseDaemons(
           }
         },
       },
-      requires: [],
+      requires: ['pg-recover'],
     })
     .addDaemon('valkey', {
       subcontainer: valkeySub,

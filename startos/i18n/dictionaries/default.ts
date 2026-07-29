@@ -192,6 +192,9 @@ const dict = {
   // bootstrapNextcloud.ts: init progress phases
   'Installing Nextcloud': 132,
   'Upgrading Nextcloud': 133,
+
+  // versions/from035x.ts: 0.3.5x migration progress
+  'Updating file permissions': 134,
 } as const
 
 /**
