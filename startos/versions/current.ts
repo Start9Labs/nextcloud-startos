@@ -1,132 +1,92 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { sdk } from '../sdk'
 import { migrateFrom035x } from './from035x'
 
 export const current = VersionInfo.of({
-  version: '33.0.7:0',
+  version: '33.0.8:0',
   releaseNotes: {
-    en_US: `Adds File Browser External Storage integration and repackages Nextcloud on start-sdk 2.0 (bundled image updated to Nextcloud 33.0.7 — upstream security and bug fixes).
-
-**External Storage**
-
-- New action to surface File Browser's shared storage as a folder in your Files, scoped per Nextcloud user — so you can move files into Nextcloud.
-
-**Upgrades**
-
-- Nextcloud version upgrades now run during the update step, so a failed upgrade rolls back cleanly instead of leaving the app in need of manual recovery.
+    en_US: `Updated Nextcloud to 33.0.8 — a maintenance release of upstream fixes and security hardening.
 
 **Fixes**
 
-- Fixed a bug where background network changes on the server could put Nextcloud into a restart loop.
-- Fixed a bug in the StartOS 0.3.5.x migration that could skip relocating the PostgreSQL database while still reporting success — leaving Nextcloud unable to start, and the migration unable to run again. It now verifies the database before changing anything, and stops with a clear explanation if it cannot safely continue.
-- The update now reports progress while migrating an instance from StartOS 0.3.5.x. On a large instance that step walks every file to correct its permissions and can run for hours; it previously showed no movement at all, which looked like a hung update.
-- Fixed a bug where PostgreSQL could refuse to start after an unclean shutdown — a power loss, a forced stop, or a failed update — leaving Nextcloud stuck on "starting" or an update failing with a timeout. A stale database lock file is now cleared before PostgreSQL starts.
+- Thumbnails work again for PDF, SVG, TIFF, HEIC, PSD and the other ImageMagick formats. Nextcloud 33.0.7 disabled those previews upstream; 33.0.8 restores them.
+- Many sharing, file and encryption fixes — shares no longer break when a recipient or owner is missing, rejected shares stay rejected, and zero-byte encrypted files report the correct size.
+- Security hardening: stricter host and IP validation, an updated code signing revocation list, and admin permission is now required for every system tag change.
+- Cleared an abandoned internal task left behind by an older release, which on some servers could stop Nextcloud with no way to dismiss it.
 
-**Known issue**
+**New**
 
-- This Nextcloud release temporarily disables ImageMagick-based previews upstream, so thumbnails are unavailable for PDF, SVG, TIFF, HEIC, PSD and a few other formats. Photos and videos in common formats are unaffected. Upstream has already fixed this for its next release.
+- Federated calendar invitations can be accepted or declined.
+- Password confirmation can be skipped for selected IP ranges.
 
-Internal updates (start-sdk 2.0).
-
-Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.7`,
-    es_ES: `Añade la integración de Almacenamiento externo de File Browser y reempaqueta Nextcloud sobre start-sdk 2.0 (imagen incluida actualizada a Nextcloud 33.0.7 — correcciones de seguridad y de errores upstream).
-
-**Almacenamiento externo**
-
-- Nueva acción para mostrar el almacenamiento compartido de File Browser como una carpeta en tus Archivos, por usuario de Nextcloud, para que puedas mover archivos a Nextcloud.
-
-**Actualizaciones de versión**
-
-- Las actualizaciones de versión de Nextcloud ahora se ejecutan durante el paso de actualización, de modo que una actualización fallida se revierte limpiamente en lugar de dejar la aplicación en un estado que requiere recuperación manual.
+Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
+    es_ES: `Nextcloud actualizado a 33.0.8: una versión de mantenimiento con correcciones y refuerzos de seguridad de upstream.
 
 **Correcciones**
 
-- Corregido un error por el que cambios de red en segundo plano en el servidor podían poner Nextcloud en un bucle de reinicios.
-- Corregido un error en la migración desde StartOS 0.3.5.x que podía omitir el traslado de la base de datos PostgreSQL informando aun así de que había funcionado, dejando Nextcloud sin poder arrancar y la migración sin poder volver a ejecutarse. Ahora se verifica la base de datos antes de modificar nada y se detiene con una explicación clara si no puede continuar de forma segura.
-- La actualización ahora informa del progreso al migrar una instancia desde StartOS 0.3.5.x. En una instancia grande, ese paso recorre todos los archivos para corregir sus permisos y puede tardar horas; antes no mostraba ningún avance, lo que parecía una actualización bloqueada.
-- Corregido un error por el que PostgreSQL podía negarse a arrancar tras un apagado no limpio —un corte de energía, una parada forzada o una actualización fallida—, dejando Nextcloud atascado en «iniciando» o provocando que una actualización fallara por tiempo de espera agotado. Ahora se elimina el archivo de bloqueo obsoleto de la base de datos antes de iniciar PostgreSQL.
+- Las miniaturas vuelven a funcionar para PDF, SVG, TIFF, HEIC, PSD y los demás formatos de ImageMagick. Nextcloud 33.0.7 desactivó esas vistas previas en upstream; 33.0.8 las restaura.
+- Numerosas correcciones de compartición, archivos y cifrado: los recursos compartidos ya no fallan cuando falta un destinatario o un propietario, los rechazados siguen rechazados y los archivos cifrados de cero bytes informan del tamaño correcto.
+- Refuerzos de seguridad: validación más estricta de host e IP, lista de revocación de firma de código actualizada y ahora se requieren permisos de administrador para cualquier cambio de etiquetas del sistema.
+- Se ha eliminado una tarea interna abandonada por una versión anterior que, en algunos servidores, podía detener Nextcloud sin forma de descartarla.
 
-**Problema conocido**
+**Novedades**
 
-- Esta versión de Nextcloud desactiva temporalmente las vistas previas basadas en ImageMagick, por lo que no hay miniaturas para PDF, SVG, TIFF, HEIC, PSD y algunos otros formatos. Las fotos y los vídeos en formatos habituales no se ven afectados. Upstream ya lo ha corregido para su próxima versión.
+- Las invitaciones a calendarios federados se pueden aceptar o rechazar.
+- La confirmación de contraseña se puede omitir en determinados rangos de IP.
 
-Actualizaciones internas (start-sdk 2.0).
+Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
+    de_DE: `Nextcloud auf 33.0.8 aktualisiert — eine Wartungsversion mit Fehlerkorrekturen und Sicherheitshärtungen aus dem Upstream.
 
-Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.7`,
-    de_DE: `Fügt die File-Browser-Integration „Externer Speicher" hinzu und stellt Nextcloud auf start-sdk 2.0 um (mitgeliefertes Image auf Nextcloud 33.0.7 aktualisiert — Sicherheits- und Fehlerkorrekturen im Upstream).
+**Korrekturen**
 
-**Externer Speicher**
+- Miniaturansichten funktionieren wieder für PDF, SVG, TIFF, HEIC, PSD und die übrigen ImageMagick-Formate. Nextcloud 33.0.7 hatte diese Vorschauen im Upstream deaktiviert; 33.0.8 stellt sie wieder her.
+- Zahlreiche Korrekturen bei Freigaben, Dateien und Verschlüsselung — Freigaben brechen nicht mehr ab, wenn ein Empfänger oder Eigentümer fehlt, abgelehnte Freigaben bleiben abgelehnt, und verschlüsselte Dateien mit null Byte melden die richtige Größe.
+- Sicherheitshärtung: strengere Host- und IP-Prüfung, aktualisierte Sperrliste für Code-Signaturen, und für jede Änderung an System-Tags sind nun Administratorrechte erforderlich.
+- Eine von einer älteren Version zurückgelassene, verwaiste interne Aufgabe wurde entfernt; sie konnte Nextcloud auf manchen Servern anhalten, ohne dass sie sich schließen ließ.
 
-- Neue Aktion, um den gemeinsamen Speicher von File Browser als Ordner in Dateien anzuzeigen — pro Nextcloud-Benutzer, sodass Sie Dateien nach Nextcloud verschieben können.
+**Neu**
 
-**Versions-Upgrades**
+- Einladungen zu föderierten Kalendern können angenommen oder abgelehnt werden.
+- Die Passwortbestätigung kann für ausgewählte IP-Bereiche übersprungen werden.
 
-- Nextcloud-Versions-Upgrades laufen jetzt während des Update-Schritts, sodass ein fehlgeschlagenes Upgrade sauber zurückgerollt wird, statt die App in einem Zustand zu hinterlassen, der manuelle Wiederherstellung erfordert.
-
-**Fehlerkorrekturen**
-
-- Ein Fehler wurde behoben, durch den Netzwerkänderungen im Hintergrund auf dem Server Nextcloud in eine Neustart-Schleife versetzen konnten.
-- Ein Fehler in der Migration von StartOS 0.3.5.x wurde behoben, durch den das Verschieben der PostgreSQL-Datenbank übersprungen werden konnte, während trotzdem Erfolg gemeldet wurde — sodass Nextcloud nicht mehr starten konnte und die Migration nicht erneut lief. Sie prüft die Datenbank jetzt, bevor etwas geändert wird, und bricht mit einer klaren Erklärung ab, wenn sie nicht sicher fortfahren kann.
-- Die Aktualisierung meldet jetzt den Fortschritt, während eine Instanz von StartOS 0.3.5.x migriert wird. Bei einer großen Instanz durchläuft dieser Schritt jede Datei, um ihre Berechtigungen zu korrigieren, und kann Stunden dauern; zuvor war überhaupt kein Fortschritt sichtbar, was wie eine hängende Aktualisierung wirkte.
-- Ein Fehler wurde behoben, durch den PostgreSQL nach einem unsauberen Herunterfahren — einem Stromausfall, einem erzwungenen Stopp oder einer fehlgeschlagenen Aktualisierung — den Start verweigern konnte, sodass Nextcloud im Zustand „wird gestartet" hängen blieb oder eine Aktualisierung mit einer Zeitüberschreitung fehlschlug. Eine veraltete Sperrdatei der Datenbank wird jetzt vor dem Start von PostgreSQL entfernt.
-
-**Bekanntes Problem**
-
-- Diese Nextcloud-Version deaktiviert vorübergehend die auf ImageMagick basierenden Vorschauen, sodass für PDF, SVG, TIFF, HEIC, PSD und einige weitere Formate keine Miniaturansichten verfügbar sind. Fotos und Videos in gängigen Formaten sind nicht betroffen. Upstream hat dies für die nächste Version bereits behoben.
-
-Interne Aktualisierungen (start-sdk 2.0).
-
-Vollständige Änderungsliste: https://github.com/nextcloud-releases/server/releases/tag/v33.0.7`,
-    pl_PL: `Dodaje integrację Magazynu zewnętrznego z File Browser i przenosi Nextcloud na start-sdk 2.0 (dołączony obraz zaktualizowany do Nextcloud 33.0.7 — poprawki bezpieczeństwa i błędów w upstreamie).
-
-**Magazyn zewnętrzny**
-
-- Nowa akcja udostępniająca współdzieloną przestrzeń File Browser jako folder w aplikacji Pliki, per użytkownik Nextcloud, dzięki czemu możesz przenosić pliki do Nextcloud.
-
-**Aktualizacje wersji**
-
-- Aktualizacje wersji Nextcloud są teraz wykonywane podczas kroku aktualizacji, dzięki czemu nieudana aktualizacja jest czysto wycofywana, zamiast pozostawiać aplikację w stanie wymagającym ręcznego przywracania.
+Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
+    pl_PL: `Zaktualizowano Nextcloud do 33.0.8 — wydanie konserwacyjne z poprawkami i wzmocnieniami bezpieczeństwa z upstreamu.
 
 **Poprawki**
 
-- Naprawiono błąd, przez który zmiany sieci w tle na serwerze mogły wprowadzić Nextcloud w pętlę restartów.
-- Naprawiono błąd w migracji ze StartOS 0.3.5.x, który mógł pominąć przeniesienie bazy danych PostgreSQL, mimo to zgłaszając powodzenie — przez co Nextcloud nie mógł się uruchomić, a migracja nie mogła zostać powtórzona. Teraz baza danych jest weryfikowana przed jakąkolwiek zmianą, a jeśli migracja nie może bezpiecznie kontynuować, zatrzymuje się z jasnym wyjaśnieniem.
-- Aktualizacja pokazuje teraz postęp podczas migracji instancji ze StartOS 0.3.5.x. W dużej instancji ten krok przechodzi przez każdy plik, aby poprawić jego uprawnienia, i może trwać godzinami; wcześniej nie pokazywał żadnego postępu, co wyglądało jak zawieszona aktualizacja.
-- Naprawiono błąd, przez który PostgreSQL mógł odmówić uruchomienia po nieczystym zamknięciu — awarii zasilania, wymuszonym zatrzymaniu lub nieudanej aktualizacji — pozostawiając Nextcloud w stanie „uruchamianie" lub powodując niepowodzenie aktualizacji z powodu przekroczenia limitu czasu. Nieaktualny plik blokady bazy danych jest teraz usuwany przed uruchomieniem PostgreSQL.
+- Miniatury znów działają dla plików PDF, SVG, TIFF, HEIC, PSD i pozostałych formatów ImageMagick. Nextcloud 33.0.7 wyłączył te podglądy w upstreamie; 33.0.8 je przywraca.
+- Wiele poprawek dotyczących udostępniania, plików i szyfrowania — udostępnienia nie psują się już przy brakującym odbiorcy lub właścicielu, odrzucone pozostają odrzucone, a zaszyfrowane pliki o zerowym rozmiarze podają prawidłowy rozmiar.
+- Wzmocnienia bezpieczeństwa: ściślejsza weryfikacja hosta i adresu IP, zaktualizowana lista unieważnień podpisu kodu oraz wymóg uprawnień administratora przy każdej zmianie tagów systemowych.
+- Usunięto porzucone zadanie wewnętrzne pozostawione przez starsze wydanie, które na niektórych serwerach mogło zatrzymać Nextcloud bez możliwości jego odrzucenia.
 
-**Znany problem**
+**Nowości**
 
-- Ta wersja Nextcloud tymczasowo wyłącza podglądy oparte na ImageMagick, więc miniatury nie są dostępne dla plików PDF, SVG, TIFF, HEIC, PSD i kilku innych formatów. Zdjęcia i filmy w popularnych formatach nie są objęte tym problemem. Upstream naprawił to już w kolejnym wydaniu.
+- Zaproszenia do kalendarzy federacyjnych można zaakceptować lub odrzucić.
+- Potwierdzanie hasła można pominąć dla wybranych zakresów adresów IP.
 
-Aktualizacje wewnętrzne (start-sdk 2.0).
-
-Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.7`,
-    fr_FR: `Ajoute l'intégration Stockage externe de File Browser et repackage Nextcloud sur start-sdk 2.0 (image fournie mise à jour vers Nextcloud 33.0.7 — correctifs de sécurité et de bogues en amont).
-
-**Stockage externe**
-
-- Nouvelle action pour afficher le stockage partagé de File Browser comme un dossier dans Fichiers, par utilisateur Nextcloud, afin de pouvoir déplacer des fichiers vers Nextcloud.
-
-**Mises à niveau de version**
-
-- Les mises à niveau de version de Nextcloud s'exécutent désormais pendant l'étape de mise à jour, de sorte qu'une mise à niveau échouée est annulée proprement au lieu de laisser l'application dans un état nécessitant une récupération manuelle.
+Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
+    fr_FR: `Nextcloud mis à jour vers 33.0.8 — une version de maintenance apportant des correctifs et des renforcements de sécurité en amont.
 
 **Correctifs**
 
-- Correction d'un bogue où des changements réseau en arrière-plan sur le serveur pouvaient placer Nextcloud dans une boucle de redémarrages.
-- Correction d'un bogue dans la migration depuis StartOS 0.3.5.x qui pouvait ignorer le déplacement de la base de données PostgreSQL tout en signalant une réussite — laissant Nextcloud incapable de démarrer et la migration incapable de s'exécuter à nouveau. Elle vérifie désormais la base de données avant toute modification et s'arrête avec une explication claire si elle ne peut pas continuer en toute sécurité.
-- La mise à jour indique désormais la progression lors de la migration d'une instance depuis StartOS 0.3.5.x. Sur une grande instance, cette étape parcourt chaque fichier pour corriger ses permissions et peut durer des heures ; auparavant elle n'affichait aucune progression, ce qui ressemblait à une mise à jour bloquée.
-- Correction d'un bogue où PostgreSQL pouvait refuser de démarrer après un arrêt brutal — une coupure de courant, un arrêt forcé ou une mise à jour échouée —, laissant Nextcloud bloqué sur « démarrage » ou faisant échouer une mise à jour par dépassement de délai. Un fichier de verrou de base de données obsolète est désormais supprimé avant le démarrage de PostgreSQL.
+- Les miniatures fonctionnent à nouveau pour les PDF, SVG, TIFF, HEIC, PSD et les autres formats ImageMagick. Nextcloud 33.0.7 avait désactivé ces aperçus en amont ; 33.0.8 les rétablit.
+- De nombreux correctifs de partage, de fichiers et de chiffrement — les partages ne cassent plus lorsqu'un destinataire ou un propriétaire est absent, les partages refusés le restent, et les fichiers chiffrés de zéro octet indiquent la bonne taille.
+- Renforcements de sécurité : validation plus stricte des hôtes et des adresses IP, liste de révocation des signatures de code mise à jour, et droits d'administrateur désormais requis pour toute modification des étiquettes système.
+- Suppression d'une tâche interne abandonnée par une version antérieure qui, sur certains serveurs, pouvait arrêter Nextcloud sans possibilité de l'écarter.
 
-**Problème connu**
+**Nouveautés**
 
-- Cette version de Nextcloud désactive temporairement les aperçus basés sur ImageMagick en amont, de sorte que les miniatures ne sont pas disponibles pour les PDF, SVG, TIFF, HEIC, PSD et quelques autres formats. Les photos et vidéos aux formats courants ne sont pas concernées. Le correctif est déjà intégré en amont pour la prochaine version.
+- Les invitations aux agendas fédérés peuvent être acceptées ou refusées.
+- La confirmation du mot de passe peut être ignorée pour certaines plages d'adresses IP.
 
-Mises à jour internes (start-sdk 2.0).
-
-Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.7`,
+Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
   },
   migrations: {
-    up: ({ effects, progress }) => migrateFrom035x(effects, progress),
+    up: async ({ effects, progress }) => {
+      // The action was renamed, so this task's replay key can never be cleared by running it.
+      await sdk.action.clearTask(effects, 'nextcloud:create-admin-user')
+      await migrateFrom035x(effects, progress)
+    },
     down: IMPOSSIBLE,
   },
 })

@@ -352,5 +352,5 @@ actions:
   - download-models
   - index-memories
   - index-places
-  - create-admin-user
+  - get-admin-credentials
 ```
