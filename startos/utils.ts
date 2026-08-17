@@ -8,30 +8,53 @@ export const POSTGRES_PATH = '/var/lib/postgresql' as const
 export const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
 
 /**
- * Throws `errorMessage` if a Nextcloud app's files are not present on the
- * volume. Checks both `custom_apps/` (user-installed) and `apps/` (built-in).
- * Used by actions that require a prerequisite Nextcloud app — calling this at
- * the top of the action's `run` produces a coherent error in the UI when the
- * app is missing.
+ * True if a Nextcloud app's files are present on the volume. Checks both
+ * `custom_apps/` (user-installed) and `apps/` (built-in).
  *
  * Note: this only checks file presence, not whether the app is enabled in
  * Nextcloud's database. An installed-but-disabled app passes this check;
  * running its `occ` namespace would then fail.
  */
-export async function requireNextcloudApp(
-  name: string,
-  errorMessage: string,
-): Promise<void> {
+export async function hasNextcloudApp(name: string): Promise<boolean> {
   const { stat } = await import('node:fs/promises')
   for (const dir of ['custom_apps', 'apps']) {
     const ok = await stat(`${NEXTCLOUD_VOLUME_HOST}/${dir}/${name}`).then(
       () => true,
       () => false,
     )
-    if (ok) return
+    if (ok) return true
   }
-  throw new Error(errorMessage)
+  return false
 }
+
+/**
+ * Throws `errorMessage` if a Nextcloud app's files are not present on the
+ * volume. Used by actions that require a prerequisite Nextcloud app — calling
+ * this at the top of the action's `run` produces a coherent error in the UI
+ * when the app is missing.
+ */
+export async function requireNextcloudApp(
+  name: string,
+  errorMessage: string,
+): Promise<void> {
+  if (!(await hasNextcloudApp(name))) throw new Error(errorMessage)
+}
+
+// Nextcloud Talk's app directory name. Talk is installed by the user from the
+// Nextcloud app store, so its `occ talk:*` namespace only exists once it is.
+export const TALK_APP = 'spreed'
+
+// The external Coturn package Talk relays calls through.
+export const coturnId = 'coturn'
+export const coturnVersionRange = '>=4.14.0:0'
+export const coturnHostId = 'turn'
+export const coturnInterfaceId = 'turn'
+// Coturn publishes its shared secret at `shared/turn-secret` on its `main`
+// volume. Mounting that subpath alone keeps the rest of that volume —
+// turnserver.conf, which holds the same secret in plaintext, and the coturn
+// database — out of view.
+export const coturnMountpoint = '/mnt/coturn'
+export const coturnSecretPath = `${coturnMountpoint}/turn-secret`
 
 export const nextcloudMount = sdk.Mounts.of().mountVolume({
   volumeId: 'nextcloud',

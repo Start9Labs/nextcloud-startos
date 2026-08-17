@@ -50,6 +50,16 @@ const shape = z.object({
   // `actions.completed`, so the oneshot's write never triggers a chain rebuild.
   // A plain string so FileHelper.merge replaces it wholesale.
   externalStoragesConfigured: z.string().catch('').default(''),
+  // Advertise the Coturn package to Nextcloud Talk as its STUN/TURN relay.
+  // DESIRED state: written by the Configure action, read reactively in
+  // setupMain/setDependencies.
+  talkTurn: z.boolean().catch(false).default(false),
+  // ACTUAL state: the Talk STUN/TURN entries this package last applied, as an
+  // opaque signature. Doubles as the record of what to delete on the next
+  // change, so nothing the user added by hand is ever touched. Same
+  // desired-vs-actual split (and the same non-reactive read) as
+  // `externalStoragesConfigured` above.
+  talkTurnConfigured: z.string().catch('').default(''),
 })
 
 export type Store = z.infer<typeof shape>

@@ -19,6 +19,19 @@ export const filebrowserDescription = {
     'Fournit un stockage de fichiers partagé que Nextcloud peut afficher comme un dossier dans Fichiers.',
 }
 
+export const coturnDescription = {
+  en_US:
+    'Provides a TURN/STUN relay so Talk calls connect through NAT and restrictive firewalls',
+  es_ES:
+    'Proporciona un relé TURN/STUN para que las llamadas de Talk se establezcan a través de NAT y cortafuegos restrictivos',
+  de_DE:
+    'Stellt ein TURN/STUN-Relay bereit, damit Talk-Anrufe durch NAT und restriktive Firewalls zustande kommen',
+  pl_PL:
+    'Udostępnia przekaźnik TURN/STUN, dzięki któremu połączenia Talk zestawiają się przez NAT i restrykcyjne zapory',
+  fr_FR:
+    'Fournit un relais TURN/STUN pour que les appels Talk aboutissent à travers le NAT et les pare-feu restrictifs',
+}
+
 export const long = {
   en_US:
     'Access & share your files, calendars, contacts, mail & more from any device, on your terms.',

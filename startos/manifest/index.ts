@@ -1,5 +1,5 @@
 import { setupManifest } from '@start9labs/start-sdk'
-import { filebrowserDescription, long, short } from './i18n'
+import { coturnDescription, filebrowserDescription, long, short } from './i18n'
 
 export const manifest = setupManifest({
   id: 'nextcloud',
@@ -40,6 +40,14 @@ export const manifest = setupManifest({
       metadata: {
         title: 'File Browser',
         icon: 'https://raw.githubusercontent.com/Start9Labs/filebrowser-startos/fbf1fefb51cca9731f2a9a9e6f790ca150aa9d04/icon.svg',
+      },
+    },
+    coturn: {
+      description: coturnDescription,
+      optional: true,
+      metadata: {
+        title: 'Coturn',
+        icon: 'https://raw.githubusercontent.com/Start9Labs/coturn-startos/d67ecaca5800a87e3300ce44c62484888f35d51b/icon.svg',
       },
     },
   },
