@@ -2,6 +2,8 @@ import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 import { locales, phoneRegions } from '../utils'
 
+const UPDATER_SERVER_URL = 'http://updates.disabled.invalid/'
+
 const shape = z.object({
   dbtype: z.literal('pgsql').catch('pgsql'),
   dbname: z.literal('nextcloud').catch('nextcloud'),
@@ -41,9 +43,10 @@ const shape = z.object({
   check_for_working_wellknown_setup: z.literal(true).catch(true),
   'filelocking.enabled': z.literal(true).catch(true),
   'integrity.check.disabled': z.literal(true).catch(true),
-  'updater.server.url': z
-    .literal('nextcloud.startos')
-    .catch('nextcloud.startos'),
+  // `updatechecker: false` already gates every automatic path to the update
+  // server, but `occ update:check` is not gated and would reach the real one.
+  // RFC 2606 reserves `.invalid`, so this can never resolve.
+  'updater.server.url': z.literal(UPDATER_SERVER_URL).catch(UPDATER_SERVER_URL),
   datadirectory: z.literal('/var/www/html/data').catch('/var/www/html/data'),
   'overwrite.cli.url': z.string().optional().catch(undefined),
   'htaccess.RewriteBase': z.string().optional().catch(undefined),

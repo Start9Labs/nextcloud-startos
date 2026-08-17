@@ -3,9 +3,11 @@ import { sdk } from '../sdk'
 import { migrateFrom035x } from './from035x'
 
 export const current = VersionInfo.of({
-  version: '33.0.8:0',
+  version: '33.0.8:1',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 33.0.8 — a maintenance release of upstream fixes and security hardening.
+    en_US: `Nextcloud's built-in update check can no longer reach the upstream update server. Automatic checks were already off, but \`occ update:check\` bypassed that switch; the update-server address now points at a reserved name that cannot resolve. StartOS is what delivers Nextcloud updates here.
+
+Updated Nextcloud to 33.0.8 — a maintenance release of upstream fixes and security hardening.
 
 **Fixes**
 
@@ -20,7 +22,9 @@ export const current = VersionInfo.of({
 - Password confirmation can be skipped for selected IP ranges.
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
-    es_ES: `Nextcloud actualizado a 33.0.8: una versión de mantenimiento con correcciones y refuerzos de seguridad de upstream.
+    es_ES: `La comprobación de actualizaciones integrada de Nextcloud ya no puede alcanzar el servidor de actualizaciones original. Las comprobaciones automáticas ya estaban desactivadas, pero \`occ update:check\` eludía ese ajuste; la dirección del servidor de actualizaciones apunta ahora a un nombre reservado que no puede resolverse. Aquí es StartOS quien entrega las actualizaciones de Nextcloud.
+
+Nextcloud actualizado a 33.0.8: una versión de mantenimiento con correcciones y refuerzos de seguridad de upstream.
 
 **Correcciones**
 
@@ -35,7 +39,9 @@ Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v33.0.
 - La confirmación de contraseña se puede omitir en determinados rangos de IP.
 
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
-    de_DE: `Nextcloud auf 33.0.8 aktualisiert — eine Wartungsversion mit Fehlerkorrekturen und Sicherheitshärtungen aus dem Upstream.
+    de_DE: `Die eingebaute Update-Prüfung von Nextcloud erreicht den Upstream-Update-Server nicht mehr. Automatische Prüfungen waren bereits deaktiviert, \`occ update:check\` umging diesen Schalter jedoch; die Adresse des Update-Servers verweist nun auf einen reservierten Namen, der nicht aufgelöst werden kann. Nextcloud-Updates liefert hier StartOS.
+
+Nextcloud auf 33.0.8 aktualisiert — eine Wartungsversion mit Fehlerkorrekturen und Sicherheitshärtungen aus dem Upstream.
 
 **Korrekturen**
 
@@ -50,7 +56,9 @@ Registro de cambios completo: https://github.com/nextcloud-releases/server/relea
 - Die Passwortbestätigung kann für ausgewählte IP-Bereiche übersprungen werden.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
-    pl_PL: `Zaktualizowano Nextcloud do 33.0.8 — wydanie konserwacyjne z poprawkami i wzmocnieniami bezpieczeństwa z upstreamu.
+    pl_PL: `Wbudowane sprawdzanie aktualizacji Nextcloud nie może już połączyć się z serwerem aktualizacji projektu źródłowego. Automatyczne sprawdzanie było już wyłączone, ale \`occ update:check\` omijał to ustawienie; adres serwera aktualizacji wskazuje teraz zastrzeżoną nazwę, której nie da się rozwiązać. Aktualizacje Nextcloud dostarcza tutaj StartOS.
+
+Zaktualizowano Nextcloud do 33.0.8 — wydanie konserwacyjne z poprawkami i wzmocnieniami bezpieczeństwa z upstreamu.
 
 **Poprawki**
 
@@ -65,7 +73,9 @@ Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server
 - Potwierdzanie hasła można pominąć dla wybranych zakresów adresów IP.
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v33.0.8`,
-    fr_FR: `Nextcloud mis à jour vers 33.0.8 — une version de maintenance apportant des correctifs et des renforcements de sécurité en amont.
+    fr_FR: `La vérification de mise à jour intégrée de Nextcloud ne peut plus joindre le serveur de mises à jour d'origine. Les vérifications automatiques étaient déjà désactivées, mais \`occ update:check\` contournait ce réglage ; l'adresse du serveur de mises à jour pointe désormais vers un nom réservé qui ne peut pas être résolu. Ici, c'est StartOS qui livre les mises à jour de Nextcloud.
+
+Nextcloud mis à jour vers 33.0.8 — une version de maintenance apportant des correctifs et des renforcements de sécurité en amont.
 
 **Correctifs**
 
