@@ -14,14 +14,22 @@ import {
 } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
+import { createHash } from 'node:crypto'
 import {
+  coturnHostId,
+  coturnId,
+  coturnInterfaceId,
+  coturnMountpoint,
+  coturnSecretPath,
   getBaseDaemons,
   getNextcloudEnv,
   getNextcloudSub,
   getPostgresEnv,
   getPostgresSub,
   getValkeySub,
+  hasNextcloudApp,
   nextcloudMount,
+  TALK_APP,
   uiPort,
 } from './utils'
 
@@ -184,6 +192,105 @@ export const main = sdk.setupMain(async ({ effects }) => {
     (await storeJson.read((s) => s.externalStorageUsers).const(effects)) ?? {}
   const configured =
     (await storeJson.read().once())?.externalStoragesConfigured ?? ''
+
+  // Talk's STUN/TURN relay: DESIRED read reactively (toggling it in the
+  // Configure action rebuilds the chain and reconciles), ACTUAL read
+  // non-reactively — same split as the two pairs above.
+  const talkTurn = (await storeJson.read((s) => s.talkTurn).const(effects))
+    ? await resolveTalkTurn()
+    : null
+  const talkTurnConfigured =
+    (await storeJson.read().once())?.talkTurnConfigured ?? ''
+
+  // Coturn's public TURN endpoint plus its shared secret. Its single `turn`
+  // interface carries the plain `turn:` address (ssl:false) and the
+  // edge-terminated `turns:` address (ssl:true) on one domain, each selected by
+  // its `ssl` flag. Null until the user gives Coturn a public domain.
+  async function resolveTalkTurn(): Promise<TalkTurn | null> {
+    const endpoint = await sdk.host
+      .get(effects, { hostId: coturnHostId, packageId: coturnId }, (host) => {
+        const iface =
+          host &&
+          Object.values(host.bindings)
+            .flatMap((b) => Object.values(b.interfaces))
+            .find((i) => i.id === coturnInterfaceId)
+        const hostnames = iface
+          ? iface.addressInfo
+              .filter({ visibility: 'public', kind: 'domain' })
+              .hostnames.filter((h) => h.port != null)
+          : []
+        const domain = hostnames[0]?.hostname
+        if (!domain) return null
+
+        const forDomain = hostnames.filter((h) => h.hostname === domain)
+        return {
+          domain,
+          turnPort: forDomain.find((h) => !h.ssl)?.port ?? null,
+          turnsPort: forDomain.find((h) => h.ssl)?.port ?? null,
+        }
+      })
+      .const()
+    if (!endpoint) return null
+
+    const secret = await readCoturnSecret()
+    if (!secret) return null
+
+    const { domain, turnPort, turnsPort } = endpoint
+    return {
+      secret,
+      // Talk stores a bare `host:port` per entry, so the plain and TLS
+      // endpoints — which sit on different ports — are two entries rather than
+      // one carrying `turn,turns`. Coturn serves TURN over TLS on TCP only.
+      turn: [
+        ...(turnPort
+          ? [
+              {
+                schemes: 'turn',
+                server: `${domain}:${turnPort}`,
+                protocols: 'udp,tcp',
+              },
+            ]
+          : []),
+        ...(turnsPort
+          ? [
+              {
+                schemes: 'turns',
+                server: `${domain}:${turnsPort}`,
+                protocols: 'tcp',
+              },
+            ]
+          : []),
+      ],
+      // Reflexive discovery rides the plain listener; Talk's STUN entries carry
+      // no scheme and no credentials.
+      stun: turnPort ? [`${domain}:${turnPort}`] : [],
+    }
+  }
+
+  // Read through a throwaway container so a missing Coturn can never break
+  // Nextcloud's own daemons, and we only ever see the `shared` subpath.
+  async function readCoturnSecret() {
+    const reader = sdk.SubContainer.of(
+      effects,
+      { imageId: 'valkey' },
+      sdk.Mounts.of().mountDependency({
+        dependencyId: coturnId,
+        volumeId: 'main',
+        subpath: 'shared',
+        mountpoint: coturnMountpoint,
+        readonly: true,
+      }),
+      'coturn-secret-read',
+    )
+    try {
+      const { stdout } = await reader.execFail(['cat', coturnSecretPath])
+      return stdout.toString().trim() || null
+    } catch {
+      return null
+    } finally {
+      await reader.destroy().catch(() => {})
+    }
+  }
 
   // Mount each selected source's volume into Nextcloud's container, read-write.
   // `idmap` remaps the source's on-disk uid to www-data (33) across the userns
@@ -447,6 +554,26 @@ export const main = sdk.setupMain(async ({ effects }) => {
         },
         requires: ['nextcloud'],
       })
+      // Point Talk's STUN/TURN settings at the Coturn package, or clear what we
+      // previously set. Always present; a no-op when desired == configured.
+      // Behind finish-upgrade so these occ calls never land during a recovery
+      // migration's maintenance-mode window.
+      .addOneshot('talk-turn', {
+        subcontainer: nextcloudSub,
+        exec: {
+          fn: async (subc, abort) => {
+            await reconcileTalkTurn(
+              subc,
+              abort,
+              effects,
+              talkTurn,
+              talkTurnConfigured,
+            )
+            return null
+          },
+        },
+        requires: ['nextcloud', 'finish-upgrade'],
+      })
       .addHealthCheck('recognize-models', () =>
         isPending(pending, completed, 'downloadModels')
           ? {
@@ -654,6 +781,148 @@ function logDetails(
       : i18n('The command produced no output before exiting.'),
     ...(tail ? ['', '```', tail, '```'] : []),
   ].join('\n')
+}
+
+type TalkTurnEntry = { schemes: string; server: string; protocols: string }
+type TalkTurn = { secret: string; turn: TalkTurnEntry[]; stun: string[] }
+type TalkTurnApplied = {
+  v: number
+  turn: TalkTurnEntry[]
+  stun: string[]
+  secret: string
+}
+
+const EMPTY_TALK_TURN: TalkTurnApplied = {
+  v: 1,
+  turn: [],
+  stun: [],
+  secret: '',
+}
+
+/**
+ * Point Nextcloud Talk's STUN and TURN settings at the Coturn package, or
+ * remove what we previously pointed them at.
+ *
+ * Only entries this package added are ever touched. The last-applied set is
+ * kept verbatim in `store.json.talkTurnConfigured` and deleted before the new
+ * set is added, so Talk's default `stun.nextcloud.com:443` — and anything the
+ * admin added by hand — survives untouched. The signature carries a hash of
+ * Coturn's shared secret rather than the secret itself: enough for a rotated
+ * secret to re-apply, without a second copy of it on this volume.
+ *
+ * Talk is installed by the user from the Nextcloud app store, so with its files
+ * absent there is no `occ talk:*` namespace to call. That is left as a retry
+ * rather than an error: the signature is not written, so the next chain build
+ * applies the config once Talk is actually there.
+ */
+async function reconcileTalkTurn(
+  subc: Awaited<ReturnType<typeof getNextcloudSub>>,
+  abort: AbortSignal,
+  effects: T.Effects,
+  desired: TalkTurn | null,
+  configured: string,
+): Promise<void> {
+  const applied: TalkTurnApplied = {
+    v: 1,
+    turn: desired?.turn ?? [],
+    stun: desired?.stun ?? [],
+    secret: desired
+      ? createHash('sha256').update(desired.secret).digest('hex').slice(0, 16)
+      : '',
+  }
+  const desiredSig = JSON.stringify(applied)
+  // A never-written signature means nothing was ever applied, so a fresh
+  // install with the toggle off short-circuits with zero occ calls.
+  if (desiredSig === (configured || JSON.stringify(EMPTY_TALK_TURN))) return
+
+  const previous = parseTalkTurnApplied(configured)
+  if (previous.turn.length === 0 && previous.stun.length === 0 && !desired) {
+    // Nothing applied and nothing wanted — record it and skip the app check, so
+    // turning the toggle on and straight back off doesn't sit retrying forever
+    // on a Nextcloud that never had Talk.
+    await storeJson.merge(effects, { talkTurnConfigured: desiredSig })
+    return
+  }
+
+  if (!(await hasNextcloudApp(TALK_APP))) {
+    console.warn(
+      'talk-turn: the Talk (spreed) app is not installed in Nextcloud; leaving its STUN/TURN settings alone until it is',
+    )
+    return
+  }
+
+  const occ = (args: string[]) =>
+    subc.exec(['php', 'occ', ...args], { user: 'www-data' })
+
+  // Delete what we last applied AND what we are about to add. The first clears
+  // a stale endpoint; the second is what makes a retry after a partial failure
+  // idempotent instead of leaving a duplicate entry behind. Both are best
+  // effort — an entry the admin already removed by hand is in the desired end
+  // state, and failing to delete it must not block the adds below.
+  for (const e of [...previous.turn, ...(desired?.turn ?? [])]) {
+    if (abort.aborted) return
+    await occ(['talk:turn:delete', e.schemes, e.server, e.protocols])
+  }
+  for (const s of [...previous.stun, ...(desired?.stun ?? [])]) {
+    if (abort.aborted) return
+    await occ(['talk:stun:delete', s])
+  }
+
+  let allOk = true
+  const add = async (args: string[], what: string) => {
+    const r = await occ(args)
+    if (r.exitCode !== 0) {
+      allOk = false
+      console.error(
+        `talk-turn: could not add ${what}: ${r.stdout.toString()} ${r.stderr.toString()}`,
+      )
+    }
+  }
+
+  if (desired) {
+    for (const e of desired.turn) {
+      if (abort.aborted) return
+      await add(
+        [
+          'talk:turn:add',
+          e.schemes,
+          e.server,
+          e.protocols,
+          '--secret',
+          desired.secret,
+        ],
+        `TURN server ${e.schemes}:${e.server}`,
+      )
+    }
+    for (const s of desired.stun) {
+      if (abort.aborted) return
+      await add(['talk:stun:add', s], `STUN server ${s}`)
+    }
+  }
+
+  if (abort.aborted) return
+  // Record only on full success, so a failure retries on the next chain build.
+  if (allOk) {
+    console.info(
+      desired
+        ? `talk-turn: Talk is relaying calls through ${desired.turn.map((e) => `${e.schemes}:${e.server}`).join(', ')}`
+        : "talk-turn: removed this package's Talk STUN/TURN entries",
+    )
+    await storeJson.merge(effects, { talkTurnConfigured: desiredSig })
+  }
+}
+
+/** The entries recorded by the last successful `reconcileTalkTurn`, or none. */
+function parseTalkTurnApplied(configured: string): {
+  turn: TalkTurnEntry[]
+  stun: string[]
+} {
+  try {
+    const { turn, stun } = JSON.parse(configured) as TalkTurnApplied
+    return { turn: turn ?? [], stun: stun ?? [] }
+  } catch {
+    return { turn: [], stun: [] }
+  }
 }
 
 type OccMount = {

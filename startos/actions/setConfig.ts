@@ -1,4 +1,5 @@
 import { configPhp } from '../fileModels/config.php'
+import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { locales, phoneRegions } from '../utils'
@@ -40,6 +41,13 @@ export const inputSpec = InputSpec.of({
     ),
     default: false,
   }),
+  talk_turn: Value.toggle({
+    name: i18n('Relay Talk Calls Through Coturn'),
+    description: i18n(
+      'Relay Talk calls through the Coturn service so they connect when both parties are behind NAT or a restrictive firewall. Requires the Talk app to be installed in Nextcloud, and Coturn to be installed and running with a public domain of its own; until both are, calls fall back to a direct connection.',
+    ),
+    default: false,
+  }),
 })
 
 export const setConfig = sdk.Action.withInput(
@@ -67,15 +75,19 @@ export const setConfig = sdk.Action.withInput(
     return {
       ...config,
       disable_skeleton_files: config?.skeletondirectory === '',
+      talk_turn: (await storeJson.read((s) => s.talkTurn).once()) ?? false,
     }
   },
 
   // the execution function
   async ({ effects, input }) => {
-    const { disable_skeleton_files, ...rest } = input
+    const { disable_skeleton_files, talk_turn, ...rest } = input
     await configPhp.merge(effects, {
       ...rest,
       skeletondirectory: disable_skeleton_files ? '' : undefined,
     })
+    // `main` reads this, resolves the Coturn endpoint and reconciles Talk's
+    // STUN/TURN entries; setDependencies reads it to add or drop the dependency.
+    await storeJson.merge(effects, { talkTurn: talk_turn })
   },
 )

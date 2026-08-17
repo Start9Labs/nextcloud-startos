@@ -42,14 +42,15 @@ Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own
 | Images        | Built from `nextcloud.Dockerfile` (`FROM nextcloud:*-apache`), `postgres`, `valkey/valkey` |
 | Architectures | x86_64, aarch64                                                                            |
 
-| Subcontainer     | Runs                                                             |
-| ---------------- | ---------------------------------------------------------------- |
-| `nextcloud-sub`  | The web daemon, and every `occ` oneshot — the one to `attach` to |
-| `nextcloud-cron` | Nextcloud's background job runner (`/cron.sh`)                   |
-| `postgres-sub`   | The private database                                             |
-| `valkey`         | The memcache, locking, and distributed cache backend             |
+| Subcontainer         | Runs                                                             |
+| -------------------- | ---------------------------------------------------------------- |
+| `nextcloud-sub`      | The web daemon, and every `occ` oneshot — the one to `attach` to |
+| `nextcloud-cron`     | Nextcloud's background job runner (`/cron.sh`)                   |
+| `postgres-sub`       | The private database                                             |
+| `valkey`             | The memcache, locking, and distributed cache backend             |
+| `coturn-secret-read` | Temporary; reads Coturn's shared secret through its own mount    |
 
-Five oneshots run alongside them, in order: `chown` hands the data directory to `www-data`; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts.
+Six oneshots run alongside them, in order: `chown` hands the data directory to `www-data`; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts; `talk-turn` reconciles Nextcloud Talk's STUN/TURN settings.
 
 **`finish-upgrade` runs after the web daemon is ready, not before it**, which is what makes it safe. In the normal case the upgrade has already happened during init and this is a no-op; when it does have work to do, Apache is up serving the maintenance page while `occ upgrade` runs, exactly as a manual recovery would. It fails open — nothing it does can prevent the service from serving.
 
@@ -92,17 +93,22 @@ Three settings depart from what upstream would do:
 | `updater.server.url`       | a reserved never-resolving address | `occ update:check` is the one path `updatechecker` does not gate, and it would otherwise reach Nextcloud's real update server |
 | `integrity.check.disabled` | `true`                             | The image adds `ffmpeg` and the package rewrites `config.php`, so the signature check would fail on a correct install         |
 
-`store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, and the external-storage selection.
+`store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, and the Talk STUN/TURN relay toggle alongside the entries it last applied.
 
 ## Dependencies
 
-None are required. One is optional and exists only while it is selected.
+None are required. Both are optional and exist only while they are selected.
 
-| Dependency    | Kind     | Required                                         |
-| ------------- | -------- | ------------------------------------------------ |
-| `filebrowser` | `exists` | Only while chosen in the External Storage action |
+| Dependency    | Kind      | Health checks | Required                                                    |
+| ------------- | --------- | ------------- | ----------------------------------------------------------- |
+| `filebrowser` | `exists`  | —             | Only while chosen in the External Storage action            |
+| `coturn`      | `running` | **none**      | Only while Talk call relaying is on in the Configure action |
 
 The External Storage action offers only the sources whose backing service is actually installed, so an uninstalled one never appears in the form.
+
+**Coturn declares no health check, deliberately.** Coturn's own `TURN Server` check fails until you attach a public domain to it, and naming it here would leave Nextcloud showing a permanently unmet dependency even though Talk works fine without a relay. Coturn's own check already says what is missing.
+
+The shared secret is read through a throwaway container that mounts only Coturn's `shared` subpath read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and the rest of Coturn's volume stays out of view.
 
 ## Network Access and Interfaces
 
@@ -131,11 +137,15 @@ Eleven actions in three groups, plus one hidden.
 
 ### Configure
 
-The four general settings: default locale, default phone region, the maintenance-window start hour, and whether new accounts are seeded with skeleton files.
+The four general settings — default locale, default phone region, the maintenance-window start hour, and whether new accounts are seeded with skeleton files — plus the Talk call-relay toggle.
 
-- **What it changes:** those keys in `config.php`.
+- **What it changes:** the first four are keys in `config.php`. **Relay Talk Calls Through Coturn** is a flag in `store.json`; through it the package's Coturn dependency and Nextcloud Talk's own STUN/TURN settings, which the `talk-turn` oneshot reconciles on the next start.
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** idempotent; the form is pre-filled.
+
+**Relaying is advertised only once Coturn has a public domain.** With the toggle on but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway. The toggle also does nothing until the Talk app itself is installed from the Nextcloud app store; until then the oneshot logs that it is waiting and applies the setting on a later start.
+
+**Only the entries this package added are ever touched.** The `talk-turn` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Removing that default is a deliberate choice left to the admin — see Limitations.
 
 ### External Storage
 
@@ -225,7 +235,9 @@ Mixed, and each half is scoped deliberately.
 6. **The admin password is shown once and then discarded.** Reset Admin Password is the only recovery.
 7. **The long-running actions restart the service** to run their work, and continue after the action returns.
 8. **External storage is limited to registered sources** — currently File Browser — and only while that service is installed.
-9. **No riscv64 build.** x86_64 and aarch64 only.
+9. **Talk's default `stun.nextcloud.com:443` is left in place** when relaying is enabled. Coturn's own STUN entry is added alongside it rather than replacing it, since removing an entry the package did not add is the admin's call; delete it in Talk's admin settings to keep reflexive discovery entirely on your own server.
+10. **Talk call relaying is Coturn or nothing.** There is no field for an external TURN server — configure one directly in Talk's admin settings instead, and leave the toggle off.
+11. **No riscv64 build.** x86_64 and aarch64 only.
 
 ---
 
@@ -242,6 +254,7 @@ subcontainers:
   - nextcloud-cron # /cron.sh background jobs
   - postgres-sub # private database
   - valkey # memcache, locking, distributed cache
+  - coturn-secret-read # temporary; reads Coturn's shared secret
 volumes:
   nextcloud: /var/www/html
   db: /var/lib/postgresql (in postgres-sub)
@@ -262,6 +275,7 @@ startos_managed_env_vars:
   - NEXTCLOUD_UPDATE # the init-time upgrade run only
 dependencies:
   - filebrowser # optional, exists; only while selected as an external-storage source
+  - coturn # optional, running, no health checks; only while Talk call relaying is on
 interfaces:
   ui: { type: ui, port: 80 }
   webdav: { type: api, port: 80 } # same binding, path /remote.php/dav/

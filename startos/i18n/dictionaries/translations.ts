@@ -137,6 +137,8 @@ export default {
     132: 'Instalando Nextcloud',
     133: 'Actualizando Nextcloud',
     134: 'Actualizando permisos de archivos',
+    135: 'Retransmitir las llamadas de Talk a través de Coturn',
+    136: 'Retransmita las llamadas de Talk a través del servicio Coturn para que se establezcan cuando ambas partes están detrás de NAT o de un cortafuegos restrictivo. Requiere que la aplicación Talk esté instalada en Nextcloud y que Coturn esté instalado y en ejecución con su propio dominio público; hasta que ambos lo estén, las llamadas recurren a una conexión directa.',
   },
   de_DE: {
     0: 'Starte Nextcloud...',
@@ -274,6 +276,8 @@ export default {
     132: 'Nextcloud wird installiert',
     133: 'Nextcloud wird aktualisiert',
     134: 'Dateiberechtigungen werden aktualisiert',
+    135: 'Talk-Anrufe über Coturn weiterleiten',
+    136: 'Talk-Anrufe über den Coturn-Dienst weiterleiten, damit sie auch zustande kommen, wenn beide Seiten hinter NAT oder einer restriktiven Firewall sitzen. Erfordert, dass die Talk-App in Nextcloud installiert ist und dass Coturn installiert ist, läuft und eine eigene öffentliche Domain hat; bis beides zutrifft, fallen Anrufe auf eine Direktverbindung zurück.',
   },
   pl_PL: {
     0: 'Uruchamianie Nextcloud...',
@@ -411,6 +415,8 @@ export default {
     132: 'Instalowanie Nextcloud',
     133: 'Aktualizowanie Nextcloud',
     134: 'Aktualizowanie uprawnień plików',
+    135: 'Przekazuj połączenia Talk przez Coturn',
+    136: 'Przekazuj połączenia Talk przez usługę Coturn, aby zestawiały się, gdy obie strony są za NAT-em lub restrykcyjną zaporą. Wymaga zainstalowanej w Nextcloud aplikacji Talk oraz zainstalowanego i uruchomionego Coturn z własną domeną publiczną; dopóki nie ma obu, połączenia wracają do trybu bezpośredniego.',
   },
   fr_FR: {
     0: 'Démarrage de Nextcloud...',
@@ -548,5 +554,7 @@ export default {
     132: 'Installation de Nextcloud',
     133: 'Mise à niveau de Nextcloud',
     134: 'Mise à jour des permissions des fichiers',
+    135: 'Relayer les appels Talk via Coturn',
+    136: "Relayer les appels Talk via le service Coturn pour qu'ils aboutissent lorsque les deux parties sont derrière un NAT ou un pare-feu restrictif. Nécessite que l'application Talk soit installée dans Nextcloud et que Coturn soit installé et démarré avec un domaine public qui lui est propre ; tant que ce n'est pas le cas, les appels se rabattent sur une connexion directe.",
   },
 } satisfies Record<string, LangDict>

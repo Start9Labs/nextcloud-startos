@@ -33,7 +33,7 @@ Point a Nextcloud desktop or mobile client (or any WebDAV client) at the **WebDA
 
 ### Actions
 
-- **Configure** — set the default locale, default phone region, the UTC start hour of Nextcloud's nightly maintenance window for background jobs, and a toggle to stop seeding new user accounts with Nextcloud's default skeleton files (sample documents, photos, README).
+- **Configure** — set the default locale, default phone region, the UTC start hour of Nextcloud's nightly maintenance window for background jobs, a toggle to stop seeding new user accounts with Nextcloud's default skeleton files (sample documents, photos, README), and **Relay Talk Calls Through Coturn** (see below).
 - **External Storage** — surface another StartOS service's storage as a folder in your Nextcloud **Files**, using Nextcloud's built-in External Storage app. The action lists a dropdown for each supported service **you have installed** (today just **File Browser** → a `/FileBrowser` folder). Each dropdown is **Not mounted** (off), **Available to all users**, or **Available to specific users** (which then lets you pick exactly which Nextcloud users see it). The folder is read-write, so you can **move files out of it into Nextcloud**. Nextcloud must be **running** to run this action (it reads your live user list). Files other services add to File Browser appear automatically when you open the folder — so File Browser acts as the shared hub: point any service that should be visible in Nextcloud at File Browser.
 - **Reset Admin Password** — pick an admin user and generate a new random password. Use this if the admin password is lost or you want to rotate it.
 - **Disable Maintenance Mode** (Maintenance group) — runs `occ maintenance:mode --off`. Brief maintenance mode after an update or restart is normal — wait at least 15 minutes before resorting to this. Nextcloud version updates now run as part of the StartOS update step and roll back cleanly if they fail, so you should rarely need this.
@@ -43,6 +43,19 @@ Point a Nextcloud desktop or mobile client (or any WebDAV client) at the **WebDA
 - **Download Machine Learning Models for Recognize** (App Commands group) — queues a background download of the ML models the Recognize app needs for object and face detection (~1-2 GB). Install the Recognize app from the Nextcloud App Store first. Progress shows on the service status page while the download is in flight, and StartOS posts a notification when it finishes.
 - **Index Media for Memories** (App Commands group) — queues a background re-index of media for the Memories app. Memories normally re-indexes itself every five minutes; only run this to force an immediate re-index (it asks you to confirm first, since it restarts the service). Install the Memories app and select a media path first. StartOS posts a notification when the re-index finishes.
 - **Setup Map for Memories** (App Commands group) — queues a background download of map data (~2-3 GB) and a re-index so the Memories app can reverse-geotag your photos. Install the Memories app first. Avoid running this alongside other heavy work on a low-resource device. StartOS posts a notification when it finishes.
+
+### Talk calls that won't connect
+
+Nextcloud Talk places calls directly between the two participants, which fails when both ends sit behind NAT or a strict firewall — the call rings, then drops or stays silent. Turning on **Relay Talk Calls Through Coturn** in the **Configure** action gives those calls a relay to fall back on.
+
+Two things have to be in place first:
+
+1. **Install the Talk app** in Nextcloud, from **Apps** in the Nextcloud web UI.
+2. **Install the separate Coturn service** from the StartOS marketplace, start it, and give it a public domain of its own, as its own instructions describe.
+
+Then turn the toggle on. Until all three are done, calls still work wherever a direct connection is possible, and nothing reports the missing relay as an error.
+
+Nextcloud is what tells Talk where the relay is, so there is nothing to enter in Talk's own admin settings — and nothing you have already entered there gets overwritten. Talk's default STUN server, `stun.nextcloud.com:443`, is also left in place; remove it under **Administration settings → Talk** if you would rather every part of call setup stayed on your own server.
 
 ## Limitations
 
