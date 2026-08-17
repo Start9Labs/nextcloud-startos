@@ -35,7 +35,7 @@
 
 ## Image and Container Runtime
 
-Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own Apache image with `ffmpeg` added for the media-handling apps.
+Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own Apache image with `ffmpeg` added for the media-handling apps and Apache's connection timeouts raised for the StartOS reverse proxy (see Network Access and Interfaces).
 
 | Property      | Value                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------ |
@@ -114,6 +114,8 @@ Two interfaces, both on the same binding and port. WebDAV is the same server und
 | WebDAV    | `webdav` | api  | 80   | `/remote.php/dav/` | Addresses for WebDAV syncing   |
 
 Neither is masked. The addresses published for `ui` are what init writes into `trusted_domains`, so an address Nextcloud does not know about is rejected by Nextcloud itself, not by StartOS.
+
+**Apache's connection timeouts are raised above every hop in front of it** — `KeepAliveTimeout 75` and `RequestReadTimeout header=90`, via `startos-proxy-keepalive.conf` baked into the image. The StartOS reverse proxy pins each client connection to a single backend connection (it never re-dials) and holds idle client connections for up to 60 seconds, and sync clients poll every 30; Debian's stock timeouts (5 s keep-alive, 20–40 s request-read) closed the backend leg first, which desktop clients experienced as periodic "Network error" disconnect/reconnect flaps, with paired `" -" 408 0` entries from the bridge gateway (`10.0.3.1`) in the service log at each flap. Details in the start-os issue: <https://github.com/Start9Labs/start-technologies/issues/3731>. If those symptoms return, first check the snippet is still enabled: `start-cli package attach nextcloud -n nextcloud-sub -- ls /etc/apache2/conf-enabled/`.
 
 ## Installation and First-Run Flow
 
