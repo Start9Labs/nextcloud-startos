@@ -6,13 +6,14 @@ Develop it inside a StartOS packaging workspace created by `start-cli s9pk init-
 which provides the packaging guide and agent context one level up. If you're reading this in a
 bare clone with no workspace, the full guide is at <https://docs.start9.com/packaging>.
 
-Work this package's `TODO.md` from top to bottom. Keep `README.md` (architecture, for developers and LLMs) and `instructions.md` (end-user docs) in sync with your changes.
+Work this package's `TODO.md` from top to bottom. Keep `README.md` (technical reference for an AI support or administering agent) and `instructions.md` (end-user docs) in sync with your changes.
 
 ## This repo
 
-- **Package id is `nextcloud`.** Enforced config lives in `config.php` (a `FileHelper` model in `startos/fileModels/`); admin operations run through `occ` as `www-data` — `subc.exec(['php', 'occ', ...], { user: 'www-data' })`.
-- **External Storage surfaces a dependency's volume via `idmap`.** The optional File Browser mount maps its on-disk uid `1000` (its `user`) → `www-data` (`33`) so Nextcloud *owns* the tree — no permission machinery. See `startos/main.ts` and the README's Dependencies section. Requires StartOS 0.4.0-beta.10+ (where `idmap` on dependency mounts is functional).
-
-## Inspecting a running install
-
-To run a command inside the service's container (read its generated config, grep app logs), use `start-cli package attach nextcloud -n <subcontainer-name> -- <cmd>`. This package has several subcontainers (`nextcloud-sub`, `nextcloud-cron`, `postgres-sub`, `valkey`), so a selector is **required** — select by **name** with `-n` (the name passed to `SubContainer.of`, e.g. `-n nextcloud-sub`) or by image with `-i`. Note the two nextcloud subcontainers share one image, so `-i nextcloud` is still ambiguous. Note: `-s/--subcontainer` matches the internal **Guid**, not the name.
+- **`finish-upgrade` must stay behind the web daemon and must fail open.** A rejected oneshot fn never reaches `EXIT_SUCCESS`, which both blocks `long-running-tasks` (gated on it) and makes the SDK re-invoke it on a backoff — `occ upgrade` in a loop. Every step inside is individually guarded for that reason.
+- **The upstream version upgrade belongs in init, not at daemon start.** Init is snapshotted, so a failed migration rolls the update back; at daemon start an interrupted one strands the instance on "Update needed — use the command line updater" permanently, because the entrypoint only compares deployed code to image code and never re-checks what the DB acknowledged.
+- **Renaming an action abandons its task's replay key, and nothing reaps it.** The key defaults to `[package-id]:[action-id]`, so the `create-admin-user` → `get-admin-credentials` rename stranded `nextcloud:create-admin-user` — and because the old action id no longer resolves, `recheck_tasks` cannot read its input and the task's `active` flag freezes wherever it last sat. A task with no `when` clause is only removed by _running_ it, which an unresolvable id makes impossible. Rename an action with a live task and you owe a `sdk.action.clearTask(effects, '<old key>')` in the same release.
+- **Long-running `occ` work must be queued, never run inline in an action handler** — it would block past the action timeout. Adding one means matching entries in `OCC_ARGS`, `TASK_NOTICE`, and a conditional health check, all keyed off `ACTION_IDS`.
+- **`config.php` only preserves modelled keys.** The PEG parser reads what the grammar covers and the serializer writes back only the shape — an unmodelled key a user or a Nextcloud app adds is dropped on the next write. Extend the shape before assuming a key survives.
+- **The File Browser mount's `idmap` (uid 1000 → `www-data` 33) is what makes the integration work at all**, and it needs StartOS 0.4.0-beta.10+. Files other services drop into File Browser's volume under a different uid surface as `nobody` until those services idmap their own mount to 1000 too.
+- **Adding an external-storage source is a registry edit in `startos/externalStorage.ts` plus a typed mount.** File Browser is the shared hub most services route through, so a direct source is worth adding only for a service whose files live browsably on its own volume.
