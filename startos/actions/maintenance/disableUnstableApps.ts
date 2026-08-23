@@ -1,6 +1,6 @@
 import { i18n } from '../../i18n'
 import { sdk } from '../../sdk'
-import { nextcloudMount } from '../../utils'
+import { nextcloudMount, readEnabledApps } from '../../utils'
 
 export const disableUnstableApps = sdk.Action.withoutInput(
   // id
@@ -23,6 +23,7 @@ export const disableUnstableApps = sdk.Action.withoutInput(
   // the execution function
   async ({ effects }) => {
     const disabledApps: string[] = []
+    const failedApps: string[] = []
     await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
@@ -90,32 +91,40 @@ export const disableUnstableApps = sdk.Action.withoutInput(
           'workflowengine',
         ]
 
-        const res = await sub.execFail(
-          ['php', 'occ', 'app:list', '--enabled', '--output=json'],
-          { user: 'www-data' },
-        )
-
-        const parsed = JSON.parse(res.stdout as string) as {
-          enabled: Record<string, string>
+        // Sequential, and tolerating failure: `occ app:disable` runs the app's
+        // own uninstall repair steps, so a fataling app — the very thing this
+        // action exists to escape — can exit non-zero or outlast exec's 30 s
+        // timeout. That must cost only its own line in the report.
+        for (const app of Object.keys(await readEnabledApps(sub))) {
+          if (defaultApps.includes(app)) continue
+          const res = await sub.exec(['php', 'occ', 'app:disable', app], {
+            user: 'www-data',
+          })
+          if (res.exitCode === 0) {
+            disabledApps.push(app)
+          } else {
+            failedApps.push(app)
+            console.error(
+              `disable-unstable-apps: could not disable ${app}: ${res.stdout.toString()} ${res.stderr.toString()}`,
+            )
+          }
         }
-
-        await Promise.all(
-          Object.keys(parsed.enabled).map((app) => {
-            if (!defaultApps.includes(app)) {
-              disabledApps.push(app)
-              return sub.execFail(['php', 'occ', 'app:disable', app], {
-                user: 'www-data',
-              })
-            }
-          }),
-        )
       },
     )
 
+    const list = (apps: string[]) =>
+      `<ul>${apps.map((app) => `<li>${app}</li>`).join('')}</ul>`
+
     return {
       version: '1',
-      title: i18n('Success'),
-      message: `${i18n('The following apps have been disabled:')} <ul>${disabledApps.map((app) => `<li>${app}</li>`).join('')}</ul>`,
+      title: failedApps.length ? i18n('Partially Successful') : i18n('Success'),
+      message:
+        (disabledApps.length
+          ? `${i18n('The following apps have been disabled:')} ${list(disabledApps)}`
+          : i18n('No non-default apps were enabled.')) +
+        (failedApps.length
+          ? `${i18n('These apps could not be disabled. The service logs say why:')} ${list(failedApps)}`
+          : ''),
       result: null,
     }
   },

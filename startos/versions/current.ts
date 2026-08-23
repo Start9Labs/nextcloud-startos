@@ -18,6 +18,7 @@ Nextcloud backported the 34.0.1–34.0.3 maintenance fixes to the 33 line as wel
 
 **Worth knowing**
 
+- If your server is still on Nextcloud 32, update to the latest Nextcloud 33 release first — open Nextcloud in the Marketplace and pick it from the version list — then update again. Nextcloud only upgrades one major version at a time, so a 32 → 34 update is refused and rolled back.
 - Apps you installed yourself from the Nextcloud app store may need updates of their own. Nextcloud 34 removes several long-deprecated interfaces; an app still using them is disabled during the upgrade, or breaks the web interface. If the interface stops loading, run **Disable Non-default Apps** from the Maintenance group, then re-enable your apps one at a time.
 - The update runs a database schema change, so it takes longer than a maintenance release.
 - PHP moves to 8.5, the version Nextcloud 34 recommends.
@@ -39,6 +40,7 @@ Nextcloud también retroportó a la serie 33 las correcciones de mantenimiento d
 
 **Conviene saber**
 
+- Si su servidor sigue en Nextcloud 32, actualice primero a la última versión de Nextcloud 33 —abra Nextcloud en el Mercado y elíjala en la lista de versiones— y después vuelva a actualizar. Nextcloud solo actualiza una versión mayor cada vez, por lo que una actualización de 32 a 34 se rechaza y se revierte.
 - Las aplicaciones que haya instalado usted desde la tienda de Nextcloud pueden necesitar su propia actualización. Nextcloud 34 elimina varias interfaces obsoletas desde hace tiempo; una aplicación que aún las use se desactiva durante la actualización o rompe la interfaz web. Si la interfaz deja de cargarse, ejecute **Desactivar aplicaciones no predeterminadas** en el grupo Mantenimiento y vuelva a activar sus aplicaciones una a una.
 - La actualización ejecuta un cambio de esquema en la base de datos, por lo que tarda más que una versión de mantenimiento.
 - PHP pasa a la versión 8.5, la recomendada por Nextcloud 34.
@@ -60,6 +62,7 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 
 **Wissenswert**
 
+- Läuft Ihr Server noch mit Nextcloud 32, aktualisieren Sie zuerst auf die neueste Version der Reihe 33 — öffnen Sie Nextcloud im Marktplatz und wählen Sie sie in der Versionsliste aus — und aktualisieren Sie danach erneut. Nextcloud aktualisiert immer nur eine Hauptversion auf einmal; ein Update von 32 auf 34 wird daher abgelehnt und zurückgerollt.
 - Selbst installierte Apps aus dem Nextcloud App Store benötigen möglicherweise ein eigenes Update. Nextcloud 34 entfernt mehrere seit Langem veraltete Schnittstellen; eine App, die sie noch nutzt, wird beim Upgrade deaktiviert oder macht die Weboberfläche unbrauchbar. Lädt die Oberfläche nicht mehr, führen Sie **Nicht-Standard-Apps deaktivieren** in der Gruppe Wartung aus und aktivieren Sie Ihre Apps anschließend einzeln wieder.
 - Das Update führt eine Schemaänderung an der Datenbank durch und dauert daher länger als eine Wartungsversion.
 - PHP wechselt auf 8.5, die von Nextcloud 34 empfohlene Version.
@@ -81,6 +84,7 @@ Nextcloud przeniósł poprawki konserwacyjne z wersji 34.0.1–34.0.3 także do 
 
 **Warto wiedzieć**
 
+- Jeśli Twój serwer nadal działa na Nextcloud 32, zaktualizuj najpierw do najnowszego wydania z serii 33 — otwórz Nextcloud w Rynku i wybierz je z listy wersji — a potem zaktualizuj ponownie. Nextcloud aktualizuje tylko o jedną wersję główną naraz, więc aktualizacja z 32 do 34 zostanie odrzucona i wycofana.
 - Aplikacje zainstalowane samodzielnie ze sklepu Nextcloud mogą wymagać własnych aktualizacji. Nextcloud 34 usuwa kilka od dawna przestarzałych interfejsów; aplikacja, która wciąż z nich korzysta, zostaje wyłączona podczas aktualizacji albo psuje interfejs webowy. Jeśli interfejs przestanie się ładować, uruchom **Wyłącz niestandardowe aplikacje** z grupy Konserwacja, a następnie włączaj swoje aplikacje pojedynczo.
 - Aktualizacja wykonuje zmianę schematu bazy danych, więc trwa dłużej niż wydanie konserwacyjne.
 - PHP przechodzi na wersję 8.5, zalecaną przez Nextcloud 34.
@@ -102,6 +106,7 @@ Nextcloud a également rétroporté vers la série 33 les correctifs de maintena
 
 **Bon à savoir**
 
+- Si votre serveur est encore sous Nextcloud 32, mettez-le d'abord à niveau vers la dernière version de la série 33 — ouvrez Nextcloud dans la Place de marché et choisissez-la dans la liste des versions — puis mettez à jour de nouveau. Nextcloud ne franchit qu'une version majeure à la fois : une mise à jour de 32 vers 34 est refusée et annulée.
 - Les applications que vous avez installées depuis la boutique Nextcloud peuvent nécessiter leur propre mise à jour. Nextcloud 34 supprime plusieurs interfaces obsolètes de longue date ; une application qui les utilise encore est désactivée pendant la mise à niveau, ou casse l'interface web. Si l'interface ne se charge plus, lancez **Désactiver les applications non standard** dans le groupe Maintenance, puis réactivez vos applications une par une.
 - La mise à jour effectue une modification du schéma de la base de données ; elle prend donc plus de temps qu'une version de maintenance.
 - PHP passe à la version 8.5, celle que Nextcloud 34 recommande.

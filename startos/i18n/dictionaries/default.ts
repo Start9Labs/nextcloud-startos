@@ -197,6 +197,11 @@ const dict = {
 
   // versions/from035x.ts: 0.3.5x migration progress
   'Updating file permissions': 134,
+
+  // disableUnstableApps.ts: per-app outcome report
+  'Partially Successful': 137,
+  'No non-default apps were enabled.': 138,
+  'These apps could not be disabled. The service logs say why:': 139,
 } as const
 
 /**

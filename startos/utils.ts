@@ -1,5 +1,6 @@
 import { sdk } from './sdk'
-import { T, utils } from '@start9labs/start-sdk'
+import { SubContainer, T, utils } from '@start9labs/start-sdk'
+import { manifest } from './manifest'
 
 export const uiPort = 80 as const
 export const NEXTCLOUD_PATH = '/var/www/html' as const
@@ -11,9 +12,9 @@ export const NEXTCLOUD_VOLUME_HOST = '/media/startos/volumes/nextcloud' as const
  * True if a Nextcloud app's files are present on the volume. Checks both
  * `custom_apps/` (user-installed) and `apps/` (built-in).
  *
- * Note: this only checks file presence, not whether the app is enabled in
- * Nextcloud's database. An installed-but-disabled app passes this check;
- * running its `occ` namespace would then fail.
+ * Presence only, and it needs no database, so it works with the service
+ * stopped. An app that is present but disabled passes; where the app's `occ`
+ * namespace itself has to exist, use `readEnabledApps`.
  */
 export async function hasNextcloudApp(name: string): Promise<boolean> {
   const { stat } = await import('node:fs/promises')
@@ -40,8 +41,41 @@ export async function requireNextcloudApp(
   if (!(await hasNextcloudApp(name))) throw new Error(errorMessage)
 }
 
-// Nextcloud Talk's app directory name. Talk is installed by the user from the
-// Nextcloud app store, so its `occ talk:*` namespace only exists once it is.
+/**
+ * The apps Nextcloud currently has enabled, keyed by app id. `occ` registers an
+ * app's command namespace only while that app is enabled, and a major upgrade
+ * disables any app without a compatible release while leaving its files in
+ * place — so a directory on disk says nothing about whether `occ <app>:*` will
+ * resolve.
+ *
+ * Reads the database, so only call this where Postgres is up.
+ */
+export async function readEnabledApps(
+  sub: SubContainer<typeof manifest>,
+): Promise<Record<string, string>> {
+  const res = await sub.exec(
+    ['php', 'occ', 'app:list', '--enabled', '--output=json'],
+    { user: 'www-data' },
+  )
+  const stdout = res.stdout.toString()
+  const fail = () =>
+    new Error(
+      `could not read Nextcloud's enabled app list; occ exited ${res.exitCode}: ${stdout} ${res.stderr.toString()}`,
+    )
+  if (res.exitCode !== 0) throw fail()
+  try {
+    // A PHP startup or deprecation notice lands on stdout ahead of occ's JSON.
+    const { enabled } = JSON.parse(stdout.slice(stdout.indexOf('{'))) as {
+      enabled?: Record<string, string>
+    }
+    return enabled ?? {}
+  } catch {
+    throw fail()
+  }
+}
+
+// Nextcloud Talk's app id, which is also its directory name. Talk is installed
+// by the user from the Nextcloud app store.
 export const TALK_APP = 'spreed'
 
 // The external Coturn package Talk relays calls through.

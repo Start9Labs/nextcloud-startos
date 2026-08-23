@@ -143,7 +143,7 @@ The four general settings — default locale, default phone region, the maintena
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** idempotent; the form is pre-filled.
 
-**Relaying is advertised only once Coturn has a public domain.** With the toggle on but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway. The toggle also does nothing until the Talk app itself is installed from the Nextcloud app store; until then the oneshot logs that it is waiting and applies the setting on a later start.
+**Relaying is advertised only once Coturn has a public domain.** With the toggle on but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway. The toggle also does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
 
 **Only the entries this package added are ever touched.** The `talk-turn` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Removing that default is a deliberate choice left to the admin — see Limitations.
 
@@ -161,7 +161,7 @@ Surfaces another StartOS service's files as a folder in Nextcloud Files, using N
 
 - **Reset Admin Password** generates a new password for a chosen admin account and shows it once. Only while running; the account list is read live.
 - **Disable Maintenance Mode** clears a stuck maintenance flag. Only while running. **Wait first** — brief maintenance mode after an update or a restart is normal, and this is for when it has lasted more than about fifteen minutes.
-- **Disable Non-default Apps** turns off every app that is not part of Nextcloud's default set. It is the recovery for an app that has made the UI return an Internal Server Error. Only while running, and **stable apps must be re-enabled individually afterwards.**
+- **Disable Non-default Apps** turns off every enabled app that Nextcloud does not ship, preserving the bundled set plus Calendar and Contacts. It is the recovery for an app that has made the UI return an Internal Server Error. Apps are disabled one at a time, and the result lists any that could not be — a fataling app is exactly what this action targets, so its own failure must not hide what did get disabled. Only while running, and **stable apps must be re-enabled individually afterwards.**
 - **Scan Files** rebuilds the file-cache index, which is what makes files added outside Nextcloud — over WebDAV's back door, rsync, or an external-storage mount — appear with correct sizes and turn up in search.
 - **Repair** runs Nextcloud's built-in repair routine against database inconsistencies, stale cache entries, and broken shares.
 
