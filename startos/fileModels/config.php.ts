@@ -1,6 +1,6 @@
 import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
-import { locales, phoneRegions } from '../utils'
+import { locales, phoneRegions, trashRetention } from '../utils'
 
 const UPDATER_SERVER_URL = 'http://updates.disabled.invalid/'
 
@@ -22,6 +22,9 @@ const shape = z.object({
   default_phone_region: z
     .enum(Object.keys(phoneRegions) as [string, ...string[]])
     .catch('US'),
+  trashbin_retention_obligation: z
+    .enum(Object.keys(trashRetention) as [string, ...string[]])
+    .catch('auto'),
   maintenance_window_start: z.number().int().min(0).catch(24),
   overwriteprotocol: z.null().optional().catch(undefined),
   'memcache.local': z

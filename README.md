@@ -137,11 +137,13 @@ Eleven actions in three groups, plus one hidden.
 
 ### Configure
 
-The four general settings — default locale, default phone region, the maintenance-window start hour, and whether new accounts are seeded with skeleton files — plus the Talk call-relay toggle.
+The five general settings — default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts are seeded with skeleton files — plus the Talk call-relay toggle.
 
-- **What it changes:** the first four are keys in `config.php`. **Relay Talk Calls Through Coturn** is a flag in `store.json`; through it the package's Coturn dependency and Nextcloud Talk's own STUN/TURN settings, which the `talk-turn` oneshot reconciles on the next start.
+- **What it changes:** the first five are keys in `config.php`. **Relay Talk Calls Through Coturn** is a flag in `store.json`; through it the package's Coturn dependency and Nextcloud Talk's own STUN/TURN settings, which the `talk-turn` oneshot reconciles on the next start.
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** idempotent; the form is pre-filled.
+
+**Delete Files in Trash** sets `trashbin_retention_obligation`. Nextcloud's default (`auto`) keeps a deleted file for at least 30 days and then removes it only as disk space is needed, so on a server with room to spare the trash grows without bound; the presets write `auto, <days>` to cap it, or `disabled` to keep everything. Only the maximum is offered — Nextcloud's `D1, D2` form also sets a guaranteed floor, which would hold files past the cap the user chose.
 
 **Relaying is advertised only once Coturn has a public domain.** With the toggle on but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway. The toggle also does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
 

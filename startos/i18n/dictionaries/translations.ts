@@ -142,6 +142,8 @@ export default {
     137: 'Parcialmente correcto',
     138: 'No había ninguna aplicación no predeterminada activada.',
     139: 'Estas aplicaciones no se pudieron desactivar. El registro del servicio indica el motivo:',
+    140: 'Eliminar los archivos de la papelera',
+    141: 'Cuánto tiempo conserva Nextcloud un archivo borrado en los Archivos eliminados de cada usuario antes de suprimirlo definitivamente. De forma predeterminada los archivos se conservan al menos 30 días y solo se suprimen cuando hace falta espacio en disco, por lo que la papelera puede crecer sin límite en un servidor con espacio de sobra. Si establece un límite, se suprimen según ese plazo. Un archivo solo se puede restaurar mientras siga en los Archivos eliminados.',
   },
   de_DE: {
     0: 'Starte Nextcloud...',
@@ -284,6 +286,8 @@ export default {
     137: 'Teilweise erfolgreich',
     138: 'Es waren keine Nicht-Standard-Apps aktiviert.',
     139: 'Diese Apps konnten nicht deaktiviert werden. Das Dienstprotokoll nennt den Grund:',
+    140: 'Dateien im Papierkorb löschen',
+    141: 'Wie lange Nextcloud eine gelöschte Datei im Papierkorb jedes Benutzers aufbewahrt, bevor sie endgültig entfernt wird. Standardmäßig bleiben Dateien mindestens 30 Tage erhalten und werden erst entfernt, wenn Speicherplatz benötigt wird — auf einem Server mit reichlich Platz kann der Papierkorb dadurch unbegrenzt wachsen. Mit einem Limit werden sie stattdessen planmäßig entfernt. Wiederherstellen lässt sich eine Datei nur, solange sie noch im Papierkorb liegt.',
   },
   pl_PL: {
     0: 'Uruchamianie Nextcloud...',
@@ -426,6 +430,8 @@ export default {
     137: 'Częściowo pomyślnie',
     138: 'Żadne niestandardowe aplikacje nie były włączone.',
     139: 'Tych aplikacji nie udało się wyłączyć. Powód znajdziesz w dzienniku usługi:',
+    140: 'Usuwanie plików z kosza',
+    141: 'Jak długo Nextcloud przechowuje usunięty plik w Usuniętych plikach każdego użytkownika, zanim skasuje go bezpowrotnie. Domyślnie pliki są przechowywane co najmniej 30 dni i usuwane dopiero wtedy, gdy potrzebne jest miejsce na dysku, więc na serwerze z zapasem miejsca kosz może rosnąć bez ograniczeń. Ustawienie limitu powoduje usuwanie ich zgodnie z harmonogramem. Plik można przywrócić tylko dopóki znajduje się w Usuniętych plikach.',
   },
   fr_FR: {
     0: 'Démarrage de Nextcloud...',
@@ -568,5 +574,7 @@ export default {
     137: 'Partiellement réussi',
     138: "Aucune application non standard n'était activée.",
     139: "Ces applications n'ont pas pu être désactivées. Le journal du service en indique la raison :",
+    140: 'Suppression des fichiers de la corbeille',
+    141: "Durée pendant laquelle Nextcloud conserve un fichier supprimé dans les Fichiers supprimés de chaque utilisateur avant de l'effacer définitivement. Par défaut les fichiers sont conservés au moins 30 jours puis effacés uniquement lorsque de l'espace disque est nécessaire : sur un serveur disposant de place, la corbeille peut donc croître sans limite. Définir une limite les efface selon ce délai. Un fichier ne peut être restauré que tant qu'il se trouve encore dans les Fichiers supprimés.",
   },
 } satisfies Record<string, LangDict>

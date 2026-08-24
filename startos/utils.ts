@@ -133,6 +133,21 @@ export const locales = {
   pl: 'Polish',
 } as const
 
+// `trashbin_retention_obligation` values. The first component is the minimum
+// retention and the second the maximum; `auto` in either position means "as
+// space is needed". Nextcloud's grammar also allows `D1, D2`, which guarantees
+// a floor — not offered here, since a floor can hold files past the maximum a
+// user picked to reclaim space.
+export const trashRetention = {
+  auto: 'Default (at least 30 days, then as space is needed)',
+  'auto, 7': 'Delete after 7 days',
+  'auto, 30': 'Delete after 30 days',
+  'auto, 90': 'Delete after 90 days',
+  'auto, 180': 'Delete after 180 days',
+  'auto, 365': 'Delete after 365 days',
+  disabled: 'Never delete automatically',
+} as const
+
 export const phoneRegions = {
   US: 'United States',
   GB: 'United Kingdom',
