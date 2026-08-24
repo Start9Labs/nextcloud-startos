@@ -1,9 +1,9 @@
 id: nextcloud
 title: Nextcloud
-version: 32.0.11
+version: 33.0.8
 release-notes: |
-  * Update to v32.0.11 - See [full changelog](https://nextcloud.com/changelog/)
-  * PostgreSQL upgraded from 15 to 17
+  * Update to v33.0.8 - See [full changelog](https://nextcloud.com/changelog/)
+  * After updating, start Nextcloud and wait for all health checks to pass. The database upgrade only completes while the service is running, so let it finish before updating StartOS to 0.4.0.
 license: AGPL-3.0
 wrapper-repo: https://github.com/Start9Labs/nextcloud-startos
 upstream-repo: https://github.com/nextcloud/docker

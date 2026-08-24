@@ -1,7 +1,7 @@
 import { EmVer } from "https://deno.land/x/embassyd_sdk@v0.3.3.0.9/emver-lite/mod.ts";
 import { compat, matches, util, types as T } from "../deps.ts";
 
-const current = "32.0.11";
+const current = "33.0.8";
 const currentMajor = EmVer.parse(current).values[0];
 const minMajor = currentMajor - 1;
 
@@ -212,6 +212,20 @@ export const migration: T.ExpectedExports.migration = async (
           },
           true,
           { version: "32.0.11", type: "up" }
+        ),
+        down: () => {
+          throw new Error(
+            "Downgrades are prohibited per Nextcloud development team recommendations"
+          );
+        },
+      },
+      "33.0.8": {
+        up: compat.migrations.updateConfig(
+          (config) => {
+            return config;
+          },
+          true,
+          { version: "33.0.8", type: "up" }
         ),
         down: () => {
           throw new Error(
