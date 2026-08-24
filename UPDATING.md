@@ -37,6 +37,13 @@ Current pin: `valkey/valkey:9-alpine` in `startos/manifest/index.ts` (`images.va
 
 **Nextcloud** — bump the `NEXTCLOUD_VERSION` `ARG` default in `nextcloud.Dockerfile` to the new patch version (e.g. `32.0.9` → `32.0.10`). The `-apache` suffix is appended by the `FROM` line; don't include it in the ARG value.
 
+A **major** bump (e.g. `33.0.8` → `34.0.3`) needs four more checks:
+
+- Diff `core/shipped.json` between the two tags and add whatever the new major appends to `defaultEnabled` and `alwaysEnabled` to the `defaultApps` list in `startos/actions/maintenance/disableUnstableApps.ts`. `occ app:disable` exits non-zero on an `alwaysEnabled` app, and the action runs under `execFail`, so one missing id breaks the recovery action a locked-out user is told to run.
+- Check `$OC_VersionCanBeUpgradedFrom` in the new tag's `version.php`. Nextcloud upgrades one major at a time, so every version the registry still lists must be within one major of the new image — `startos/init/bootstrapNextcloud.ts` refuses the rest and StartOS rolls the update back.
+- Diff `config/config.sample.php` between the two tags against the keys `startos/fileModels/config.php.ts` models, and against the defaults the README and `instructions.md` quote.
+- Re-check the new major's system requirements page for the supported PostgreSQL and PHP versions.
+
 **Postgres** — change the `dockerTag` value in `images.postgres.source` in `startos/manifest/index.ts`. The pin tracks the `17` major; bumping across major versions (e.g. `17` → `18`) requires a data migration in `startos/versions/`.
 
 **Valkey** — change the `dockerTag` value in `images.valkey.source` in `startos/manifest/index.ts`. The pin tracks the `9` major.

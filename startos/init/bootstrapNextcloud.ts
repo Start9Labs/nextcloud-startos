@@ -165,8 +165,9 @@ async function runUpstreamUpgrade(effects: T.Effects, progress: InitProgress) {
   if (image[0] > installed[0] + 1) {
     throw new Error(
       `Cannot update Nextcloud from major version ${installed[0]} directly to ${image[0]}. ` +
-        `Nextcloud only supports upgrading one major version at a time, and one or more intermediate ` +
-        `major releases were skipped.`,
+        `Nextcloud only supports upgrading one major version at a time. Update to a release ` +
+        `bundling Nextcloud ${installed[0] + 1} first — open this service in the Marketplace and ` +
+        `pick it from the version list — then update again.`,
     )
   }
 

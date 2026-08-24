@@ -197,6 +197,15 @@ const dict = {
 
   // versions/from035x.ts: 0.3.5x migration progress
   'Updating file permissions': 134,
+
+  // disableUnstableApps.ts: per-app outcome report
+  'Partially Successful': 137,
+  'No non-default apps were enabled.': 138,
+  'These apps could not be disabled. The service logs say why:': 139,
+
+  // setConfig.ts: trash retention
+  'Delete Files in Trash': 140,
+  "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. By default files are kept for at least 30 days and then removed only as disk space is needed, so trash can grow without bound on a server with room to spare. Setting a limit removes them on schedule instead. Restoring a file is only possible while it is still in Deleted Files.": 141,
 } as const
 
 /**

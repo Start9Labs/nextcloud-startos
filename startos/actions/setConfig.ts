@@ -2,7 +2,7 @@ import { configPhp } from '../fileModels/config.php'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import { locales, phoneRegions } from '../utils'
+import { locales, phoneRegions, trashRetention } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -22,6 +22,14 @@ export const inputSpec = InputSpec.of({
     ),
     default: 'US',
     values: phoneRegions,
+  }),
+  trashbin_retention_obligation: Value.select({
+    name: i18n('Delete Files in Trash'),
+    description: i18n(
+      "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. By default files are kept for at least 30 days and then removed only as disk space is needed, so trash can grow without bound on a server with room to spare. Setting a limit removes them on schedule instead. Restoring a file is only possible while it is still in Deleted Files.",
+    ),
+    default: 'auto',
+    values: trashRetention,
   }),
   maintenance_window_start: Value.number({
     name: i18n('Maintenance Window Start Time'),

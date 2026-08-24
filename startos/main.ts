@@ -27,7 +27,7 @@ import {
   getPostgresEnv,
   getPostgresSub,
   getValkeySub,
-  hasNextcloudApp,
+  readEnabledApps,
   nextcloudMount,
   TALK_APP,
   uiPort,
@@ -810,10 +810,11 @@ const EMPTY_TALK_TURN: TalkTurnApplied = {
  * Coturn's shared secret rather than the secret itself: enough for a rotated
  * secret to re-apply, without a second copy of it on this volume.
  *
- * Talk is installed by the user from the Nextcloud app store, so with its files
- * absent there is no `occ talk:*` namespace to call. That is left as a retry
- * rather than an error: the signature is not written, so the next chain build
- * applies the config once Talk is actually there.
+ * Talk is installed by the user from the Nextcloud app store, and `occ` exposes
+ * its `talk:*` namespace only while the app is enabled — which a major
+ * Nextcloud upgrade revokes from any app without a compatible release. Either
+ * way that is left as a retry rather than an error: the signature is not
+ * written, so the next chain build applies the config once Talk is back.
  */
 async function reconcileTalkTurn(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
@@ -844,9 +845,13 @@ async function reconcileTalkTurn(
     return
   }
 
-  if (!(await hasNextcloudApp(TALK_APP))) {
+  const enabled = await readEnabledApps(subc).catch((e) => {
+    console.warn(`talk-turn: ${e}`)
+    return {}
+  })
+  if (!(TALK_APP in enabled)) {
     console.warn(
-      'talk-turn: the Talk (spreed) app is not installed in Nextcloud; leaving its STUN/TURN settings alone until it is',
+      'talk-turn: the Talk (spreed) app is not enabled in Nextcloud; leaving its STUN/TURN settings alone until it is',
     )
     return
   }
