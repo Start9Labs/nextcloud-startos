@@ -29,7 +29,14 @@ Value
   = WellFormed
   / raw:Raw { return { __raw: raw } }
 
-WellFormed = v:(String / Number / NonFinite / Array / Bool / Null) &ValueEnd { return v }
+WellFormed = v:(String / LossyNumber / Number / NonFinite / Array / Bool / Null) &ValueEnd { return v }
+
+// A double that does not print back to its own source silently rewrites the
+// value on the next write, so carry the source through instead.
+LossyNumber
+  = n:$(minus? int frac? exp?) &{ return String(parseFloat(n)) !== n } {
+      return { __raw: n }
+    }
 
 ValueEnd = _ ("," / ")" / ";")
 

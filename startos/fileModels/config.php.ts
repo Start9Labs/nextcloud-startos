@@ -4,6 +4,10 @@ import { locales, phoneRegions, trashRetention } from '../utils'
 
 const UPDATER_SERVER_URL = 'http://updates.disabled.invalid/'
 
+type Locale = keyof typeof locales
+type PhoneRegion = keyof typeof phoneRegions
+type TrashRetention = keyof typeof trashRetention
+
 const shape = z.object({
   dbtype: z.literal('pgsql').catch('pgsql'),
   dbname: z.literal('nextcloud').catch('nextcloud'),
@@ -30,13 +34,13 @@ const shape = z.object({
       ).filter((v) => typeof v === 'string' && v.replace(/\*/g, '') !== ''),
     ),
   default_locale: z
-    .enum(Object.keys(locales) as [string, ...string[]])
+    .enum(Object.keys(locales) as [Locale, ...Locale[]])
     .catch('en_US'),
   default_phone_region: z
-    .enum(Object.keys(phoneRegions) as [string, ...string[]])
+    .enum(Object.keys(phoneRegions) as [PhoneRegion, ...PhoneRegion[]])
     .catch('US'),
   trashbin_retention_obligation: z
-    .enum(Object.keys(trashRetention) as [string, ...string[]])
+    .enum(Object.keys(trashRetention) as [TrashRetention, ...TrashRetention[]])
     .catch('auto'),
   maintenance_window_start: z.number().int().min(0).catch(24),
   overwriteprotocol: z.null().optional().catch(undefined),

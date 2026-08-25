@@ -31,7 +31,9 @@ import {
   NEXTCLOUD_VOLUME_HOST,
   PGDATA,
   POSTGRES_PATH,
+  locales,
   nextcloudMount,
+  phoneRegions,
 } from '../utils'
 
 const POSTGRES_VOLUME_HOST = '/media/startos/volumes/db' as const
@@ -174,9 +176,14 @@ type OldConfig = {
 const importConfigFrom035x = async (effects: T.Effects, config: OldConfig) => {
   await cp(configPhp.path, `${configPhp.path}.bak`)
 
+  // 0.3.5 stored these as free text; anything unrecognised is left unset so
+  // the shape supplies its default.
+  const known = <T extends object>(table: T, v: string) =>
+    v in table ? (v as keyof T) : undefined
+
   await configPhp.merge(effects, {
-    default_locale: config['default-locale'],
-    default_phone_region: config['default-phone-region'],
+    default_locale: known(locales, config['default-locale']),
+    default_phone_region: known(phoneRegions, config['default-phone-region']),
     maintenance_window_start: config.maintenance_window_start,
     'overwrite.cli.url': undefined,
     'htaccess.RewriteBase': undefined,

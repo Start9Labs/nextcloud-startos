@@ -79,9 +79,14 @@ export const setConfig = sdk.Action.withInput(
 
   // optionally pre-fill the input form
   async ({ effects }) => {
-    const config = (await configPhp.read().once()) as any
+    // Name every field. Spreading the config carries `dbpassword`,
+    // `passwordsalt` and `secret` to whoever opens the form.
+    const config = await configPhp.read().once()
     return {
-      ...config,
+      default_locale: config?.default_locale,
+      default_phone_region: config?.default_phone_region,
+      trashbin_retention_obligation: config?.trashbin_retention_obligation,
+      maintenance_window_start: config?.maintenance_window_start,
       disable_skeleton_files: config?.skeletondirectory === '',
       talk_turn: (await storeJson.read((s) => s.talkTurn).once()) ?? false,
     }
