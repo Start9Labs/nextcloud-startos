@@ -30,7 +30,7 @@ Nextcloud backported the 34.0.1–34.0.3 maintenance fixes to the 33 line as wel
 
 **Fixed**
 
-- Settings that Nextcloud can store but the package could not read back — an unset value, text spanning several lines, or a number outside the range PHP can represent — left the service restarting without ever coming up, and with no explanation in the logs. Those now read correctly, and a \`config.php\` that still cannot be read reports the line it stopped on.
+- Settings that Nextcloud can store but the package could not read back — an unset value, text spanning several lines, or an infinite or not-a-number value — left the service restarting without ever coming up, and with no explanation in the logs. Those now read correctly, and a \`config.php\` that still cannot be read reports the line it stopped on.
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     es_ES: `Nextcloud actualizado a 34.0.3: una actualización mayor desde la serie 33 de Nextcloud.
@@ -60,7 +60,7 @@ Nextcloud también retroportó a la serie 33 las correcciones de mantenimiento d
 
 **Correcciones**
 
-- Los ajustes que Nextcloud puede guardar pero que el paquete no lograba volver a leer —un valor sin definir, un texto de varias líneas o un número fuera del rango que PHP puede representar— dejaban el servicio reiniciándose sin llegar a arrancar y sin ninguna explicación en el registro. Ahora se leen correctamente, y un \`config.php\` que aun así no pueda leerse indica la línea en la que se detuvo.
+- Los ajustes que Nextcloud puede guardar pero que el paquete no lograba volver a leer —un valor sin definir, un texto de varias líneas o un valor infinito o no numérico— dejaban el servicio reiniciándose sin llegar a arrancar y sin ninguna explicación en el registro. Ahora se leen correctamente, y un \`config.php\` que aun así no pueda leerse indica la línea en la que se detuvo.
 
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     de_DE: `Nextcloud auf 34.0.3 aktualisiert — ein Upgrade auf eine neue Hauptversion, ausgehend von der Nextcloud-Reihe 33.
@@ -90,7 +90,7 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 
 **Korrekturen**
 
-- Einstellungen, die Nextcloud speichern kann, das Paket aber nicht wieder einlesen konnte — ein nicht gesetzter Wert, ein Text über mehrere Zeilen oder eine Zahl außerhalb des von PHP darstellbaren Bereichs — ließen den Dienst immer wieder neu starten, ohne jemals hochzufahren und ohne Erklärung im Protokoll. Sie werden jetzt korrekt gelesen, und eine weiterhin unlesbare \`config.php\` nennt die Zeile, an der die Auswertung abgebrochen ist.
+- Einstellungen, die Nextcloud speichern kann, das Paket aber nicht wieder einlesen konnte — ein nicht gesetzter Wert, ein Text über mehrere Zeilen oder ein unendlicher oder keine-Zahl-Wert — ließen den Dienst immer wieder neu starten, ohne jemals hochzufahren und ohne Erklärung im Protokoll. Sie werden jetzt korrekt gelesen, und eine weiterhin unlesbare \`config.php\` nennt die Zeile, an der die Auswertung abgebrochen ist.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.3 — to aktualizacja do nowej wersji głównej, wychodząca z serii 33.
@@ -120,7 +120,7 @@ Nextcloud przeniósł poprawki konserwacyjne z wersji 34.0.1–34.0.3 także do 
 
 **Poprawki**
 
-- Ustawienia, które Nextcloud potrafi zapisać, ale których pakiet nie umiał odczytać — wartość nieustawiona, tekst zajmujący kilka wierszy albo liczba spoza zakresu reprezentowanego przez PHP — powodowały, że usługa wciąż się restartowała, nigdy nie wstając i nie zostawiając wyjaśnienia w dzienniku. Teraz odczytują się poprawnie, a plik \`config.php\`, którego nadal nie da się odczytać, wskazuje wiersz, na którym odczyt się zatrzymał.
+- Ustawienia, które Nextcloud potrafi zapisać, ale których pakiet nie umiał odczytać — wartość nieustawiona, tekst zajmujący kilka wierszy albo wartość nieskończona lub nieliczbowa — powodowały, że usługa wciąż się restartowała, nigdy nie wstając i nie zostawiając wyjaśnienia w dzienniku. Teraz odczytują się poprawnie, a plik \`config.php\`, którego nadal nie da się odczytać, wskazuje wiersz, na którym odczyt się zatrzymał.
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     fr_FR: `Nextcloud mis à jour vers 34.0.3 — une mise à niveau majeure depuis la série Nextcloud 33.
@@ -150,7 +150,7 @@ Nextcloud a également rétroporté vers la série 33 les correctifs de maintena
 
 **Correctifs**
 
-- Les réglages que Nextcloud peut enregistrer mais que le paquet ne parvenait pas à relire — une valeur non définie, un texte réparti sur plusieurs lignes ou un nombre hors de la plage représentable par PHP — laissaient le service redémarrer sans jamais se lancer, et sans explication dans le journal. Ils se lisent désormais correctement, et un fichier \`config.php\` toujours illisible indique la ligne où la lecture s'est arrêtée.
+- Les réglages que Nextcloud peut enregistrer mais que le paquet ne parvenait pas à relire — une valeur non définie, un texte réparti sur plusieurs lignes ou une valeur infinie ou non numérique — laissaient le service redémarrer sans jamais se lancer, et sans explication dans le journal. Ils se lisent désormais correctement, et un fichier \`config.php\` toujours illisible indique la ligne où la lecture s'est arrêtée.
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
   },

@@ -88,7 +88,7 @@ function toPhpString(value: unknown, indent = 0): string {
       return toSingleQuotedLiteral(value)
     case 'number':
       // `String(Infinity)` is `Infinity`, which PHP reads as an undefined
-      // constant and dies on. PHP spells these `INF`, `-INF` and `NAN`.
+      // constant and dies on.
       if (Number.isFinite(value)) return String(value)
       if (Number.isNaN(value)) return 'NAN'
       return value > 0 ? 'INF' : '-INF'
@@ -100,17 +100,10 @@ function toPhpString(value: unknown, indent = 0): string {
 const CONFIG_PATH = 'config/config.php'
 
 type PhpParser = {
-  parse(text: string, options?: { grammarSource?: string }): unknown
+  parse(text: string): unknown
   SyntaxError: new (...args: never[]) => Error & {
-    format(sources: { source: string; text: string }[]): string
+    location?: { start: { line: number; column: number } }
   }
-}
-
-// `main` reads this file before it starts anything, and StartOS retries a failed
-// `main` without reporting why, so this is the only account the user gets of a
-// config it cannot read.
-function logUnreadable(detail: unknown) {
-  console.error(`Could not read ${CONFIG_PATH}: ${detail}`)
 }
 
 export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
@@ -122,24 +115,20 @@ export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
     const { parse, SyntaxError: PhpSyntaxError } =
       require('./php-parser.js') as PhpParser
     try {
-      return parse(rawData, { grammarSource: CONFIG_PATH })
+      return parse(rawData)
     } catch (e) {
-      // Peggy's `format` quotes the offending line under a caret; the bare
-      // message says only what it expected.
-      logUnreadable(
-        e instanceof PhpSyntaxError
-          ? e.format([{ source: CONFIG_PATH, text: rawData }])
-          : e,
+      // StartOS retries a failed `main` without reporting why, so this is the
+      // only account the user gets. Report the position but not the line, which
+      // holds the database password and the instance secret.
+      const at =
+        e instanceof PhpSyntaxError && e.location
+          ? ` at line ${e.location.start.line}, column ${e.location.start.column}`
+          : ''
+      console.error(
+        `Could not parse ${CONFIG_PATH}${at}: ${e instanceof Error ? e.message : String(e)}`,
       )
       throw e
     }
   },
-  (x) => {
-    try {
-      return shape.parse(x)
-    } catch (e) {
-      logUnreadable(e)
-      throw e
-    }
-  },
+  (x) => shape.parse(x),
 )

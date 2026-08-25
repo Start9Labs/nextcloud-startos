@@ -75,7 +75,7 @@ Two models, and only one of them is upstream's.
 | `config/config.php` | `nextcloud` | PHP    | Yes — `FileHelper.raw`  | Every start, and the Configure action |
 | `store.json`        | `main`      | JSON   | Yes — `FileHelper.json` | Install, and several actions          |
 
-`config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. The shape models only the keys the package reads or enforces, listed below. **Keys outside it are preserved**: the SDK's `z.object` is loose, so an unmodelled key — `instanceid`, `passwordsalt`, `secret`, or one a Nextcloud app or an admin adds — is read, kept, and written back untouched.
+`config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. **A key outside the shape survives**: the SDK's `z.object` is loose, so `instanceid`, `passwordsalt`, `secret` and anything a Nextcloud app or an admin adds are read, kept and written back. A key the shape *does* model is normalised to whatever the shape says on the next write — including `overwriteprotocol`, which the shape holds unset, so a hand-set value is removed. Numbers pass through a JavaScript double, so an integer above 2^53 loses precision and a whole-valued float comes back an integer.
 
 **Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, and the two below.
 
@@ -229,7 +229,7 @@ Mixed, and each half is scoped deliberately.
 
 ## Limitations and Differences
 
-1. **The package re-asserts the settings it enforces in `config.php`.** A hand edit to one of the enforced keys listed above is overwritten the next time the package writes the file; keys it does not model are left as you set them.
+1. **The package re-asserts every `config.php` key its shape models.** A hand edit to one of them — including `overwriteprotocol`, which the shape holds unset — is overwritten or removed the next time the package writes the file. Keys outside the shape are left as you set them.
 2. **Nextcloud's in-app updater is disabled and its update server is unreachable by design.** Updates arrive as new StartOS package versions, and they run during init inside a snapshot so a failed one rolls back. `occ update:check` consequently reports nothing available, whatever upstream has released.
 3. **Skipping a major version is refused.** Nextcloud upgrades one major at a time, and the package fails the update up front rather than mid-run.
 4. **The code-integrity check is disabled**, because the image adds `ffmpeg` and the package rewrites `config.php`.
