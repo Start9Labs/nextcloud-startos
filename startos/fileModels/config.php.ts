@@ -15,17 +15,19 @@ const shape = z.object({
   trusted_proxies: z
     .tuple([z.literal('10.0.3.0/24')])
     .catch(['10.0.3.0/24'] as const),
-  // `occ` can leave this as a gapped array, which reads back as a map, or as a
-  // bare string. Recover the hostnames: any merge that does not carry this key
-  // writes the result back, and an empty list locks Nextcloud out of itself.
+  // `occ` can leave this as a gapped array or a bare string, and a merge that
+  // does not carry this key writes back whatever this returns. Recover the
+  // hostnames so they are not blanked, but never a bare `*` — PHP ignores a
+  // scalar outright, so promoting one would newly trust every Host header.
   trusted_domains: z
     .array(z.string())
     .catch((ctx) =>
-      typeof ctx.value === 'string'
+      (typeof ctx.value === 'string'
         ? [ctx.value]
         : typeof ctx.value === 'object' && ctx.value !== null
-          ? Object.values(ctx.value).filter((v) => typeof v === 'string')
-          : [],
+          ? Object.values(ctx.value)
+          : []
+      ).filter((v) => typeof v === 'string' && v.replace(/\*/g, '') !== ''),
     ),
   default_locale: z
     .enum(Object.keys(locales) as [string, ...string[]])
@@ -126,7 +128,13 @@ export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
     const { parse, SyntaxError: PhpSyntaxError } =
       require('./php-parser.js') as PhpParser
     try {
-      return parse(rawData)
+      const parsed = parse(rawData)
+      // A `$CONFIG` that is not an array would merge down to the shape's
+      // defaults, and the write that follows would drop `secret`, `instanceid`
+      // and `dbpassword`. Refuse it while the file is still intact.
+      if (typeof parsed !== 'object' || parsed === null)
+        throw new Error('$CONFIG is not an array')
+      return parsed
     } catch (e) {
       // A parse failure otherwise reaches the user as a service that never
       // starts, with no mention of this file. Never log the failing line's

@@ -92,9 +92,16 @@ quotation_mark
 unescaped
   = [^\x27\x5C]
 
-__ "required-whitespace" = [ \t\n\r]+
+__ "required-whitespace" = ([ \t\n\r] / Comment)+
 
 _ "whitespace"
-  = [ \t\n\r]*
+  = ([ \t\n\r] / Comment)*
+
+// Nextcloud 34 writes a banner comment between `<?php` and `$CONFIG` on every
+// config write, so a comment is something this file normally contains.
+Comment
+  = "//" [^\n]*
+  / "#" [^\n]*
+  / "/*" (!"*/" .)* "*/"
 
 DIGIT  = [0-9]
