@@ -15,7 +15,10 @@ const shape = z.object({
   trusted_proxies: z
     .tuple([z.literal('10.0.3.0/24')])
     .catch(['10.0.3.0/24'] as const),
-  trusted_domains: z.array(z.string()),
+  // `main` rebuilds this from the published addresses on every start, so a
+  // value it cannot use is worth discarding rather than failing the read.
+  // Deleting one entry with `occ` leaves a gapped PHP array, which is a map.
+  trusted_domains: z.array(z.string()).catch([]),
   default_locale: z
     .enum(Object.keys(locales) as [string, ...string[]])
     .catch('en_US'),
@@ -117,9 +120,9 @@ export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
     try {
       return parse(rawData)
     } catch (e) {
-      // StartOS retries a failed `main` without reporting why, so this is the
-      // only account the user gets. Report the position but not the line, which
-      // holds the database password and the instance secret.
+      // A parse failure otherwise reaches the user as a service that never
+      // starts, with no mention of this file. Never log the failing line's
+      // text — it holds the database password and the instance secret.
       const at =
         e instanceof PhpSyntaxError && e.location
           ? ` at line ${e.location.start.line}, column ${e.location.start.column}`

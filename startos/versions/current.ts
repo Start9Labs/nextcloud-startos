@@ -90,7 +90,7 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 
 **Korrekturen**
 
-- Einstellungen, die Nextcloud speichern kann, das Paket aber nicht wieder einlesen konnte — ein nicht gesetzter Wert, ein Text über mehrere Zeilen oder ein unendlicher oder keine-Zahl-Wert — ließen den Dienst immer wieder neu starten, ohne jemals hochzufahren und ohne Erklärung im Protokoll. Sie werden jetzt korrekt gelesen, und eine weiterhin unlesbare \`config.php\` nennt die Zeile, an der die Auswertung abgebrochen ist.
+- Einstellungen, die Nextcloud speichern kann, das Paket aber nicht wieder einlesen konnte — ein nicht gesetzter Wert, ein Text über mehrere Zeilen oder ein unendlicher oder nicht-numerischer Wert — ließen den Dienst immer wieder neu starten, ohne jemals hochzufahren und ohne Erklärung im Protokoll. Sie werden jetzt korrekt gelesen, und eine weiterhin unlesbare \`config.php\` nennt die Zeile, an der die Auswertung abgebrochen ist.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.3 — to aktualizacja do nowej wersji głównej, wychodząca z serii 33.
