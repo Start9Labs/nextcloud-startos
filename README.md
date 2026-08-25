@@ -77,13 +77,13 @@ Two models, and only one of them is upstream's.
 
 `config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. **A key outside the shape survives**: the SDK's `z.object` is loose, so `instanceid`, `passwordsalt`, `secret` and anything a Nextcloud app or an admin adds are read, kept and written back. A key the shape models keeps its value too, unless the shape rejects it or pins it to a literal — the enforced list below. Numbers pass through a JavaScript double, so an integer above 2^53 loses precision and a whole-valued float comes back an integer.
 
-**Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, `overwriteprotocol` (held unset, so a value set by hand is removed), and the two below.
+**Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, port, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, `overwriteprotocol` (held unset, so a value set by hand is removed), and the three below.
 
 **Derived** — `trusted_domains`, rebuilt on every start from the addresses the UI interface actually publishes. It is a reactive read reduced all the way down to a sorted, de-duplicated hostname list, so the service restarts when a hostname appears or disappears and not when unrelated address metadata churns.
 
 **Seeded once** — `dbpassword`, written by Nextcloud's own installer during install; it is also the credential the backup's dump authenticates with.
 
-**Yours** — the four settings the Configure action owns: default locale, default phone region, the maintenance-window start hour, and whether new accounts get skeleton files.
+**Yours** — the five settings the Configure action owns: default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts get skeleton files.
 
 Three settings depart from what upstream would do:
 

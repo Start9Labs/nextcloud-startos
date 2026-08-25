@@ -15,10 +15,18 @@ const shape = z.object({
   trusted_proxies: z
     .tuple([z.literal('10.0.3.0/24')])
     .catch(['10.0.3.0/24'] as const),
-  // `main` rebuilds this from the published addresses on every start, so a
-  // value it cannot use is worth discarding rather than failing the read.
-  // Deleting one entry with `occ` leaves a gapped PHP array, which is a map.
-  trusted_domains: z.array(z.string()).catch([]),
+  // `occ` can leave this as a gapped array, which reads back as a map, or as a
+  // bare string. Recover the hostnames: any merge that does not carry this key
+  // writes the result back, and an empty list locks Nextcloud out of itself.
+  trusted_domains: z
+    .array(z.string())
+    .catch((ctx) =>
+      typeof ctx.value === 'string'
+        ? [ctx.value]
+        : typeof ctx.value === 'object' && ctx.value !== null
+          ? Object.values(ctx.value).filter((v) => typeof v === 'string')
+          : [],
+    ),
   default_locale: z
     .enum(Object.keys(locales) as [string, ...string[]])
     .catch('en_US'),
