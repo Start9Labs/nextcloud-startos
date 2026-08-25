@@ -25,9 +25,10 @@ Key = String / Number
 
 Value = String / Number / Array / Bool / Null
 
-Bool = "true" { return true } / "false" { return false }
+// PHP matches these keywords case-insensitively, and `var_export` writes `NULL`.
+Bool = "true"i { return true } / "false"i { return false }
 
-Null = "null" { return null }
+Null = "null"i { return null }
 
 Number
   = minus? int frac? exp? { return parseFloat(text()); }
@@ -63,21 +64,15 @@ zero
 String
   = quotation_mark chars:char* quotation_mark { return chars.join(""); }
 
+// Inside a single-quoted PHP string only \\ and \' are escapes. Every other
+// character stands for itself, including a raw newline, and a backslash before
+// anything else is a literal backslash.
 char
   = unescaped
   / escape
     sequence:(
         "'"
       / "\\"
-      / "/"
-      / "b" { return "\b"; }
-      / "f" { return "\f"; }
-      / "n" { return "\n"; }
-      / "r" { return "\r"; }
-      / "t" { return "\t"; }
-      / "u" digits:$(HEXDIG HEXDIG HEXDIG HEXDIG) {
-          return String.fromCharCode(parseInt(digits, 16));
-        }
       / c:. { return "\\" + c; }
     )
     { return sequence; }
@@ -89,7 +84,7 @@ quotation_mark
   = "'"
 
 unescaped
-  = [^\0-\x1F\x27\x5C]
+  = [^\x27\x5C]
 
 __ "required-whitespace" = [ \t\n\r]+
 
@@ -97,4 +92,3 @@ _ "whitespace"
   = [ \t\n\r]*
 
 DIGIT  = [0-9]
-HEXDIG = [0-9a-f]i

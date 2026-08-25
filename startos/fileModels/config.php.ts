@@ -56,29 +56,11 @@ const shape = z.object({
   skeletondirectory: z.string().optional().catch(undefined),
 })
 
+// PHP decodes only \\ and \' inside a single-quoted string, so those are the
+// only two characters that may be escaped. Escaping a newline as \n would write
+// a literal backslash-n, which is what PHP would then read back.
 function toSingleQuotedLiteral(str: string) {
-  return (
-    "'" +
-    str.replace(/[\u0000-\u001F'\\]/g, (c) => {
-      switch (c) {
-        case "'":
-          return "\\'"
-        case '\\':
-          return '\\\\'
-        case '\n':
-          return '\\n'
-        case '\r':
-          return '\\r'
-        case '\t':
-          return '\\t'
-        default: {
-          const code = c.charCodeAt(0).toString(16).padStart(4, '0')
-          return '\\u' + code
-        }
-      }
-    }) +
-    "'"
-  )
+  return "'" + str.replace(/[\\']/g, (c) => '\\' + c) + "'"
 }
 
 function toPhpString(value: unknown, indent = 0): string {
@@ -117,7 +99,15 @@ export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
   },
   (rawData) => {
     const { parse } = require('./php-parser.js')
-    return parse(rawData)
+    try {
+      return parse(rawData)
+    } catch (e) {
+      // `main` reads this file before it starts anything, and StartOS retries a
+      // failed `main` without reporting why, so this line is the only account
+      // the user gets of an unreadable config.
+      console.error(`Could not parse config/config.php: ${e}`)
+      throw e
+    }
   },
   (x) => shape.parse(x),
 )

@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.3:0',
+  version: '34.0.3:1',
   releaseNotes: {
     en_US: `Updated Nextcloud to 34.0.3 — a major upgrade from the Nextcloud 33 series.
 
@@ -27,6 +27,10 @@ Nextcloud backported the 34.0.1–34.0.3 maintenance fixes to the 33 line as wel
 - The update runs a database schema change, so it takes longer than a maintenance release.
 - PHP moves to 8.5, the version Nextcloud 34 recommends.
 - Nextcloud Desktop clients older than 3.2.50 are refused. Any client from the last few years is well past that.
+
+**Fixed**
+
+- The package now reads and writes Nextcloud's \`config.php\` exactly as Nextcloud itself does. A value Nextcloud can store but the package could not read back — an unset setting, or text spanning several lines — left the service restarting without ever coming up, and without an explanation in the logs.
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     es_ES: `Nextcloud actualizado a 34.0.3: una actualización mayor desde la serie 33 de Nextcloud.
@@ -54,6 +58,10 @@ Nextcloud también retroportó a la serie 33 las correcciones de mantenimiento d
 - PHP pasa a la versión 8.5, la recomendada por Nextcloud 34.
 - Los clientes de Nextcloud Desktop anteriores a la versión 3.2.50 se rechazan. Cualquier cliente de los últimos años supera con creces esa versión.
 
+**Correcciones**
+
+- El paquete ahora lee y escribe el archivo \`config.php\` de Nextcloud igual que lo hace Nextcloud. Un valor que Nextcloud puede guardar pero que el paquete no lograba volver a leer —un ajuste sin valor o un texto de varias líneas— dejaba el servicio reiniciándose sin llegar a arrancar y sin ninguna explicación en el registro.
+
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     de_DE: `Nextcloud auf 34.0.3 aktualisiert — ein Upgrade auf eine neue Hauptversion, ausgehend von der Nextcloud-Reihe 33.
 
@@ -79,6 +87,10 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 - Das Update führt eine Schemaänderung an der Datenbank durch und dauert daher länger als eine Wartungsversion.
 - PHP wechselt auf 8.5, die von Nextcloud 34 empfohlene Version.
 - Nextcloud-Desktop-Clients älter als 3.2.50 werden abgewiesen. Jeder Client der letzten Jahre liegt weit darüber.
+
+**Korrekturen**
+
+- Das Paket liest und schreibt die \`config.php\` von Nextcloud jetzt genauso wie Nextcloud selbst. Ein Wert, den Nextcloud speichern kann, den das Paket aber nicht wieder einlesen konnte — eine Einstellung ohne Wert oder ein Text über mehrere Zeilen — ließ den Dienst immer wieder neu starten, ohne jemals hochzufahren und ohne Erklärung im Protokoll.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.3 — to aktualizacja do nowej wersji głównej, wychodząca z serii 33.
@@ -106,6 +118,10 @@ Nextcloud przeniósł poprawki konserwacyjne z wersji 34.0.1–34.0.3 także do 
 - PHP przechodzi na wersję 8.5, zalecaną przez Nextcloud 34.
 - Klienty Nextcloud Desktop starsze niż 3.2.50 są odrzucane. Każdy klient z ostatnich lat jest znacznie nowszy.
 
+**Poprawki**
+
+- Pakiet czyta i zapisuje plik \`config.php\` Nextcloud dokładnie tak samo jak sam Nextcloud. Wartość, którą Nextcloud potrafi zapisać, ale której pakiet nie umiał odczytać — ustawienie bez wartości albo tekst zajmujący kilka wierszy — powodowała, że usługa wciąż się restartowała, nigdy nie wstając i nie zostawiając wyjaśnienia w dzienniku.
+
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     fr_FR: `Nextcloud mis à jour vers 34.0.3 — une mise à niveau majeure depuis la série Nextcloud 33.
 
@@ -131,6 +147,10 @@ Nextcloud a également rétroporté vers la série 33 les correctifs de maintena
 - La mise à jour effectue une modification du schéma de la base de données ; elle prend donc plus de temps qu'une version de maintenance.
 - PHP passe à la version 8.5, celle que Nextcloud 34 recommande.
 - Les clients Nextcloud Desktop antérieurs à 3.2.50 sont refusés. Tout client des dernières années est bien au-delà.
+
+**Correctifs**
+
+- Le paquet lit et écrit désormais le fichier \`config.php\` de Nextcloud exactement comme Nextcloud lui-même. Une valeur que Nextcloud peut enregistrer mais que le paquet ne parvenait pas à relire — un réglage sans valeur ou un texte réparti sur plusieurs lignes — laissait le service redémarrer sans jamais se lancer, et sans explication dans le journal.
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
   },
