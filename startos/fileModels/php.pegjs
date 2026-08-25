@@ -2,7 +2,7 @@ Config = "<?php" __ "$CONFIG" _ "=" _ config:Value _ ";" _ { return config }
 
 NextArrayEntry = _ "," _ entry:ArrayEntry { return entry }
 
-Array = "array" _ "(" _ first:ArrayEntry rest:NextArrayEntry* _ ","? _ ")" {
+Array = "array"i _ "(" _ first:ArrayEntry rest:NextArrayEntry* _ ","? _ ")" {
     const entries = [first, ...rest]
     let res = []
     let autoIdx = 0
@@ -16,19 +16,26 @@ Array = "array" _ "(" _ first:ArrayEntry rest:NextArrayEntry* _ ","? _ ")" {
     }
     return res
 }
-  / "array" _ "(" _ ")" { return [] }
+  / "array"i _ "(" _ ")" { return [] }
 
 ArrayEntry = key:Key _ "=>" _ value:Value { return { key, value } }
   / value:Value { return { key: null, value } }
 
 Key = String / Number
 
-Value = String / Number / Array / Bool / Null
+Value = String / Number / NonFinite / Array / Bool / Null
 
 // PHP matches these keywords case-insensitively, and `var_export` writes `NULL`.
 Bool = "true"i { return true } / "false"i { return false }
 
 Null = "null"i { return null }
+
+// `INF` and `NAN` are constants, so PHP matches them case-sensitively, unlike
+// the keywords above.
+NonFinite
+  = "-INF" { return -Infinity }
+  / "INF" { return Infinity }
+  / "NAN" { return NaN }
 
 Number
   = minus? int frac? exp? { return parseFloat(text()); }
@@ -64,9 +71,8 @@ zero
 String
   = quotation_mark chars:char* quotation_mark { return chars.join(""); }
 
-// Inside a single-quoted PHP string only \\ and \' are escapes. Every other
-// character stands for itself, including a raw newline, and a backslash before
-// anything else is a literal backslash.
+// Inside a single-quoted PHP string only \\ and \' are escapes, and every other
+// character, a raw newline included, stands for itself.
 char
   = unescaped
   / escape

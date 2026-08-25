@@ -57,8 +57,7 @@ const shape = z.object({
 })
 
 // PHP decodes only \\ and \' inside a single-quoted string, so those are the
-// only two characters that may be escaped. Escaping a newline as \n would write
-// a literal backslash-n, which is what PHP would then read back.
+// only two characters that may be escaped.
 function toSingleQuotedLiteral(str: string) {
   return "'" + str.replace(/[\\']/g, (c) => '\\' + c) + "'"
 }
@@ -87,27 +86,60 @@ function toPhpString(value: unknown, indent = 0): string {
           }${'  '.repeat(indent)})`
     case 'string':
       return toSingleQuotedLiteral(value)
+    case 'number':
+      // `String(Infinity)` is `Infinity`, which PHP reads as an undefined
+      // constant and dies on. PHP spells these `INF`, `-INF` and `NAN`.
+      if (Number.isFinite(value)) return String(value)
+      if (Number.isNaN(value)) return 'NAN'
+      return value > 0 ? 'INF' : '-INF'
     default:
       return String(value)
   }
 }
 
+const CONFIG_PATH = 'config/config.php'
+
+type PhpParser = {
+  parse(text: string, options?: { grammarSource?: string }): unknown
+  SyntaxError: new (...args: never[]) => Error & {
+    format(sources: { source: string; text: string }[]): string
+  }
+}
+
+// `main` reads this file before it starts anything, and StartOS retries a failed
+// `main` without reporting why, so this is the only account the user gets of a
+// config it cannot read.
+function logUnreadable(detail: unknown) {
+  console.error(`Could not read ${CONFIG_PATH}: ${detail}`)
+}
+
 export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
-  { base: sdk.volumes.nextcloud, subpath: './config/config.php' },
+  { base: sdk.volumes.nextcloud, subpath: `./${CONFIG_PATH}` },
   (dataIn) => {
     return '<?php\n$CONFIG = ' + toPhpString(dataIn) + ';'
   },
   (rawData) => {
-    const { parse } = require('./php-parser.js')
+    const { parse, SyntaxError: PhpSyntaxError } =
+      require('./php-parser.js') as PhpParser
     try {
-      return parse(rawData)
+      return parse(rawData, { grammarSource: CONFIG_PATH })
     } catch (e) {
-      // `main` reads this file before it starts anything, and StartOS retries a
-      // failed `main` without reporting why, so this line is the only account
-      // the user gets of an unreadable config.
-      console.error(`Could not parse config/config.php: ${e}`)
+      // Peggy's `format` quotes the offending line under a caret; the bare
+      // message says only what it expected.
+      logUnreadable(
+        e instanceof PhpSyntaxError
+          ? e.format([{ source: CONFIG_PATH, text: rawData }])
+          : e,
+      )
       throw e
     }
   },
-  (x) => shape.parse(x),
+  (x) => {
+    try {
+      return shape.parse(x)
+    } catch (e) {
+      logUnreadable(e)
+      throw e
+    }
+  },
 )

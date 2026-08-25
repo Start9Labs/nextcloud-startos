@@ -3,6 +3,7 @@
   "scripts": {
     "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript",
     "prettier": "prettier --write startos",
+    "regen-parser": "npx -y peggy@5.1.0 --format commonjs -o startos/fileModels/php-parser.js startos/fileModels/php.pegjs && prettier --write startos/fileModels/php-parser.js",
     "check": "tsc --noEmit"
   },
   "dependencies": {
