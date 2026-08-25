@@ -75,28 +75,34 @@ function toSingleQuotedLiteral(str: string) {
   return "'" + str.replace(/[\\']/g, (c) => '\\' + c) + "'"
 }
 
+// The parser's marker for a value it could not model, holding that value's
+// source text.
+const isRaw = (v: object): v is { __raw: string } =>
+  Object.keys(v).length === 1 &&
+  typeof (v as { __raw?: unknown }).__raw === 'string'
+
 function toPhpString(value: unknown, indent = 0): string {
   switch (typeof value) {
     case 'object':
-      return value == null
-        ? 'null'
-        : `array (\n${
-            Array.isArray(value)
-              ? value
-                  .filter((x) => x !== undefined)
-                  .reduce(
-                    (acc, x, idx) =>
-                      `${acc}${'  '.repeat(indent + 1)}${idx} => ${toPhpString(x, indent + 1)},\n`,
-                    '',
-                  )
-              : Object.entries(value)
-                  .filter(([k, v]) => k !== undefined && v !== undefined)
-                  .reduce(
-                    (acc, [key, value]) =>
-                      `${acc}${'  '.repeat(indent + 1)}${toPhpString(key)} => ${toPhpString(value, indent + 1)},\n`,
-                    '',
-                  )
-          }${'  '.repeat(indent)})`
+      if (value === null) return 'null'
+      if (isRaw(value)) return value.__raw
+      return `array (\n${
+        Array.isArray(value)
+          ? value
+              .filter((x) => x !== undefined)
+              .reduce(
+                (acc, x, idx) =>
+                  `${acc}${'  '.repeat(indent + 1)}${idx} => ${toPhpString(x, indent + 1)},\n`,
+                '',
+              )
+          : Object.entries(value)
+              .filter(([k, v]) => k !== undefined && v !== undefined)
+              .reduce(
+                (acc, [key, value]) =>
+                  `${acc}${'  '.repeat(indent + 1)}${toPhpString(key)} => ${toPhpString(value, indent + 1)},\n`,
+                '',
+              )
+      }${'  '.repeat(indent)})`
     case 'string':
       return toSingleQuotedLiteral(value)
     case 'number':
@@ -132,7 +138,7 @@ export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
       // A `$CONFIG` that is not an array would merge down to the shape's
       // defaults, and the write that follows would drop `secret`, `instanceid`
       // and `dbpassword`. Refuse it while the file is still intact.
-      if (typeof parsed !== 'object' || parsed === null)
+      if (typeof parsed !== 'object' || parsed === null || isRaw(parsed))
         throw new Error('$CONFIG is not an array')
       return parsed
     } catch (e) {

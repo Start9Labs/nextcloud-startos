@@ -19,11 +19,19 @@ Array = "array"i _ "(" _ first:ArrayEntry rest:NextArrayEntry* _ ","? _ ")" {
   / "array"i _ "(" _ ")" { return [] }
 
 ArrayEntry = key:Key _ "=>" _ value:Value { return { key, value } }
-  / value:Value { return { key: null, value } }
+  / value:WellFormed { return { key: null, value } }
 
 Key = String / Number
 
-Value = String / Number / NonFinite / Array / Bool / Null
+// The lookahead is what yields to `Raw`: `Number` alone matches the leading
+// `-9223372036854775807` of PHP_INT_MIN and strands the rest.
+Value
+  = WellFormed
+  / raw:Raw { return { __raw: raw } }
+
+WellFormed = v:(String / Number / NonFinite / Array / Bool / Null) &ValueEnd { return v }
+
+ValueEnd = _ ("," / ")" / ";")
 
 // PHP matches these keywords case-insensitively, and `var_export` writes `NULL`.
 Bool = "true"i { return true } / "false"i { return false }
@@ -103,5 +111,28 @@ Comment
   = "//" [^\n]*
   / "#" [^\n]*
   / "/*" (!"*/" .)* "*/"
+
+// Carried through as source text: `occ` runs inside the service container, so
+// a value that stops the read cannot be reached to be removed.
+Raw = $RawToken+
+
+// One line only — a run that reaches a newline is malformed, not unmodelled.
+RawToken
+  = String
+  / DoubleQuoted
+  / RawGroup
+  / [^,;()\[\]'\"\n]
+
+RawGroup
+  = "(" RawInner* ")"
+  / "[" RawInner* "]"
+
+RawInner
+  = String
+  / DoubleQuoted
+  / RawGroup
+  / [^;()\[\]'\"\n]
+
+DoubleQuoted = '"' ("\\" . / [^"\\])* '"'
 
 DIGIT  = [0-9]
