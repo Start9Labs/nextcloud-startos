@@ -15,7 +15,20 @@ const shape = z.object({
   trusted_proxies: z
     .tuple([z.literal('10.0.3.0/24')])
     .catch(['10.0.3.0/24'] as const),
-  trusted_domains: z.array(z.string()),
+  // `occ` can leave this as a gapped array or a bare string, and a merge that
+  // does not carry this key writes back whatever this returns. Recover the
+  // hostnames so they are not blanked, but never a bare `*` — PHP ignores a
+  // scalar outright, so promoting one would newly trust every Host header.
+  trusted_domains: z
+    .array(z.string())
+    .catch((ctx) =>
+      (typeof ctx.value === 'string'
+        ? [ctx.value]
+        : typeof ctx.value === 'object' && ctx.value !== null
+          ? Object.values(ctx.value)
+          : []
+      ).filter((v) => typeof v === 'string' && v.replace(/\*/g, '') !== ''),
+    ),
   default_locale: z
     .enum(Object.keys(locales) as [string, ...string[]])
     .catch('en_US'),
@@ -56,68 +69,91 @@ const shape = z.object({
   skeletondirectory: z.string().optional().catch(undefined),
 })
 
+// PHP decodes only \\ and \' inside a single-quoted string, so those are the
+// only two characters that may be escaped.
 function toSingleQuotedLiteral(str: string) {
-  return (
-    "'" +
-    str.replace(/[\u0000-\u001F'\\]/g, (c) => {
-      switch (c) {
-        case "'":
-          return "\\'"
-        case '\\':
-          return '\\\\'
-        case '\n':
-          return '\\n'
-        case '\r':
-          return '\\r'
-        case '\t':
-          return '\\t'
-        default: {
-          const code = c.charCodeAt(0).toString(16).padStart(4, '0')
-          return '\\u' + code
-        }
-      }
-    }) +
-    "'"
-  )
+  return "'" + str.replace(/[\\']/g, (c) => '\\' + c) + "'"
 }
+
+// The parser's marker for a value it could not model, holding that value's
+// source text.
+const isRaw = (v: object): v is { __raw: string } =>
+  Object.keys(v).length === 1 &&
+  typeof (v as { __raw?: unknown }).__raw === 'string'
 
 function toPhpString(value: unknown, indent = 0): string {
   switch (typeof value) {
     case 'object':
-      return value == null
-        ? 'null'
-        : `array (\n${
-            Array.isArray(value)
-              ? value
-                  .filter((x) => x !== undefined)
-                  .reduce(
-                    (acc, x, idx) =>
-                      `${acc}${'  '.repeat(indent + 1)}${idx} => ${toPhpString(x, indent + 1)},\n`,
-                    '',
-                  )
-              : Object.entries(value)
-                  .filter(([k, v]) => k !== undefined && v !== undefined)
-                  .reduce(
-                    (acc, [key, value]) =>
-                      `${acc}${'  '.repeat(indent + 1)}${toPhpString(key)} => ${toPhpString(value, indent + 1)},\n`,
-                    '',
-                  )
-          }${'  '.repeat(indent)})`
+      if (value === null) return 'null'
+      if (isRaw(value)) return value.__raw
+      return `array (\n${
+        Array.isArray(value)
+          ? value
+              .filter((x) => x !== undefined)
+              .reduce(
+                (acc, x, idx) =>
+                  `${acc}${'  '.repeat(indent + 1)}${idx} => ${toPhpString(x, indent + 1)},\n`,
+                '',
+              )
+          : Object.entries(value)
+              .filter(([k, v]) => k !== undefined && v !== undefined)
+              .reduce(
+                (acc, [key, value]) =>
+                  `${acc}${'  '.repeat(indent + 1)}${toPhpString(key)} => ${toPhpString(value, indent + 1)},\n`,
+                '',
+              )
+      }${'  '.repeat(indent)})`
     case 'string':
       return toSingleQuotedLiteral(value)
+    case 'number':
+      // `String(Infinity)` is `Infinity`, which PHP reads as an undefined
+      // constant and dies on.
+      if (Number.isFinite(value)) return String(value)
+      if (Number.isNaN(value)) return 'NAN'
+      return value > 0 ? 'INF' : '-INF'
     default:
       return String(value)
   }
 }
 
+const CONFIG_PATH = 'config/config.php'
+
+type PhpParser = {
+  parse(text: string): unknown
+  SyntaxError: new (...args: never[]) => Error & {
+    location?: { start: { line: number; column: number } }
+  }
+}
+
 export const configPhp = FileHelper.raw<z.infer<typeof shape>>(
-  { base: sdk.volumes.nextcloud, subpath: './config/config.php' },
+  { base: sdk.volumes.nextcloud, subpath: `./${CONFIG_PATH}` },
   (dataIn) => {
     return '<?php\n$CONFIG = ' + toPhpString(dataIn) + ';'
   },
   (rawData) => {
-    const { parse } = require('./php-parser.js')
-    return parse(rawData)
+    const { parse, SyntaxError: PhpSyntaxError } =
+      require('./php-parser.js') as PhpParser
+    try {
+      const parsed = parse(rawData)
+      // A `$CONFIG` that is not an array would merge down to the shape's
+      // defaults, and the write that follows would drop `secret`, `instanceid`
+      // and `dbpassword`. Refuse it while the file is still intact.
+      if (typeof parsed !== 'object' || parsed === null || isRaw(parsed))
+        throw new Error('$CONFIG is not an array')
+      return parsed
+    } catch (e) {
+      // A parse failure otherwise reaches the user as a service that never
+      // starts, with no mention of this file. Never log the failing line's
+      // text — it holds the database password and the instance secret.
+      const at =
+        e instanceof PhpSyntaxError && e.location
+          ? ` at line ${e.location.start.line}, column ${e.location.start.column}`
+          : ''
+      console.error(
+        `Could not parse ${CONFIG_PATH}${at}: ${e instanceof Error ? e.message : String(e)}`,
+      )
+      throw e
+    }
   },
   (x) => shape.parse(x),
 )

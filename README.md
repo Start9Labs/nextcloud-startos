@@ -75,15 +75,15 @@ Two models, and only one of them is upstream's.
 | `config/config.php` | `nextcloud` | PHP    | Yes — `FileHelper.raw`  | Every start, and the Configure action |
 | `store.json`        | `main`      | JSON   | Yes — `FileHelper.json` | Install, and several actions          |
 
-`config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. That is why the shape is narrow: only the keys listed below are modelled, and **any key you add by hand is dropped the next time the package writes the file** — unlike the JSON model alongside it, where an undeclared key is left alone.
+`config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. **A key outside the shape survives**: the SDK's `z.object` is loose, so `instanceid`, `passwordsalt`, `secret` and anything a Nextcloud app or an admin adds are read, kept and written back. A key the shape models keeps its value too, unless the shape rejects it or pins it to a literal — the enforced list below. A value written in a form the grammar does not model is left exactly as it was found, so a setting the package cannot interpret can never stop it from starting. Numbers pass through a JavaScript double, so an integer above 2^53 loses precision and a whole-valued float comes back an integer.
 
-**Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, and the two below.
+**Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, port, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, `overwriteprotocol` (held unset, so a value set by hand is removed), and the three in the table below.
 
 **Derived** — `trusted_domains`, rebuilt on every start from the addresses the UI interface actually publishes. It is a reactive read reduced all the way down to a sorted, de-duplicated hostname list, so the service restarts when a hostname appears or disappears and not when unrelated address metadata churns.
 
 **Seeded once** — `dbpassword`, written by Nextcloud's own installer during install; it is also the credential the backup's dump authenticates with.
 
-**Yours** — the four settings the Configure action owns: default locale, default phone region, the maintenance-window start hour, and whether new accounts get skeleton files.
+**Yours** — the five settings the Configure action owns: default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts get skeleton files.
 
 Three settings depart from what upstream would do:
 
@@ -229,7 +229,7 @@ Mixed, and each half is scoped deliberately.
 
 ## Limitations and Differences
 
-1. **Hand edits to `config.php` do not survive.** Only the modelled keys are preserved; anything else is dropped the next time the package writes the file.
+1. **The package re-asserts the settings it enforces in `config.php`.** A hand edit to one of the enforced keys listed above is overwritten — or, for `overwriteprotocol`, removed — the next time the package writes the file. Every other key, modelled or not, keeps whatever you set as long as the shape accepts it.
 2. **Nextcloud's in-app updater is disabled and its update server is unreachable by design.** Updates arrive as new StartOS package versions, and they run during init inside a snapshot so a failed one rolls back. `occ update:check` consequently reports nothing available, whatever upstream has released.
 3. **Skipping a major version is refused.** Nextcloud upgrades one major at a time, and the package fails the update up front rather than mid-run.
 4. **The code-integrity check is disabled**, because the image adds `ffmpeg` and the package rewrites `config.php`.
