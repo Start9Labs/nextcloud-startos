@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.3:2',
+  version: '34.0.3:1',
   releaseNotes: {
     en_US: `Updated Nextcloud to 34.0.3 — a major upgrade from the Nextcloud 33 series.
 
@@ -30,8 +30,7 @@ Nextcloud backported the 34.0.1–34.0.3 maintenance fixes to the 33 line as wel
 
 **Fixed**
 
-- The service could get stuck restarting and never finish starting, with nothing in the log to explain it. New and existing installs were both affected.
-- Opening the Configure form no longer sends your database password and instance secret to your browser.
+- The service could get stuck restarting and never finish starting, with nothing in the log to explain it.
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     es_ES: `Nextcloud actualizado a 34.0.3: una actualización mayor desde la serie 33 de Nextcloud.
@@ -61,8 +60,7 @@ Nextcloud también retroportó a la serie 33 las correcciones de mantenimiento d
 
 **Correcciones**
 
-- El servicio podía quedarse reiniciándose sin llegar nunca a arrancar, y sin ninguna explicación en el registro. Afectaba tanto a las instalaciones nuevas como a las existentes.
-- Abrir el formulario de Configuración ya no envía a tu navegador la contraseña de la base de datos ni el secreto de la instancia.
+- El servicio podía quedarse reiniciándose sin llegar nunca a arrancar, y sin ninguna explicación en el registro.
 
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     de_DE: `Nextcloud auf 34.0.3 aktualisiert — ein Upgrade auf eine neue Hauptversion, ausgehend von der Nextcloud-Reihe 33.
@@ -92,8 +90,7 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 
 **Korrekturen**
 
-- Der Dienst konnte in einer Neustartschleife hängen bleiben, ohne jemals vollständig hochzufahren, und das Protokoll gab keinen Hinweis darauf. Betroffen waren neue wie bestehende Installationen.
-- Beim Öffnen des Konfigurationsformulars werden das Datenbankpasswort und das Instanz-Geheimnis nicht mehr an den Browser gesendet.
+- Der Dienst konnte in einer Neustartschleife hängen bleiben, ohne jemals vollständig hochzufahren, und das Protokoll gab keinen Hinweis darauf.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.3 — to aktualizacja do nowej wersji głównej, wychodząca z serii 33.
@@ -123,8 +120,7 @@ Nextcloud przeniósł poprawki konserwacyjne z wersji 34.0.1–34.0.3 także do 
 
 **Poprawki**
 
-- Usługa mogła utknąć, wciąż się restartując i nigdy nie kończąc uruchamiania, bez żadnego wyjaśnienia w dzienniku. Dotyczyło to zarówno nowych, jak i istniejących instalacji.
-- Otwarcie formularza konfiguracji nie wysyła już do przeglądarki hasła do bazy danych ani sekretu instancji.
+- Usługa mogła utknąć, wciąż się restartując i nigdy nie kończąc uruchamiania, bez żadnego wyjaśnienia w dzienniku.
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     fr_FR: `Nextcloud mis à jour vers 34.0.3 — une mise à niveau majeure depuis la série Nextcloud 33.
@@ -154,8 +150,7 @@ Nextcloud a également rétroporté vers la série 33 les correctifs de maintena
 
 **Correctifs**
 
-- Le service pouvait rester bloqué à redémarrer sans jamais finir de se lancer, sans aucune explication dans le journal. Les nouvelles installations comme les existantes étaient concernées.
-- L'ouverture du formulaire de configuration n'envoie plus à votre navigateur le mot de passe de la base de données ni le secret de l'instance.
+- Le service pouvait rester bloqué à redémarrer sans jamais finir de se lancer, sans aucune explication dans le journal.
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
   },
