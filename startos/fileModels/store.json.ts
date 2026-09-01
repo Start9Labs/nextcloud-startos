@@ -60,6 +60,13 @@ const shape = z.object({
   // desired-vs-actual split (and the same non-reactive read) as
   // `externalStoragesConfigured` above.
   talkTurnConfigured: z.string().catch('').default(''),
+  // Which document server serves the office editors, if any. DESIRED state:
+  // written by the Configure action, read reactively in setupMain/setDependencies.
+  officeSuite: z.enum(['collabora', 'onlyoffice']).optional().catch(undefined),
+  // ACTUAL state: an opaque signature of the office settings this package last
+  // applied, and the record of what to clear on the next change. Same
+  // desired-vs-actual split, and the same non-reactive read, as the two above.
+  officeConfigured: z.string().catch('').default(''),
 })
 
 export type Store = z.infer<typeof shape>

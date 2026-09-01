@@ -10,10 +10,12 @@ import { repair } from './maintenance/repair'
 import { resetAdmin } from './maintenance/resetAdmin'
 import { scanFiles } from './maintenance/scanFiles'
 import { setConfig } from './setConfig'
+import { setOfficeSuite } from './setOfficeSuite'
 
 export const actions = sdk.Actions.of()
   .addAction(setConfig)
   .addAction(externalStorage)
+  .addAction(setOfficeSuite)
   .addAction(resetAdmin)
   .addAction(disableMaintenanceMode)
   .addAction(disableUnstableApps)

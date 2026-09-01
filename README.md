@@ -54,6 +54,10 @@ Six oneshots run alongside them, in order: `chown` hands the data directory to `
 
 **`finish-upgrade` runs after the web daemon is ready, not before it**, which is what makes it safe. In the normal case the upgrade has already happened during init and this is a no-op; when it does have work to do, Apache is up serving the maintenance page while `occ upgrade` runs, exactly as a manual recovery would. It fails open — nothing it does can prevent the service from serving.
 
+Apache also carries a generated `startos-office.conf` and the four proxy modules it needs, written into the container's filesystem on every start. It puts the chosen document server on Nextcloud's own origin — `/browser`, `/cool` and `/hosting` for Collabora, `/ds-vpath` for ONLYOFFICE — which is what lets the editor work on every address Nextcloud is reachable at rather than one. The file is empty when no office suite is selected.
+
+For Collabora it also rewrites the WOPI discovery response, stripping the absolute origin out of every `urlsrc` so the editor loads same-origin — Nextcloud otherwise copies Collabora's own absolute address into the editor frame verbatim, pinning it to one address. Tracked upstream as nextcloud/richdocuments#6019; if that lands, the rewrite can go.
+
 ## Volume and Data Layout
 
 Three volumes.
@@ -93,7 +97,7 @@ Three settings depart from what upstream would do:
 | `updater.server.url`       | a reserved never-resolving address | `occ update:check` is the one path `updatechecker` does not gate, and it would otherwise reach Nextcloud's real update server |
 | `integrity.check.disabled` | `true`                             | The image adds `ffmpeg` and the package rewrites `config.php`, so the signature check would fail on a correct install         |
 
-`store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, and the Talk STUN/TURN relay toggle alongside the entries it last applied.
+`store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, the Talk STUN/TURN relay toggle, and the office-suite choice — each of the last two alongside a signature of what was last applied for it, which is how a reconcile knows what to clear before it writes.
 
 ## Dependencies
 
@@ -101,14 +105,18 @@ None are required. Both are optional and exist only while they are selected.
 
 | Dependency    | Kind      | Health checks | Required                                                    |
 | ------------- | --------- | ------------- | ----------------------------------------------------------- |
-| `filebrowser` | `exists`  | —             | Only while chosen in the External Storage action            |
-| `coturn`      | `running` | **none**      | Only while Talk call relaying is on in the Configure action |
+| `filebrowser`       | `exists`  | —             | Only while chosen in the External Storage action            |
+| `coturn`            | `running` | **none**      | Only while Talk call relaying is on in the Configure action |
+| `collabora-online`  | `running` | `cool`        | Only while chosen in the Office Suite action |
+| `onlyoffice-docs`   | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
 
 The External Storage action offers only the sources whose backing service is actually installed, so an uninstalled one never appears in the form.
 
 **Coturn declares no health check, deliberately.** Coturn's own `TURN Server` check fails until you attach a public domain to it, and naming it here would leave Nextcloud showing a permanently unmet dependency even though Talk works fine without a relay. Coturn's own check already says what is missing.
 
-The shared secret is read through a throwaway container that mounts only Coturn's `shared` subpath read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and the rest of Coturn's volume stays out of view.
+The shared secret is read through a throwaway container that mounts only Coturn's `shared` subpath read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and the rest of Coturn's volume stays out of view. ONLYOFFICE's JWT secret is read the same way, from its own `shared` subpath.
+
+**The office backends are mutually exclusive**, and only the chosen one is declared. Unlike Coturn they do name a health check: Nextcloud can hand a document to a document server that is up, and cannot to one that is starting.
 
 ## Network Access and Interfaces
 
@@ -160,6 +168,23 @@ Surfaces another StartOS service's files as a folder in Nextcloud Files, using N
 - **Repeat safety:** idempotent — the oneshot compares a signature of the desired state against the applied one and does nothing when they match.
 - **Availability: only while the service is running**, since the per-source user picker reads the live Nextcloud user list.
 - **Per-source scoping.** Each source is off, available to all users, or restricted to a chosen set. Clearing a source deletes its `files_external` entry; it does not delete any files.
+
+### Office Suite
+
+Selects the document server that opens office files — Collabora Online, ONLYOFFICE Docs, or none. Collabora is labelled recommended in the form and is the right answer for most installs; the trade-off is set out in `instructions.md` under **Which one to choose**, and rests on a measured round-trip rather than a marketing claim: both engines preserve text, tables, images, links, footnotes and fields exactly, but LibreOffice rewrites style-inherited formatting as direct formatting on each run, where ONLYOFFICE returns the file byte-identical in structure.
+
+- **When to run it:** after installing one of the two services and its Nextcloud app, and again to switch or to turn editing off.
+- **What it changes:** `officeSuite` in `store.json`. Through it: the package's dependency on that service, the host bridge's IP in `trusted_domains`, the generated Apache proxy that serves the editor from Nextcloud's own origin, and — on the next start, via the `office-suite` oneshot — the connector app's own settings.
+- **Cost:** seconds, then a restart.
+- **Repeat safety:** idempotent; the form is pre-filled with the current choice.
+
+**Only one connector app may be enabled.** `richdocuments` drops the Microsoft formats out of its default-open capability whenever it finds `onlyoffice` or `officeonline` enabled, and the other app does not pick them up unless it is configured too — so Word, Excel and PowerPoint files open in neither and download instead, with nothing in Nextcloud saying why. The `office-connectors` health check fails while that is the case and names the app to disable.
+
+**Switching first deletes the settings written for the previous backend**, so a connector is never left pointed at a service that has since been uninstalled. That teardown is also what keeps the choice unambiguous: an unconfigured connector registers no file actions of its own, so exactly one handler is live in the Files UI.
+
+**It waits on the connector app.** The setting does nothing until **Nextcloud Office** (for Collabora) or **ONLYOFFICE** (for ONLYOFFICE Docs) is installed from the Nextcloud app store and enabled. Until then the oneshot logs that it is waiting and applies the settings on a later start.
+
+**The `trusted_domains` entry is load-bearing.** A document server fetches and saves files over the host bridge, and without that entry Nextcloud answers every one of those requests with `Trusted domain error` — the editor opens and then fails to load the document. Nextcloud matches on the host alone, so the bare IP covers whatever port the binding was assigned.
 
 ### Maintenance — Reset Admin Password, Disable Maintenance Mode, Disable Non-default Apps, Scan Files, Repair
 
@@ -217,6 +242,10 @@ The database and cache checks report `loading` rather than failing while they co
 A web-interface failure after the grace period is Nextcloud itself: an app that fails to load, a `config.php` value it rejects, or a database it cannot reach. It names the cause in the service logs. A UI reporting "Update needed — use the command line updater" is the case `finish-upgrade` handles automatically on the next start.
 
 The transient checks — Recognize Model Download, Memories Indexing, Memories Map Setup, File Scan, Repair — exist only while their task is pending, and report `loading` with a progress message throughout.
+
+**Office Connector** (`office-connectors`) — present only while an office suite is selected. It reads Nextcloud's enabled-app list and fails while more than one office connector app is enabled.
+
+A failure here is not a fault in any service: everything is running, and OpenDocument files still open. What breaks is Word, Excel and PowerPoint, silently — `richdocuments` demotes those formats the moment it sees a rival connector enabled, and the rival does not claim them unless it is configured. The message names the app to disable; disabling it in Nextcloud's Apps page clears the check on the next poll. It is a check rather than a task because a task can be dismissed while the breakage remains.
 
 ## Backups and Restore
 
@@ -280,12 +309,15 @@ startos_managed_env_vars:
 dependencies:
   - filebrowser # optional, exists; only while selected as an external-storage source
   - coturn # optional, running, no health checks; only while Talk call relaying is on
+  - collabora-online # optional, running, health check `cool`; only while selected as the office suite
+  - onlyoffice-docs # optional, running, health check `documentserver`; only while selected as the office suite
 interfaces:
   ui: { type: ui, port: 80 }
   webdav: { type: api, port: 80 } # same binding, path /remote.php/dav/
 actions:
   - set-config
   - external-storage # only-running
+  - set-office-suite
   - reset-admin # only-running
   - disable-maintenance # only-running
   - disable-unstable-apps # only-running
@@ -302,6 +334,7 @@ health_checks:
   - valkey # hidden
   - nextcloud # displayed "Web Interface"
   - cron # hidden
+  - office-connectors # only while an office suite is selected
   - recognize-models # only while that task is pending
   - memories-indexing # only while that task is pending
   - memories-map-setup # only while that task is pending
