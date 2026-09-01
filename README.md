@@ -171,7 +171,7 @@ Surfaces another StartOS service's files as a folder in Nextcloud Files, using N
 
 ### Office Suite
 
-Selects the document server that opens office files — Collabora Online, ONLYOFFICE Docs, or none.
+Selects the document server that opens office files — Collabora Online, ONLYOFFICE Docs, or none. Collabora is labelled recommended in the form and is the right answer for most installs; the trade-off is set out in `instructions.md` under **Which one to choose**, and rests on a measured round-trip rather than a marketing claim: both engines preserve text, tables, images, links, footnotes and fields exactly, but LibreOffice rewrites style-inherited formatting as direct formatting on each run, where ONLYOFFICE returns the file byte-identical in structure.
 
 - **When to run it:** after installing one of the two services and its Nextcloud app, and again to switch or to turn editing off.
 - **What it changes:** `officeSuite` in `store.json`. Through it: the package's dependency on that service, the host bridge's IP in `trusted_domains`, the generated Apache proxy that serves the editor from Nextcloud's own origin, and — on the next start, via the `office-suite` oneshot — the connector app's own settings.

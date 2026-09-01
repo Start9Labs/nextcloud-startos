@@ -61,11 +61,19 @@ Nextcloud is what tells Talk where the relay is, so there is nothing to enter in
 
 Nextcloud on its own shows your documents but cannot edit them. To edit in the browser, install one of the two office services from the Marketplace and connect it:
 
-1. Install either **Collabora Online** or **ONLYOFFICE Docs**. Collabora is much lighter; ONLYOFFICE keeps Microsoft Office formatting closer but wants several gigabytes of memory to itself.
-2. In Nextcloud's web interface, open **Apps** and install the matching app — **Nextcloud Office** for Collabora, **ONLYOFFICE** for ONLYOFFICE Docs. Leave it enabled.
+1. Install **Collabora Online**, unless you have a specific reason for the other one — see below.
+2. In Nextcloud's web interface, open **Apps** and install the matching app — **Nextcloud Office** for Collabora, **ONLYOFFICE** for ONLYOFFICE Docs. Enable only that one: with both enabled, Nextcloud stops opening Word, Excel and PowerPoint files in either, and this service's page will name the one to disable.
 3. Run the **Office Suite** action here and pick the one you installed.
 
-Documents, spreadsheets and presentations then open in the browser from Files, and several people can edit the same file at once. Enable only the app for the suite you chose: with both enabled, Nextcloud stops opening Word, Excel and PowerPoint files in either, and this service's page will name the one to disable. The editor is served from your Nextcloud address, so it works the same on your local network, a public domain, or Tor.
+Documents, spreadsheets and presentations then open in the browser from Files, and several people can edit the same file at once. The editor is served from your Nextcloud address, so it works the same on your local network, a public domain, or Tor.
+
+### Which one to choose
+
+**Collabora Online for almost everyone.** It uses roughly a quarter of the memory — a gigabyte or so against the four ONLYOFFICE asks for — and opens more kinds of file, including Visio, WordPerfect and Apple iWork documents that ONLYOFFICE cannot. It edits Word, Excel and PowerPoint files perfectly well.
+
+**ONLYOFFICE Docs if your documents move back and forth with Microsoft Office.** Its native format is the same one Word and Excel use, so it can save a file back exactly as it found it. Collabora is built on LibreOffice, which reads a Word file into its own model and writes it out again; nothing is lost — the text, tables, images, links, footnotes and page layout all survive — but it writes the formatting out in its own way, spelling out on each paragraph what the document had left to its styles. You would not see a difference on screen. You would see one if a colleague later opened that file in Word and changed a style, because the parts Collabora spelled out no longer follow it.
+
+If that does not describe your documents, the memory is better spent elsewhere.
 
 ## Limitations
 
