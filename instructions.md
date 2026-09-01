@@ -57,6 +57,16 @@ Then turn the toggle on. Until all three are done, calls still work wherever a d
 
 Nextcloud is what tells Talk where the relay is, so there is nothing to enter in Talk's own admin settings — and nothing you have already entered there gets overwritten. Talk's default STUN server, `stun.nextcloud.com:443`, is also left in place; remove it under **Administration settings → Talk** if you would rather every part of call setup stayed on your own server.
 
+## Editing documents
+
+Nextcloud on its own shows your documents but cannot edit them. To edit in the browser, install one of the two office services from the Marketplace and connect it:
+
+1. Install either **Collabora Online** or **ONLYOFFICE Docs**. Collabora is much lighter; ONLYOFFICE keeps Microsoft Office formatting closer but wants several gigabytes of memory to itself.
+2. In Nextcloud's web interface, open **Apps** and install the matching app — **Nextcloud Office** for Collabora, **ONLYOFFICE** for ONLYOFFICE Docs. Leave it enabled.
+3. Run the **Office Suite** action here and pick the one you installed.
+
+Documents, spreadsheets and presentations then open in the browser from Files, and several people can edit the same file at once. Enable only the app for the suite you chose: with both enabled, Nextcloud stops opening Word, Excel and PowerPoint files in either, and this service's page will name the one to disable. The editor is served from your Nextcloud address, so it works the same on your local network, a public domain, or Tor.
+
 ## Limitations
 
 - **No arbitrary host directory mounts.** You can surface another StartOS service's files with the **External Storage** action (currently File Browser), and you can attach remote storage (S3, WebDAV, SMB, etc.) through Nextcloud's built-in External Storage app. StartOS does not expose arbitrary host directories to the container.

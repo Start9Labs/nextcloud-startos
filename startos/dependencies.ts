@@ -2,12 +2,14 @@ import { T } from '@start9labs/start-sdk'
 import { externalStorageMeta } from './externalStorage'
 import { storeJson } from './fileModels/store.json'
 import { sdk } from './sdk'
+import { officeSuiteMeta } from './officeSuite'
 import { coturnId, coturnVersionRange } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const sources =
     (await storeJson.read((s) => s.externalStorages).const(effects)) ?? []
   const talkTurn = await storeJson.read((s) => s.talkTurn).const(effects)
+  const officeSuite = await storeJson.read((s) => s.officeSuite).const(effects)
 
   const deps: T.CurrentDependenciesResult<any> = {}
 
@@ -28,6 +30,16 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
       kind: 'running',
       versionRange: coturnVersionRange,
       healthChecks: [],
+    }
+  }
+  // The document server has to be up before Nextcloud can hand it a document,
+  // and its own health check is the readiness signal.
+  if (officeSuite) {
+    const meta = officeSuiteMeta[officeSuite]
+    deps[meta.packageId] = {
+      kind: 'running',
+      versionRange: meta.versionRange,
+      healthChecks: [meta.healthCheckId],
     }
   }
   return deps

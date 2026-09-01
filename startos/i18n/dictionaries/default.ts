@@ -206,6 +206,14 @@ const dict = {
   // setConfig.ts: trash retention
   'Delete Files in Trash': 140,
   "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. By default files are kept for at least 30 days and then removed only as disk space is needed, so trash can grow without bound on a server with room to spare. Setting a limit removes them on schedule instead. Restoring a file is only possible while it is still in Deleted Files.": 141,
+
+  // actions/setConfig.ts — office suite
+  'Office Suite': 142,
+  'Which document server opens documents, spreadsheets and presentations in your browser. Install the service first, then its Nextcloud app — Nextcloud Office for Collabora, ONLYOFFICE for ONLYOFFICE Docs — from the Nextcloud app store. Collabora is the lighter of the two; ONLYOFFICE matches Microsoft Office formatting more closely but wants several gigabytes of memory.': 143,
+  None: 144,
+  'Choose the document server that opens office files in your browser.': 145,
+  'Office Connector': 146,
+  'Disable or uninstall the Nextcloud app named below. More than one office app is enabled, and Nextcloud then refuses to open Word, Excel and PowerPoint files in any of them: ': 147,
 } as const
 
 /**
