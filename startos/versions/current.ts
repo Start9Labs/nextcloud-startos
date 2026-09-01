@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.3:1',
+  version: '34.0.3:2',
   releaseNotes: {
     en_US: `Updated Nextcloud to 34.0.3 — a major upgrade from the Nextcloud 33 series.
 
@@ -30,6 +30,7 @@ Nextcloud backported the 34.0.1–34.0.3 maintenance fixes to the 33 line as wel
 
 **Fixed**
 
+- On macOS and iOS, Calendar and Contacts accounts set up with just the server address (CalDAV/CardDAV autodiscovery) would add but never sync when using an HTTPS address. They now sync.
 - The service could get stuck restarting and never finish starting, with nothing in the log to explain it.
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
@@ -60,6 +61,7 @@ Nextcloud también retroportó a la serie 33 las correcciones de mantenimiento d
 
 **Correcciones**
 
+- En macOS y iOS, las cuentas de Calendario y Contactos configuradas solo con la dirección del servidor (autodescubrimiento CalDAV/CardDAV) se añadían pero nunca sincronizaban al usar una dirección HTTPS. Ahora sincronizan.
 - El servicio podía quedarse reiniciándose sin llegar nunca a arrancar, y sin ninguna explicación en el registro.
 
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
@@ -90,6 +92,7 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 
 **Korrekturen**
 
+- Auf macOS und iOS wurden Kalender- und Kontakte-Konten, die nur mit der Serveradresse eingerichtet wurden (CalDAV/CardDAV-Autodiscovery), zwar hinzugefügt, synchronisierten über eine HTTPS-Adresse aber nie. Jetzt synchronisieren sie.
 - Der Dienst konnte in einer Neustartschleife hängen bleiben, ohne jemals vollständig hochzufahren, und das Protokoll gab keinen Hinweis darauf.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
@@ -120,6 +123,7 @@ Nextcloud przeniósł poprawki konserwacyjne z wersji 34.0.1–34.0.3 także do 
 
 **Poprawki**
 
+- W systemach macOS i iOS konta Kalendarza i Kontaktów skonfigurowane samym adresem serwera (autowykrywanie CalDAV/CardDAV) dawały się dodać, ale przy adresie HTTPS nigdy nie synchronizowały. Teraz synchronizują.
 - Usługa mogła utknąć, wciąż się restartując i nigdy nie kończąc uruchamiania, bez żadnego wyjaśnienia w dzienniku.
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
@@ -150,6 +154,7 @@ Nextcloud a également rétroporté vers la série 33 les correctifs de maintena
 
 **Correctifs**
 
+- Sur macOS et iOS, les comptes Calendrier et Contacts configurés avec la seule adresse du serveur (autodécouverte CalDAV/CardDAV) s'ajoutaient mais ne se synchronisaient jamais via une adresse HTTPS. Ils se synchronisent désormais.
 - Le service pouvait rester bloqué à redémarrer sans jamais finir de se lancer, sans aucune explication dans le journal.
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,

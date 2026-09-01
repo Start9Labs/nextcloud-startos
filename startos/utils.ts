@@ -115,6 +115,9 @@ export function getNextcloudEnv(postgresEnv: Record<string, string>) {
     PHP_MEMORY_LIMIT: '1024M',
     PHP_UPLOAD_LIMIT: '20480M',
     POSTGRES_HOST: 'localhost',
+    // keeps mod_remoteip off: REMOTE_ADDR must stay the proxy's bridge IP,
+    // which is what config.php's trusted_proxies matches
+    APACHE_DISABLE_REWRITE_IP: '1',
   }
 }
 
