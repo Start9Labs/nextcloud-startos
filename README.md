@@ -108,7 +108,7 @@ None are required. Both are optional and exist only while they are selected.
 | `filebrowser`       | `exists`  | —             | Only while chosen in the External Storage action            |
 | `coturn`            | `running` | **none**      | Only while Talk call relaying is on in the Configure action |
 | `collabora-online`  | `running` | `cool`        | Only while chosen in the Office Suite action |
-| `onlyoffice-docs`   | `running` | `documentserver` | Only while chosen in the Office Suite action |
+| `onlyoffice-docs`   | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
 
 The External Storage action offers only the sources whose backing service is actually installed, so an uninstalled one never appears in the form.
 

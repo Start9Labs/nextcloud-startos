@@ -209,7 +209,7 @@ const dict = {
 
   // actions/setConfig.ts — office suite
   'Office Suite': 142,
-  'Which document server opens documents, spreadsheets and presentations in your browser. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. Choose ONLYOFFICE Docs only if your documents move back and forth with Microsoft Office and must come back untouched. Install the service first, then its Nextcloud app — Nextcloud Office for Collabora, ONLYOFFICE for ONLYOFFICE Docs — and enable only that one.': 143,
+  'Which document server opens documents, spreadsheets and presentations in your browser. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office. Install the service first, then its Nextcloud app — Nextcloud Office for Collabora, ONLYOFFICE for ONLYOFFICE Docs — and enable only that one.': 143,
   None: 144,
   'Choose the document server that opens office files in your browser.': 145,
   'Office Connector': 146,
