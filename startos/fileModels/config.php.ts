@@ -43,6 +43,8 @@ const shape = z.object({
     .enum(Object.keys(trashRetention) as [TrashRetention, ...TrashRetention[]])
     .catch('auto'),
   maintenance_window_start: z.number().int().min(0).catch(24),
+  // the scheme comes per-request from X-Forwarded-Proto via trusted_proxies;
+  // a blanket https here would break URLs on plain-http (onion) bindings
   overwriteprotocol: z.null().optional().catch(undefined),
   'memcache.local': z
     .literal('\\OC\\Memcache\\APCu')
