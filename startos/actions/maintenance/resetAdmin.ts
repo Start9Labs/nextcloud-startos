@@ -36,7 +36,9 @@ export const resetAdmin = sdk.Action.withInput(
   async ({ effects }) => ({
     name: i18n('Reset Admin Password'),
     description: i18n('Generate a new password for an admin user'),
-    warning: null,
+    warning: i18n(
+      'This replaces the password on the chosen account immediately. The current one stops working, and anyone signed in as that user is signed out.',
+    ),
     allowedStatuses: 'only-running',
     group: 'Maintenance',
     visibility: 'enabled',

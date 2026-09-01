@@ -18,6 +18,7 @@ import { createHash } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
 import {
   APACHE_MODULES,
+  CONNECTOR_APP_TITLES,
   DS_VPATH,
   isOfficeSuite,
   moduleLoadLine,
@@ -41,6 +42,7 @@ import {
   getPostgresEnv,
   getPostgresSub,
   getValkeySub,
+  hasNextcloudApp,
   readEnabledApps,
   nextcloudMount,
   TALK_APP,
@@ -708,17 +710,47 @@ export const main = sdk.setupMain(async ({ effects }) => {
                       result: 'starting' as const,
                       message: null,
                     }
-                  const keep = officeSuiteMeta[officeSuite].connectorApp
+                  const { connectorApp: keep, title } =
+                    officeSuiteMeta[officeSuite]
+                  // Selected a document server but Nextcloud has nothing to
+                  // reach it with. Silent otherwise: the reconcile just waits.
+                  if (!(keep in enabled)) {
+                    // Present but disabled is a different instruction from
+                    // absent, and telling someone to install what they already
+                    // have is how a message stops being followed.
+                    const present = await hasNextcloudApp(keep)
+                    return {
+                      result: 'failure' as const,
+                      message: (present ? i18n('Enable ') : i18n('Install '))
+                        .concat(CONNECTOR_APP_TITLES[keep] ?? keep)
+                        .concat(
+                          i18n(
+                            ' in Nextcloud, or select “None” using the “Office Suite” action.',
+                          ),
+                        ),
+                    }
+                  }
                   const rivals = OFFICE_CONNECTOR_APPS.filter(
                     (a) => a !== keep && a in enabled,
                   )
                   if (rivals.length === 0)
-                    return { result: 'success' as const, message: null }
+                    return {
+                      result: 'success' as const,
+                      message: title.concat(i18n(' is ready')),
+                    }
                   return {
                     result: 'failure' as const,
-                    message: i18n(
-                      'Disable or uninstall the Nextcloud app named below. More than one office app is enabled, and Nextcloud then refuses to open Word, Excel and PowerPoint files in any of them: ',
-                    ).concat(rivals.join(', ')),
+                    message: i18n('Disable ')
+                      .concat(
+                        rivals
+                          .map((a) => CONNECTOR_APP_TITLES[a] ?? a)
+                          .join(', '),
+                      )
+                      .concat(
+                        i18n(
+                          ' on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.',
+                        ),
+                      ),
                   }
                 },
               },
@@ -1364,10 +1396,28 @@ async function reconcileOffice(
   })
   const app = officeSuiteMeta[suite].connectorApp
   if (!(app in enabled)) {
-    console.warn(
-      `office-suite: the ${app} app is not enabled in Nextcloud; leaving its settings alone until it is`,
-    )
-    return
+    // Install it, but only when it is absent entirely, and only here — this
+    // runs on a change of selection, never on an ordinary start, so an app the
+    // user later removes stays removed and the health check reports it.
+    //
+    // A present-but-disabled app is left alone on purpose. That state is either
+    // the user's decision or a major Nextcloud upgrade disabling an app with no
+    // compatible release, and re-enabling it is exactly how that protection
+    // gets undone — the failure `Disable Non-default Apps` exists to recover.
+    if (await hasNextcloudApp(app)) {
+      console.warn(
+        `office-suite: the ${app} app is present but disabled; not re-enabling it`,
+      )
+      return
+    }
+    const res = await occ(['app:install', app])
+    if (res.exitCode !== 0) {
+      console.warn(
+        `office-suite: could not install ${app}: ${res.stdout.toString()} ${res.stderr.toString()}`,
+      )
+      return
+    }
+    console.info(`office-suite: installed the ${app} app`)
   }
 
   // Collabora's two URLs are set through `activate-config` rather than
