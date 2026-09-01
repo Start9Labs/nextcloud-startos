@@ -122,10 +122,10 @@ The shared secret is read through a throwaway container that mounts only Coturn'
 
 Two interfaces, both on the same binding and port. WebDAV is the same server under a different path, offered separately so the desktop and mobile sync clients have an address to copy.
 
-| Interface | Id       | Type | Port | Path               | Description                    |
-| --------- | -------- | ---- | ---- | ------------------ | ------------------------------ |
-| Web UI    | `ui`     | ui   | 80   | `/`                | The web interface of Nextcloud |
-| WebDAV    | `webdav` | api  | 80   | `/remote.php/dav/` | Addresses for WebDAV syncing   |
+| Interface | Id | Type | Port | Path | Description |
+| --------- | -- | ---- | ---- | ---- | ----------- |
+| Web UI | `ui` | ui | 80 | `/` | The web interface of Nextcloud |
+| WebDAV | `webdav` | api | 80 | `/remote.php/dav/` | Addresses for WebDAV syncing |
 
 Neither is masked. The addresses published for `ui` are what init writes into `trusted_domains`, so an address Nextcloud does not know about is rejected by Nextcloud itself, not by StartOS.
 
@@ -182,13 +182,15 @@ Selects the document server that opens office files — Collabora Online, ONLYOF
 
 **Switching first deletes the settings written for the previous backend**, so a connector is never left pointed at a service that has since been uninstalled. That teardown is also what keeps the choice unambiguous: an unconfigured connector registers no file actions of its own, so exactly one handler is live in the Files UI.
 
-**It waits on the connector app.** The setting does nothing until **Nextcloud Office** (for Collabora) or **ONLYOFFICE** (for ONLYOFFICE Docs) is installed from the Nextcloud app store and enabled. Until then the oneshot logs that it is waiting and applies the settings on a later start.
+**It installs the connector app, once, on a change of selection.** The `office-suite` oneshot runs `occ app:install` for **Nextcloud Office (Collabora)** or **ONLYOFFICE** when that app is absent. Because it sits behind the signature check it fires only when the selection changes, never on an ordinary start — so an app the user later removes stays removed, and the health check reports it rather than the package silently putting it back.
+
+**It never re-enables a disabled connector.** An app that is present but switched off is either the user's decision or a major Nextcloud upgrade disabling one with no compatible release; re-enabling it is how that protection gets undone, and it is what `Disable Non-default Apps` exists to recover from. That state falls through to the health check instead.
 
 **The `trusted_domains` entry is load-bearing.** A document server fetches and saves files over the host bridge, and without that entry Nextcloud answers every one of those requests with `Trusted domain error` — the editor opens and then fails to load the document. Nextcloud matches on the host alone, so the bare IP covers whatever port the binding was assigned.
 
 ### Maintenance — Reset Admin Password, Disable Maintenance Mode, Disable Non-default Apps, Scan Files, Repair
 
-- **Reset Admin Password** generates a new password for a chosen admin account and shows it once. Only while running; the account list is read live.
+- **Reset Admin Password** generates a new password for a chosen admin account and shows it once. Only while running; the account list is read live. It carries a warning, so StartOS asks for confirmation first — it replaces on invocation rather than revealing the current password, and signs that user out.
 - **Disable Maintenance Mode** clears a stuck maintenance flag. Only while running. **Wait first** — brief maintenance mode after an update or a restart is normal, and this is for when it has lasted more than about fifteen minutes.
 - **Disable Non-default Apps** turns off every enabled app that Nextcloud does not ship, preserving the bundled set plus Calendar and Contacts. It is the recovery for an app that has made the UI return an Internal Server Error. Apps are disabled one at a time, and the result lists any that could not be — a fataling app is exactly what this action targets, so its own failure must not hide what did get disabled. Only while running, and **stable apps must be re-enabled individually afterwards.**
 - **Scan Files** rebuilds the file-cache index, which is what makes files added outside Nextcloud — over WebDAV's back door, rsync, or an external-storage mount — appear with correct sizes and turn up in search.
@@ -243,9 +245,13 @@ A web-interface failure after the grace period is Nextcloud itself: an app that 
 
 The transient checks — Recognize Model Download, Memories Indexing, Memories Map Setup, File Scan, Repair — exist only while their task is pending, and report `loading` with a progress message throughout.
 
-**Office Connector** (`office-connectors`) — present only while an office suite is selected. It reads Nextcloud's enabled-app list and fails while more than one office connector app is enabled.
+**Office Connector** (`office-connectors`) — present only while an office suite is selected. It reads Nextcloud's enabled-app list and fails in two distinct cases, each with its own instruction.
 
-A failure here is not a fault in any service: everything is running, and OpenDocument files still open. What breaks is Word, Excel and PowerPoint, silently — `richdocuments` demotes those formats the moment it sees a rival connector enabled, and the rival does not claim them unless it is configured. The message names the app to disable; disabling it in Nextcloud's Apps page clears the check on the next poll. It is a check rather than a task because a task can be dismissed while the breakage remains.
+**The selected suite's connector is not enabled.** Either it was never installed, or it has been removed or switched off since. The message says *Install* or *Enable* accordingly — telling someone to install what they already have is how a message stops being read — and names the other way out: selecting `None` in the Office Suite action. Without this the failure is silent: the reconcile simply waits, the document server runs, and nothing in Nextcloud opens in it.
+
+**More than one office connector is enabled.** Everything is running and OpenDocument files still open; what breaks is Word, Excel and PowerPoint, silently. `richdocuments` demotes those formats the moment it sees a rival connector enabled, and the rival does not claim them unless it is configured too. The message names the app to disable.
+
+Both clear on the next poll once the condition is resolved. It is a check rather than a task because a task can be dismissed while the breakage remains.
 
 ## Backups and Restore
 

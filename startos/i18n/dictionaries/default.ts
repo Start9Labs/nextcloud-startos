@@ -213,7 +213,14 @@ const dict = {
   None: 144,
   'Choose the document server that opens office files in your browser.': 145,
   'Office Connector': 146,
-  'Disable or uninstall the Nextcloud app named below. More than one office app is enabled, and Nextcloud then refuses to open Word, Excel and PowerPoint files in any of them: ': 147,
+
+  'This replaces the password on the chosen account immediately. The current one stops working, and anyone signed in as that user is signed out.': 150,
+  'Install ': 152,
+  ' is ready': 154,
+  'Disable ': 155,
+  ' on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.': 156,
+  'Enable ': 157,
+  ' in Nextcloud, or select “None” using the “Office Suite” action.': 158,
 } as const
 
 /**

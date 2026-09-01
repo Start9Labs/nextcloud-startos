@@ -20,6 +20,13 @@ export const OFFICE_CONNECTOR_APPS = [
   'officeonline',
 ] as const
 
+/** Exactly what each connector is called in Nextcloud's own Apps list. */
+export const CONNECTOR_APP_TITLES: Record<string, string> = {
+  richdocuments: 'Nextcloud Office (Collabora)',
+  onlyoffice: 'ONLYOFFICE',
+  officeonline: 'Office Online',
+}
+
 export const officeMountpoint = '/mnt/onlyoffice'
 export const officeSecretPath = `${officeMountpoint}/jwt-secret`
 
@@ -35,7 +42,7 @@ export const officeSuiteMeta = {
     internalPort: 9980,
     // The daemon's id, which is what its `ready` check is named.
     healthCheckId: 'cool',
-    // Installed by the user from the Nextcloud app store, like Talk.
+    title: 'Collabora Online',
     connectorApp: 'richdocuments',
   },
   onlyoffice: {
@@ -44,6 +51,7 @@ export const officeSuiteMeta = {
     hostId: 'main',
     internalPort: 80,
     healthCheckId: 'documentserver',
+    title: 'ONLYOFFICE Docs',
     connectorApp: 'onlyoffice',
   },
 } as const satisfies Record<
@@ -54,6 +62,7 @@ export const officeSuiteMeta = {
     hostId: string
     internalPort: number
     healthCheckId: string
+    title: string
     connectorApp: string
   }
 >
