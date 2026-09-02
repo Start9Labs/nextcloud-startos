@@ -1,13 +1,13 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.3:3',
+  version: '34.0.3:4',
   releaseNotes: {
     en_US: `Updated Nextcloud to 34.0.3 — a major upgrade from the Nextcloud 33 series.
 
 **New in this package**
 
-- **Office editing.** A new **Office Suite** action connects Nextcloud to Collabora Online or ONLYOFFICE Docs, both in the marketplace, so you can open and edit documents, spreadsheets and presentations in your browser and work on them with other people at the same time. Install the service, then its app from the Nextcloud app store — Nextcloud Office for Collabora, ONLYOFFICE for ONLYOFFICE Docs — and pick it in the Office Suite action. Collabora Online is recommended for almost everyone; it is the lighter of the two by far. The editor is served from your own Nextcloud address, so it works on your local network, a public domain and Tor alike.
+- **Office editing.** A new **Office Suite** action connects Nextcloud to Collabora Online or ONLYOFFICE Docs, both in the marketplace, so you can open and edit documents, spreadsheets and presentations in your browser and work on them with other people at the same time. Install the service and pick it in the Office Suite action; Nextcloud installs the app it needs and points itself at it. Collabora Online is recommended for almost everyone; it is the lighter of the two by far. The editor is served from your own Nextcloud address, so it works on your local network, a public domain and Tor alike.
 
 - **Delete Files in Trash**, a new setting in the Configure action. Nextcloud keeps a deleted file for at least 30 days and then clears it only when disk space runs short, so on a server with room to spare the trash grows without bound. You can now cap it at 7 to 365 days, or keep everything.
 
@@ -40,7 +40,7 @@ Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.
 
 **Novedades de este paquete**
 
-- **Edición ofimática.** Una nueva acción **Suite ofimática** conecta Nextcloud con Collabora Online o con ONLYOFFICE Docs, ambos en el mercado, para que pueda abrir y editar documentos, hojas de cálculo y presentaciones en su navegador y trabajar en ellos con otras personas a la vez. Instale el servicio, después su aplicación desde la tienda de aplicaciones de Nextcloud —Nextcloud Office para Collabora, ONLYOFFICE para ONLYOFFICE Docs— y elíjalo en la acción Suite ofimática. Se recomienda Collabora Online para casi todo el mundo; es con diferencia la más ligera de las dos. El editor se sirve desde su propia dirección de Nextcloud, así que funciona igual en su red local, en un dominio público y en Tor.
+- **Edición ofimática.** Una nueva acción **Suite ofimática** conecta Nextcloud con Collabora Online o con ONLYOFFICE Docs, ambos en el mercado, para que pueda abrir y editar documentos, hojas de cálculo y presentaciones en su navegador y trabajar en ellos con otras personas a la vez. Instale el servicio y elíjalo en la acción Suite ofimática; Nextcloud instala la aplicación que necesita y se apunta a ella. Se recomienda Collabora Online para casi todo el mundo; es con diferencia la más ligera de las dos. El editor se sirve desde su propia dirección de Nextcloud, así que funciona igual en su red local, en un dominio público y en Tor.
 
 - **Eliminar los archivos de la papelera**, un nuevo ajuste en la acción Configuración. Nextcloud conserva un archivo borrado al menos 30 días y solo lo suprime cuando escasea el espacio en disco, de modo que en un servidor con espacio de sobra la papelera crece sin límite. Ahora puede limitarla de 7 a 365 días, o conservarlo todo.
 
@@ -73,7 +73,7 @@ Registro de cambios completo: https://github.com/nextcloud-releases/server/relea
 
 **Neu in diesem Paket**
 
-- **Dokumentbearbeitung.** Eine neue Aktion **Office-Suite** verbindet Nextcloud mit Collabora Online oder ONLYOFFICE Docs, beide im Marktplatz. Damit öffnen und bearbeiten Sie Dokumente, Tabellen und Präsentationen im Browser und arbeiten gemeinsam mit anderen daran. Installieren Sie den Dienst, danach seine App aus dem Nextcloud App Store — Nextcloud Office für Collabora, ONLYOFFICE für ONLYOFFICE Docs — und wählen Sie ihn in der Aktion „Office-Suite“. Für fast alle ist Collabora Online die Empfehlung; es ist die mit Abstand leichtere der beiden. Der Editor wird über Ihre eigene Nextcloud-Adresse ausgeliefert und funktioniert dadurch im Heimnetz, über eine öffentliche Domain und über Tor gleichermaßen.
+- **Dokumentbearbeitung.** Eine neue Aktion **Office-Suite** verbindet Nextcloud mit Collabora Online oder ONLYOFFICE Docs, beide im Marktplatz. Damit öffnen und bearbeiten Sie Dokumente, Tabellen und Präsentationen im Browser und arbeiten gemeinsam mit anderen daran. Installieren Sie den Dienst und wählen Sie ihn in der Aktion „Office-Suite“; Nextcloud installiert die benötigte App und richtet sich selbst darauf aus. Für fast alle ist Collabora Online die Empfehlung; es ist die mit Abstand leichtere der beiden. Der Editor wird über Ihre eigene Nextcloud-Adresse ausgeliefert und funktioniert dadurch im Heimnetz, über eine öffentliche Domain und über Tor gleichermaßen.
 
 - **Dateien im Papierkorb löschen**, eine neue Einstellung in der Aktion Konfiguration. Nextcloud bewahrt eine gelöschte Datei mindestens 30 Tage auf und entfernt sie erst, wenn der Speicherplatz knapp wird — auf einem Server mit reichlich Platz wächst der Papierkorb also unbegrenzt. Sie können ihn jetzt auf 7 bis 365 Tage begrenzen oder alles behalten.
 
@@ -106,7 +106,7 @@ Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server
 
 **Nowości w tym pakiecie**
 
-- **Edycja dokumentów.** Nowa akcja **Pakiet biurowy** łączy Nextcloud z Collabora Online albo z ONLYOFFICE Docs — oba są dostępne na rynku. Możesz otwierać i edytować dokumenty, arkusze i prezentacje w przeglądarce oraz pracować nad nimi razem z innymi osobami. Zainstaluj usługę, następnie jej aplikację ze sklepu Nextcloud — Nextcloud Office dla Collabory, ONLYOFFICE dla ONLYOFFICE Docs — i wskaż ją w akcji Pakiet biurowy. Dla niemal wszystkich zalecana jest Collabora Online; jest zdecydowanie lżejsza z tych dwóch. Edytor jest udostępniany spod Twojego własnego adresu Nextcloud, więc działa tak samo w sieci lokalnej, pod domeną publiczną i przez Tor.
+- **Edycja dokumentów.** Nowa akcja **Pakiet biurowy** łączy Nextcloud z Collabora Online albo z ONLYOFFICE Docs — oba są dostępne na rynku. Możesz otwierać i edytować dokumenty, arkusze i prezentacje w przeglądarce oraz pracować nad nimi razem z innymi osobami. Zainstaluj usługę i wskaż ją w akcji Pakiet biurowy; Nextcloud zainstaluje potrzebną aplikację i sam się na nią skieruje. Dla niemal wszystkich zalecana jest Collabora Online; jest zdecydowanie lżejsza z tych dwóch. Edytor jest udostępniany spod Twojego własnego adresu Nextcloud, więc działa tak samo w sieci lokalnej, pod domeną publiczną i przez Tor.
 
 - **Usuwanie plików z kosza**, nowe ustawienie w akcji Konfiguracja. Nextcloud przechowuje usunięty plik co najmniej 30 dni i kasuje go dopiero wtedy, gdy zaczyna brakować miejsca na dysku, więc na serwerze z zapasem miejsca kosz rośnie bez ograniczeń. Teraz możesz ograniczyć go do 7–365 dni albo zachować wszystko.
 
@@ -139,7 +139,7 @@ Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag
 
 **Nouveautés de ce paquet**
 
-- **Édition bureautique.** Une nouvelle action **Suite bureautique** relie Nextcloud à Collabora Online ou à ONLYOFFICE Docs, tous deux dans la place de marché, pour ouvrir et modifier documents, feuilles de calcul et présentations dans votre navigateur, et y travailler à plusieurs simultanément. Installez le service, puis son application depuis la boutique Nextcloud — Nextcloud Office pour Collabora, ONLYOFFICE pour ONLYOFFICE Docs — et sélectionnez-le dans l'action Suite bureautique. Collabora Online est recommandé pour presque tout le monde ; c'est de loin le plus léger des deux. L'éditeur est servi depuis votre propre adresse Nextcloud : il fonctionne donc aussi bien sur votre réseau local, sur un domaine public et via Tor.
+- **Édition bureautique.** Une nouvelle action **Suite bureautique** relie Nextcloud à Collabora Online ou à ONLYOFFICE Docs, tous deux dans la place de marché, pour ouvrir et modifier documents, feuilles de calcul et présentations dans votre navigateur, et y travailler à plusieurs simultanément. Installez le service et sélectionnez-le dans l'action Suite bureautique ; Nextcloud installe l'application nécessaire et se pointe dessus. Collabora Online est recommandé pour presque tout le monde ; c'est de loin le plus léger des deux. L'éditeur est servi depuis votre propre adresse Nextcloud : il fonctionne donc aussi bien sur votre réseau local, sur un domaine public et via Tor.
 
 - **Suppression des fichiers de la corbeille**, un nouveau réglage dans l'action Configuration. Nextcloud conserve un fichier supprimé au moins 30 jours et ne l'efface que lorsque l'espace disque vient à manquer : sur un serveur disposant de place, la corbeille grossit donc sans limite. Vous pouvez désormais la plafonner de 7 à 365 jours, ou tout conserver.
 

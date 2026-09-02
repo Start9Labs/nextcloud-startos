@@ -10,6 +10,10 @@ export const DS_VPATH = '/ds-vpath'
 export const isOfficeSuite = (v: unknown): v is OfficeSuite =>
   typeof v === 'string' && (OFFICE_SUITES as readonly string[]).includes(v)
 
+// Collabora's WOPI discovery document, proxied below and fetched back through
+// that proxy by `richdocuments:activate-config`.
+export const COLLABORA_DISCOVERY = '/hosting/discovery'
+
 // Every Nextcloud app that handles office documents. richdocuments demotes the
 // Microsoft formats out of its default-open list whenever it finds one of the
 // others enabled (`CapabilitiesService::hasOtherOOXMLApps`), so a second one
@@ -19,9 +23,10 @@ export const OFFICE_CONNECTOR_APPS = [
   'onlyoffice',
   'officeonline',
 ] as const
+export type OfficeConnectorApp = (typeof OFFICE_CONNECTOR_APPS)[number]
 
 /** Exactly what each connector is called in Nextcloud's own Apps list. */
-export const CONNECTOR_APP_TITLES: Record<string, string> = {
+export const CONNECTOR_APP_TITLES: Record<OfficeConnectorApp, string> = {
   richdocuments: 'Nextcloud Office (Collabora)',
   onlyoffice: 'ONLYOFFICE',
   officeonline: 'Office Online',
@@ -44,6 +49,9 @@ export const officeSuiteMeta = {
     healthCheckId: 'cool',
     title: 'Collabora Online',
     connectorApp: 'richdocuments',
+    // What `richdocuments:activate-config` writes, and so what has to be
+    // cleared when the selection moves off this backend.
+    settingKeys: ['wopi_url', 'wopi_callback_url', 'public_wopi_url'],
   },
   onlyoffice: {
     packageId: 'onlyoffice-docs',
@@ -53,6 +61,13 @@ export const officeSuiteMeta = {
     healthCheckId: 'documentserver',
     title: 'ONLYOFFICE Docs',
     connectorApp: 'onlyoffice',
+    settingKeys: [
+      'DocumentServerUrl',
+      'DocumentServerInternalUrl',
+      'StorageUrl',
+      'jwt_secret',
+      'jwt_header',
+    ],
   },
 } as const satisfies Record<
   OfficeSuite,
@@ -63,7 +78,8 @@ export const officeSuiteMeta = {
     internalPort: number
     healthCheckId: string
     title: string
-    connectorApp: string
+    connectorApp: OfficeConnectorApp
+    settingKeys: readonly string[]
   }
 >
 
@@ -85,8 +101,8 @@ ProxyPreserveHost On
 ProxyPass        /browser http://${backend}/browser retry=0
 ProxyPassReverse /browser http://${backend}/browser
 
-ProxyPass        /hosting/discovery http://${backend}/hosting/discovery retry=0
-ProxyPassReverse /hosting/discovery http://${backend}/hosting/discovery
+ProxyPass        ${COLLABORA_DISCOVERY} http://${backend}${COLLABORA_DISCOVERY} retry=0
+ProxyPassReverse ${COLLABORA_DISCOVERY} http://${backend}${COLLABORA_DISCOVERY}
 
 ProxyPass        /hosting/capabilities http://${backend}/hosting/capabilities retry=0
 ProxyPassReverse /hosting/capabilities http://${backend}/hosting/capabilities
@@ -103,7 +119,7 @@ ProxyPassReverse /cool http://${backend}/cool
 # Nextcloud copies that URL into the editor frame verbatim. Stripping the origin
 # leaves a relative URL, which the browser resolves against whichever address it
 # is already on.
-<Location /hosting/discovery>
+<Location ${COLLABORA_DISCOVERY}>
   SetOutputFilter SUBSTITUTE
   Substitute "s#(urlsrc|favIconUrl)=\\"https?://[^/]+/#$1=\\"/#i"
 </Location>
@@ -122,13 +138,3 @@ ProxyPass        ${DS_VPATH}/ http://${backend}/ upgrade=websocket nocanon
 ProxyPassReverse ${DS_VPATH}/ http://${backend}/
 `
 }
-
-export const APACHE_MODULES = [
-  'proxy',
-  'proxy_http',
-  'proxy_wstunnel',
-  'substitute',
-] as const
-
-export const moduleLoadLine = (mod: string) =>
-  `LoadModule ${mod}_module /usr/lib/apache2/modules/mod_${mod}.so\n`

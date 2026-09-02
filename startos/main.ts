@@ -17,11 +17,9 @@ import { sdk } from './sdk'
 import { createHash } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
 import {
-  APACHE_MODULES,
   CONNECTOR_APP_TITLES,
   DS_VPATH,
   isOfficeSuite,
-  moduleLoadLine,
   officeMountpoint,
   OFFICE_CONNECTOR_APPS,
   officeSecretPath,
@@ -43,6 +41,7 @@ import {
   getPostgresSub,
   getValkeySub,
   hasNextcloudApp,
+  readDependencySecret,
   readEnabledApps,
   nextcloudMount,
   TALK_APP,
@@ -191,9 +190,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Host it sends has to be trusted or Nextcloud answers every request with
   // `Trusted domain error`. Nextcloud matches on the host alone, so the bare
   // bridge IP covers whatever port the binding was assigned.
-  const osIp = await sdk.getOsIp(effects)
+  const osIp = officeSuite ? await sdk.getOsIp(effects) : null
   await configPhp.merge(effects, {
-    trusted_domains: officeSuite
+    trusted_domains: osIp
       ? [...new Set([...trustedDomains, osIp])].sort()
       : trustedDomains,
   })
@@ -297,30 +296,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
     }
   }
 
-  // Read through a throwaway container so a missing Coturn can never break
-  // Nextcloud's own daemons, and we only ever see the `shared` subpath.
-  async function readCoturnSecret() {
-    const reader = sdk.SubContainer.of(
-      effects,
-      { imageId: 'valkey' },
-      sdk.Mounts.of().mountDependency({
-        dependencyId: coturnId,
-        volumeId: 'main',
-        subpath: 'shared',
-        mountpoint: coturnMountpoint,
-        readonly: true,
-      }),
-      'coturn-secret-read',
-    )
-    try {
-      const { stdout } = await reader.execFail(['cat', coturnSecretPath])
-      return stdout.toString().trim() || null
-    } catch {
-      return null
-    } finally {
-      await reader.destroy().catch(() => {})
-    }
-  }
+  const readCoturnSecret = () =>
+    readDependencySecret(effects, {
+      dependencyId: coturnId,
+      volumeId: 'main',
+      subpath: 'shared',
+      mountpoint: coturnMountpoint,
+      path: coturnSecretPath,
+    })
 
   // Mount each selected source's volume into Nextcloud's container, read-write.
   // `idmap` remaps the source's on-disk uid to www-data (33) across the userns
@@ -356,13 +339,15 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Nextcloud's own bridge address, which is what the document server is told
   // to fetch and save documents through: plaintext, so neither side needs to
   // trust this server's certificate.
-  const ownBridge = await sdk.host
-    .getBridgeAddress(effects, {
-      hostId: 'main',
-      internalPort: uiPort,
-      ssl: false,
-    })
-    .const()
+  const ownBridge = officeSuite
+    ? await sdk.host
+        .getBridgeAddress(effects, {
+          hostId: 'main',
+          internalPort: uiPort,
+          ssl: false,
+        })
+        .const()
+    : null
 
   const officeBackend = officeSuite
     ? await sdk.host
@@ -375,47 +360,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
         .const()
     : null
 
-  // ONLYOFFICE signs every request between the two services. Read through a
-  // throwaway container so a missing or stopped document server can never break
-  // Nextcloud's own daemons, and we only ever see the `shared` subpath.
-  const officeSecret =
-    officeSuite === 'onlyoffice' ? await readOfficeSecret() : null
-
-  async function readOfficeSecret() {
-    const reader = sdk.SubContainer.of(
-      effects,
-      { imageId: 'valkey' },
-      sdk.Mounts.of().mountDependency({
-        dependencyId: officeSuiteMeta.onlyoffice.packageId,
-        volumeId: 'startos',
-        subpath: 'shared',
-        mountpoint: officeMountpoint,
-        readonly: true,
-      }),
-      'office-secret-read',
-    )
-    try {
-      const { stdout } = await reader.execFail(['cat', officeSecretPath])
-      return stdout.toString().trim() || null
-    } catch {
-      return null
-    } finally {
-      await reader.destroy().catch(() => {})
-    }
-  }
-
   // Apache reads its configuration once, at startup, so the proxy that puts the
   // editor on Nextcloud's own origin has to be written before the web daemon
   // starts rather than reconciled after it.
-  const rootfs = await nextcloudSub.rootfs
-  for (const mod of APACHE_MODULES) {
-    await writeFile(
-      `${rootfs}/etc/apache2/mods-enabled/${mod}.load`,
-      moduleLoadLine(mod),
-    )
-  }
   await writeFile(
-    `${rootfs}/etc/apache2/conf-enabled/startos-office.conf`,
+    `${await nextcloudSub.rootfs}/etc/apache2/conf-enabled/startos-office.conf`,
     officeSuite && officeBackend
       ? renderOfficeProxyConf(officeSuite, officeBackend)
       : '',
@@ -685,7 +634,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
               suite: officeSuite,
               backend: officeBackend,
               ownBridge,
-              secret: officeSecret,
               configured: officeConfigured,
             })
             return null
@@ -701,6 +649,18 @@ export const main = sdk.setupMain(async ({ effects }) => {
           ? {
               ready: {
                 display: i18n('Office Connector'),
+                // Each poll boots PHP to read the app list, so a settled
+                // install is checked less often than the SDK's 30s default.
+                // The other intervals match that default, because the trigger
+                // waits out the interval for the status it is already in
+                // before polling again: raising them delays the first result
+                // and every recovery, and the ceiling here is how long a
+                // connector someone just switched off keeps reading as ready.
+                trigger: sdk.trigger.statusTrigger(120_000, {
+                  starting: 1_000,
+                  waiting: 1_000,
+                  failure: 15_000,
+                }),
                 fn: async () => {
                   const enabled = await readEnabledApps(nextcloudSub).catch(
                     () => null,
@@ -713,21 +673,24 @@ export const main = sdk.setupMain(async ({ effects }) => {
                   const { connectorApp: keep, title } =
                     officeSuiteMeta[officeSuite]
                   // Selected a document server but Nextcloud has nothing to
-                  // reach it with. Silent otherwise: the reconcile just waits.
+                  // reach it with — the connector was removed or switched off
+                  // after the selection, which the reconcile leaves alone.
                   if (!(keep in enabled)) {
                     // Present but disabled is a different instruction from
                     // absent, and telling someone to install what they already
                     // have is how a message stops being followed.
-                    const present = await hasNextcloudApp(keep)
+                    const app = CONNECTOR_APP_TITLES[keep]
                     return {
                       result: 'failure' as const,
-                      message: (present ? i18n('Enable ') : i18n('Install '))
-                        .concat(CONNECTOR_APP_TITLES[keep] ?? keep)
-                        .concat(
-                          i18n(
-                            ' in Nextcloud, or select “None” using the “Office Suite” action.',
+                      message: (await hasNextcloudApp(keep))
+                        ? i18n(
+                            'Enable ${app} in Nextcloud, or select “None” using the “Office Suite” action.',
+                            { app },
+                          )
+                        : i18n(
+                            'Install ${app} in Nextcloud, or select “None” using the “Office Suite” action.',
+                            { app },
                           ),
-                        ),
                     }
                   }
                   const rivals = OFFICE_CONNECTOR_APPS.filter(
@@ -736,21 +699,18 @@ export const main = sdk.setupMain(async ({ effects }) => {
                   if (rivals.length === 0)
                     return {
                       result: 'success' as const,
-                      message: title.concat(i18n(' is ready')),
+                      message: i18n('${app} is ready', { app: title }),
                     }
                   return {
                     result: 'failure' as const,
-                    message: i18n('Disable ')
-                      .concat(
-                        rivals
-                          .map((a) => CONNECTOR_APP_TITLES[a] ?? a)
+                    message: i18n(
+                      'Disable ${app} on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.',
+                      {
+                        app: rivals
+                          .map((a) => CONNECTOR_APP_TITLES[a])
                           .join(', '),
-                      )
-                      .concat(
-                        i18n(
-                          ' on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.',
-                        ),
-                      ),
+                      },
+                    ),
                   }
                 },
               },
@@ -1315,7 +1275,6 @@ async function reconcileExternalStorage(
   }
 }
 
-
 /**
  * Point the chosen office connector at its document server, or clear what we
  * previously pointed it at.
@@ -1326,10 +1285,12 @@ async function reconcileExternalStorage(
  * certificates out of the path entirely. The browser-facing one is relative, so
  * the editor follows whichever address the user already reached Nextcloud on.
  *
- * The connector app is installed by the user from the Nextcloud app store, and
- * `occ` resolves an app's settings only while it is enabled. A missing app is
- * left as a retry rather than an error: the signature is not written, so the
- * next chain build applies the config once the app is back.
+ * Nothing here runs until the chosen document server reports healthy, so every
+ * step below is one we expect to succeed rather than one we retry until it
+ * does. Past that gate it acts only on a change of selection, since the
+ * signature check short-circuits every other start — which is what makes it
+ * safe to install and switch on the connector for the suite the user just
+ * chose, and to switch off the one being left behind.
  */
 async function reconcileOffice(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
@@ -1339,11 +1300,45 @@ async function reconcileOffice(
     suite: OfficeSuite | null
     backend: string | null
     ownBridge: string | null
-    secret: string | null
     configured: string
   },
 ): Promise<void> {
-  const { suite, backend, ownBridge, secret, configured } = desired
+  const { suite, backend, ownBridge, configured } = desired
+
+  // Wait for the document server before touching Nextcloud at all. Its own
+  // health check fetches the endpoint this reconcile depends on, so `success`
+  // is precisely "the work below can succeed". Waiting is a watch on its
+  // status: it runs no commands, cannot fail, and resolves the moment the
+  // service becomes ready — seconds later on an ordinary start, or whenever
+  // the user gets around to installing it. `waitFor` rejects only when the
+  // context is torn down, which is a chain rebuild, not an error.
+  if (suite) {
+    const { packageId, healthCheckId, title } = officeSuiteMeta[suite]
+    try {
+      await sdk
+        .getStatus(effects, { packageId })
+        .waitFor((s) => s?.health[healthCheckId]?.result === 'success')
+    } catch {
+      return
+    }
+    if (abort.aborted) return
+    console.info(`office-suite: ${title} is ready`)
+  }
+
+  // ONLYOFFICE signs every request between the two services. Read after the
+  // gate: the secret is written during its install, so a healthy service has
+  // one, where a snapshot taken at chain build can predate it.
+  const secret =
+    suite === 'onlyoffice'
+      ? await readDependencySecret(effects, {
+          dependencyId: officeSuiteMeta.onlyoffice.packageId,
+          volumeId: 'startos',
+          subpath: 'shared',
+          mountpoint: officeMountpoint,
+          path: officeSecretPath,
+        })
+      : null
+
   const desiredSig = JSON.stringify({
     v: 1,
     suite,
@@ -1368,14 +1363,18 @@ async function reconcileOffice(
   const occ = (args: string[]) =>
     subc.exec(['php', 'occ', ...args], { user: 'www-data' })
 
-  // Clear the connector we are moving away from, so switching backends does not
-  // leave the old one still pointed at a service that may be uninstalled next.
+  // Clear the connector we are moving away from and switch it off. Its settings
+  // would otherwise point at a service that may be uninstalled next, and either
+  // connector left enabled demotes the Microsoft formats out of the other one's
+  // default-open list, so both suites end up opening neither.
   if (previous.suite && previous.suite !== suite) {
-    const app = officeSuiteMeta[previous.suite].connectorApp
-    for (const key of OFFICE_KEYS[previous.suite]) {
+    const { connectorApp, settingKeys } = officeSuiteMeta[previous.suite]
+    for (const key of settingKeys) {
       if (abort.aborted) return
-      await occ(['config:app:delete', app, key])
+      await occ(['config:app:delete', connectorApp, key])
     }
+    if (abort.aborted) return
+    await occ(['app:disable', connectorApp])
   }
 
   if (!suite) {
@@ -1396,28 +1395,20 @@ async function reconcileOffice(
   })
   const app = officeSuiteMeta[suite].connectorApp
   if (!(app in enabled)) {
-    // Install it, but only when it is absent entirely, and only here — this
-    // runs on a change of selection, never on an ordinary start, so an app the
-    // user later removes stays removed and the health check reports it.
-    //
-    // A present-but-disabled app is left alone on purpose. That state is either
-    // the user's decision or a major Nextcloud upgrade disabling an app with no
-    // compatible release, and re-enabling it is exactly how that protection
-    // gets undone — the failure `Disable Non-default Apps` exists to recover.
-    if (await hasNextcloudApp(app)) {
-      console.warn(
-        `office-suite: the ${app} app is present but disabled; not re-enabling it`,
-      )
-      return
-    }
-    const res = await occ(['app:install', app])
+    // Both commands refuse an app with no release compatible with this
+    // Nextcloud, which is the state a major upgrade leaves behind — so the
+    // protection `Disable Non-default Apps` exists to recover holds here
+    // without a check of our own.
+    const res = (await hasNextcloudApp(app))
+      ? await occ(['app:enable', app])
+      : await occ(['app:install', app])
     if (res.exitCode !== 0) {
       console.warn(
-        `office-suite: could not install ${app}: ${res.stdout.toString()} ${res.stderr.toString()}`,
+        `office-suite: could not enable ${app}: ${res.stdout.toString()} ${res.stderr.toString()}`,
       )
       return
     }
-    console.info(`office-suite: installed the ${app} app`)
+    console.info(`office-suite: enabled the ${app} app`)
   }
 
   // Collabora's two URLs are set through `activate-config` rather than
@@ -1425,6 +1416,11 @@ async function reconcileOffice(
   // it is run without `--callback-url` — and it has to be run, since it is what
   // refreshes the cached discovery document.
   if (suite === 'collabora') {
+    // That refresh is a live fetch of `/hosting/discovery` back through this
+    // container's own proxy, which is why the readiness gate above has to have
+    // passed: a fetch that fails still leaves richdocuments holding a WOPI url
+    // with no discovery behind it, and every document then opens to a spinner
+    // that never resolves.
     const res = await occ([
       'richdocuments:activate-config',
       // Our own Apache, in-container: the discovery fetch has to pass through
@@ -1432,8 +1428,9 @@ async function reconcileOffice(
       '--wopi-url=http://127.0.0.1',
       ...(ownBridge ? [`--callback-url=http://${ownBridge}`] : []),
     ])
+    if (abort.aborted) return
     if (res.exitCode !== 0) {
-      console.warn(
+      console.error(
         `office-suite: richdocuments:activate-config failed: ${res.stdout.toString()} ${res.stderr.toString()}`,
       )
       return
@@ -1442,23 +1439,32 @@ async function reconcileOffice(
     return
   }
 
-  const settings: Record<string, string> =
-    suite === 'onlyoffice'
-      ? {
-          // Relative, so the browser resolves it against the address it is on.
-          DocumentServerUrl: `${DS_VPATH}/`,
-          DocumentServerInternalUrl: `http://${backend}/`,
-          StorageUrl: ownBridge ? `http://${ownBridge}/` : '',
-          jwt_secret: secret ?? '',
-          jwt_header: OO_JWT_HEADER,
-        }
-      : {}
+  // Pairing on an empty secret authenticates nothing, so record nothing and let
+  // the next chain build try again.
+  if (!secret) {
+    console.error(
+      `office-suite: ${officeSuiteMeta.onlyoffice.packageId} is ready but has published no JWT secret`,
+    )
+    return
+  }
+
+  const settings: Record<
+    (typeof officeSuiteMeta)['onlyoffice']['settingKeys'][number],
+    string
+  > = {
+    // Relative, so the browser resolves it against the address it is on.
+    DocumentServerUrl: `${DS_VPATH}/`,
+    DocumentServerInternalUrl: `http://${backend}/`,
+    StorageUrl: ownBridge ? `http://${ownBridge}/` : '',
+    jwt_secret: secret,
+    jwt_header: OO_JWT_HEADER,
+  }
 
   for (const [key, value] of Object.entries(settings)) {
     if (abort.aborted) return
     const res = await occ(['config:app:set', app, key, `--value=${value}`])
     if (res.exitCode !== 0) {
-      console.warn(
+      console.error(
         `office-suite: could not set ${key}: ${res.stdout.toString()} ${res.stderr.toString()}`,
       )
       return
@@ -1466,15 +1472,4 @@ async function reconcileOffice(
   }
 
   await storeJson.merge(effects, { officeConfigured: desiredSig })
-}
-
-const OFFICE_KEYS: Record<OfficeSuite, string[]> = {
-  collabora: ['wopi_url', 'wopi_callback_url', 'public_wopi_url'],
-  onlyoffice: [
-    'DocumentServerUrl',
-    'DocumentServerInternalUrl',
-    'StorageUrl',
-    'jwt_secret',
-    'jwt_header',
-  ],
 }

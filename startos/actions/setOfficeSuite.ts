@@ -9,12 +9,12 @@ export const inputSpec = InputSpec.of({
   office_suite: Value.select({
     name: i18n('Office Suite'),
     description: i18n(
-      'Which document server opens documents, spreadsheets and presentations in your browser. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office. Install the service first, then its Nextcloud app — Nextcloud Office for Collabora, ONLYOFFICE for ONLYOFFICE Docs — and enable only that one.',
+      'Which document server opens documents, spreadsheets and presentations in your browser. Install it from the Marketplace first, then pick it here — Nextcloud installs the app it needs and points itself at the service. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office.',
     ),
     default: 'none',
     values: {
       none: i18n('None'),
-      collabora: 'Collabora Online (recommended)',
+      collabora: i18n('Collabora Online (recommended)'),
       onlyoffice: 'ONLYOFFICE Docs',
     },
   }),
@@ -43,7 +43,9 @@ export const setOfficeSuite = sdk.Action.withInput(
   async ({ effects }) => {
     const officeSuite = await storeJson.read((s) => s.officeSuite).once()
     return {
-      office_suite: isOfficeSuite(officeSuite) ? officeSuite : ('none' as const),
+      office_suite: isOfficeSuite(officeSuite)
+        ? officeSuite
+        : ('none' as const),
     }
   },
 

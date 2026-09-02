@@ -54,7 +54,7 @@ Six oneshots run alongside them, in order: `chown` hands the data directory to `
 
 **`finish-upgrade` runs after the web daemon is ready, not before it**, which is what makes it safe. In the normal case the upgrade has already happened during init and this is a no-op; when it does have work to do, Apache is up serving the maintenance page while `occ upgrade` runs, exactly as a manual recovery would. It fails open — nothing it does can prevent the service from serving.
 
-Apache also carries a generated `startos-office.conf` and the four proxy modules it needs, written into the container's filesystem on every start. It puts the chosen document server on Nextcloud's own origin — `/browser`, `/cool` and `/hosting` for Collabora, `/ds-vpath` for ONLYOFFICE — which is what lets the editor work on every address Nextcloud is reachable at rather than one. The file is empty when no office suite is selected.
+Apache also carries a generated `startos-office.conf`, written into the container's filesystem on every start; the four proxy modules it needs are enabled in the image. It puts the chosen document server on Nextcloud's own origin — `/browser`, `/cool` and `/hosting` for Collabora, `/ds-vpath` for ONLYOFFICE — which is what lets the editor work on every address Nextcloud is reachable at rather than one. The file is empty when no office suite is selected.
 
 For Collabora it also rewrites the WOPI discovery response, stripping the absolute origin out of every `urlsrc` so the editor loads same-origin — Nextcloud otherwise copies Collabora's own absolute address into the editor frame verbatim, pinning it to one address. Tracked upstream as nextcloud/richdocuments#6019; if that lands, the rewrite can go.
 
@@ -103,12 +103,12 @@ Three settings depart from what upstream would do:
 
 None are required. Both are optional and exist only while they are selected.
 
-| Dependency    | Kind      | Health checks | Required                                                    |
-| ------------- | --------- | ------------- | ----------------------------------------------------------- |
-| `filebrowser`       | `exists`  | —             | Only while chosen in the External Storage action            |
-| `coturn`            | `running` | **none**      | Only while Talk call relaying is on in the Configure action |
-| `collabora-online`  | `running` | `cool`        | Only while chosen in the Office Suite action |
-| `onlyoffice-docs`   | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
+| Dependency         | Kind      | Health checks    | Required                                                                                             |
+| ------------------ | --------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
+| `filebrowser`      | `exists`  | —                | Only while chosen in the External Storage action                                                     |
+| `coturn`           | `running` | **none**         | Only while Talk call relaying is on in the Configure action                                          |
+| `collabora-online` | `running` | `cool`           | Only while chosen in the Office Suite action                                                         |
+| `onlyoffice-docs`  | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
 
 The External Storage action offers only the sources whose backing service is actually installed, so an uninstalled one never appears in the form.
 
@@ -122,10 +122,10 @@ The shared secret is read through a throwaway container that mounts only Coturn'
 
 Two interfaces, both on the same binding and port. WebDAV is the same server under a different path, offered separately so the desktop and mobile sync clients have an address to copy.
 
-| Interface | Id | Type | Port | Path | Description |
-| --------- | -- | ---- | ---- | ---- | ----------- |
-| Web UI | `ui` | ui | 80 | `/` | The web interface of Nextcloud |
-| WebDAV | `webdav` | api | 80 | `/remote.php/dav/` | Addresses for WebDAV syncing |
+| Interface | Id       | Type | Port | Path               | Description                    |
+| --------- | -------- | ---- | ---- | ------------------ | ------------------------------ |
+| Web UI    | `ui`     | ui   | 80   | `/`                | The web interface of Nextcloud |
+| WebDAV    | `webdav` | api  | 80   | `/remote.php/dav/` | Addresses for WebDAV syncing   |
 
 Neither is masked. The addresses published for `ui` are what init writes into `trusted_domains`, so an address Nextcloud does not know about is rejected by Nextcloud itself, not by StartOS.
 
@@ -173,18 +173,20 @@ Surfaces another StartOS service's files as a folder in Nextcloud Files, using N
 
 Selects the document server that opens office files — Collabora Online, ONLYOFFICE Docs, or none. Collabora is labelled recommended in the form and is the right answer for most installs; the trade-off is set out in `instructions.md` under **Which one to choose**, and rests on a measured round-trip rather than a marketing claim: both engines preserve text, tables, images, links, footnotes and fields exactly, but LibreOffice rewrites style-inherited formatting as direct formatting on each run, where ONLYOFFICE returns the file byte-identical in structure.
 
-- **When to run it:** after installing one of the two services and its Nextcloud app, and again to switch or to turn editing off.
+- **When to run it:** after installing one of the two services, and again to switch or to turn editing off.
 - **What it changes:** `officeSuite` in `store.json`. Through it: the package's dependency on that service, the host bridge's IP in `trusted_domains`, the generated Apache proxy that serves the editor from Nextcloud's own origin, and — on the next start, via the `office-suite` oneshot — the connector app's own settings.
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** idempotent; the form is pre-filled with the current choice.
 
 **Only one connector app may be enabled.** `richdocuments` drops the Microsoft formats out of its default-open capability whenever it finds `onlyoffice` or `officeonline` enabled, and the other app does not pick them up unless it is configured too — so Word, Excel and PowerPoint files open in neither and download instead, with nothing in Nextcloud saying why. The `office-connectors` health check fails while that is the case and names the app to disable.
 
-**Switching first deletes the settings written for the previous backend**, so a connector is never left pointed at a service that has since been uninstalled. That teardown is also what keeps the choice unambiguous: an unconfigured connector registers no file actions of its own, so exactly one handler is live in the Files UI.
+**Switching deletes the settings written for the previous backend and disables its connector**, so a connector is never left pointed at a service that has since been uninstalled, and the two are never enabled at once — which is the state that stops Word, Excel and PowerPoint opening in either.
 
-**It installs the connector app, once, on a change of selection.** The `office-suite` oneshot runs `occ app:install` for **Nextcloud Office (Collabora)** or **ONLYOFFICE** when that app is absent. Because it sits behind the signature check it fires only when the selection changes, never on an ordinary start — so an app the user later removes stays removed, and the health check reports it rather than the package silently putting it back.
+**It installs and enables the connector app on a change of selection.** The `office-suite` oneshot runs `occ app:install` for **Nextcloud Office (Collabora)** or **ONLYOFFICE** when that app is absent, and `occ app:enable` when it is present but switched off. Because it sits behind the signature check it fires only when the selection changes, never on an ordinary start — so an app the user later removes or disables stays that way, and the health check reports it rather than the package silently putting it back. Neither command overrides Nextcloud's own compatibility check, so an app with no release for the running major version is refused rather than force-enabled.
 
-**It never re-enables a disabled connector.** An app that is present but switched off is either the user's decision or a major Nextcloud upgrade disabling one with no compatible release; re-enabling it is how that protection gets undone, and it is what `Disable Non-default Apps` exists to recover from. That state falls through to the health check instead.
+**The reconcile waits for the document server to report healthy before it touches anything.** The `office-suite` oneshot watches the chosen service's status and blocks until its own health check passes — `cool` for Collabora, `documentserver` for ONLYOFFICE. That check fetches the same endpoint this package depends on, so passing it means the work below can succeed rather than merely that something is listening. It matters most for `richdocuments:activate-config`, which refreshes the cached discovery document by fetching it: a fetch that fails partway leaves the app holding a WOPI url with no discovery behind it, and every document then opens to a spinner that never resolves.
+
+The wait is a subscription, not a poll. It runs no commands, cannot fail, and releases the moment the service becomes ready — a few tens of seconds into an ordinary start, or whenever the user installs the service if they selected it first. A bridge address is not a usable readiness signal here: the port is bound, and the address therefore resolves, well before `coolwsd` accepts its first connection.
 
 **The `trusted_domains` entry is load-bearing.** A document server fetches and saves files over the host bridge, and without that entry Nextcloud answers every one of those requests with `Trusted domain error` — the editor opens and then fails to load the document. Nextcloud matches on the host alone, so the bare IP covers whatever port the binding was assigned.
 
@@ -245,7 +247,7 @@ A web-interface failure after the grace period is Nextcloud itself: an app that 
 
 The transient checks — Recognize Model Download, Memories Indexing, Memories Map Setup, File Scan, Repair — exist only while their task is pending, and report `loading` with a progress message throughout.
 
-**Office Connector** (`office-connectors`) — present only while an office suite is selected. It reads Nextcloud's enabled-app list and fails in two distinct cases, each with its own instruction.
+**Office Connector** (`office-connectors`) — present only while an office suite is selected. It reads Nextcloud's enabled-app list and fails in two distinct cases, each with its own instruction. Each poll boots PHP to read that list, so it runs every two minutes while passing and every fifteen seconds while failing. That ceiling is also how long a connector someone has just switched off keeps reading as ready.
 
 **The selected suite's connector is not enabled.** Either it was never installed, or it has been removed or switched off since. The message says *Install* or *Enable* accordingly — telling someone to install what they already have is how a message stops being read — and names the other way out: selecting `None` in the Office Suite action. Without this the failure is silent: the reconcile simply waits, the document server runs, and nothing in Nextcloud opens in it.
 
@@ -316,7 +318,7 @@ dependencies:
   - filebrowser # optional, exists; only while selected as an external-storage source
   - coturn # optional, running, no health checks; only while Talk call relaying is on
   - collabora-online # optional, running, health check `cool`; only while selected as the office suite
-  - onlyoffice-docs # optional, running, health check `documentserver`; only while selected as the office suite
+  - onlyoffice-docs # optional, running, health check `documentserver`; only while selected as the office suite; Community Registry
 interfaces:
   ui: { type: ui, port: 80 }
   webdav: { type: api, port: 80 } # same binding, path /remote.php/dav/
