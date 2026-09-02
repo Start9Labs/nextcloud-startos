@@ -92,9 +92,8 @@ export const coturnSecretPath = `${coturnMountpoint}/turn-secret`
 
 /**
  * Read a secret another package publishes on one of its volumes, through a
- * throwaway container that mounts only that subpath read-only — so a missing or
- * stopped dependency can never take Nextcloud's own daemons down, and nothing
- * else on that volume comes into view. Null if it cannot be read.
+ * throwaway container that mounts only that subpath read-only, so a missing
+ * dependency can never take Nextcloud's own daemons down. Null if unreadable.
  */
 export async function readDependencySecret(
   effects: T.Effects,

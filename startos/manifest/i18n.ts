@@ -55,7 +55,7 @@ export const onlyofficeDescription = {
   pl_PL:
     'Otwiera i edytuje dokumenty, arkusze i prezentacje w przeglądarce, prosto z Plików Nextcloud. Cięższa alternatywa dla Collabora Online',
   fr_FR:
-    'Ouvre et modifie documents, feuilles de calcul et présentations dans le navigateur, depuis Fichiers de Nextcloud. Lalternative plus lourde à Collabora Online',
+    "Ouvre et modifie documents, feuilles de calcul et présentations dans le navigateur, depuis Fichiers de Nextcloud. L'alternative plus lourde à Collabora Online",
 }
 
 export const long = {

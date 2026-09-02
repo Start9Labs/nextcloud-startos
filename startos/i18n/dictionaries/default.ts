@@ -219,7 +219,9 @@ const dict = {
 
   // main.ts: the office-connectors health check
   'Office Connector': 146,
-  '${app} is ready': 154,
+  'Waiting for ${suite} to be ready': 159,
+  'Setting up ${app}...': 160,
+  '${app} is enabled': 154,
   'Install ${app} in Nextcloud, or select “None” using the “Office Suite” action.': 152,
   'Enable ${app} in Nextcloud, or select “None” using the “Office Suite” action.': 157,
   'Disable ${app} on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.': 155,

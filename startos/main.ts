@@ -17,6 +17,7 @@ import { sdk } from './sdk'
 import { createHash } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
 import {
+  appliedOfficeSuite,
   CONNECTOR_APP_TITLES,
   DS_VPATH,
   isOfficeSuite,
@@ -25,6 +26,7 @@ import {
   officeSecretPath,
   officeSuiteMeta,
   OfficeSuite,
+  OnlyofficeSettingKey,
   OO_JWT_HEADER,
   renderOfficeProxyConf,
 } from './officeSuite'
@@ -649,19 +651,38 @@ export const main = sdk.setupMain(async ({ effects }) => {
           ? {
               ready: {
                 display: i18n('Office Connector'),
-                // Each poll boots PHP to read the app list, so a settled
-                // install is checked less often than the SDK's 30s default.
-                // The other intervals match that default, because the trigger
-                // waits out the interval for the status it is already in
-                // before polling again: raising them delays the first result
-                // and every recovery, and the ceiling here is how long a
-                // connector someone just switched off keeps reading as ready.
+                // Reading the app list boots PHP.
                 trigger: sdk.trigger.statusTrigger(120_000, {
                   starting: 1_000,
-                  waiting: 1_000,
+                  loading: 5_000,
                   failure: 15_000,
                 }),
                 fn: async () => {
+                  const {
+                    connectorApp: keep,
+                    title,
+                    packageId,
+                    healthCheckId,
+                  } = officeSuiteMeta[officeSuite]
+                  const app = CONNECTOR_APP_TITLES[keep]
+                  const applied = appliedOfficeSuite(
+                    (await storeJson.read().once())?.officeConfigured ?? '',
+                  )
+                  if (applied !== officeSuite) {
+                    // A document server that is missing, stopped or unhealthy
+                    // is the dependency's own report.
+                    const ready =
+                      (await sdk.getStatus(effects, { packageId }).once())
+                        ?.health[healthCheckId]?.result === 'success'
+                    return {
+                      result: 'loading' as const,
+                      message: ready
+                        ? i18n('Setting up ${app}...', { app })
+                        : i18n('Waiting for ${suite} to be ready', {
+                            suite: title,
+                          }),
+                    }
+                  }
                   const enabled = await readEnabledApps(nextcloudSub).catch(
                     () => null,
                   )
@@ -670,16 +691,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
                       result: 'starting' as const,
                       message: null,
                     }
-                  const { connectorApp: keep, title } =
-                    officeSuiteMeta[officeSuite]
-                  // Selected a document server but Nextcloud has nothing to
-                  // reach it with — the connector was removed or switched off
-                  // after the selection, which the reconcile leaves alone.
-                  if (!(keep in enabled)) {
-                    // Present but disabled is a different instruction from
-                    // absent, and telling someone to install what they already
-                    // have is how a message stops being followed.
-                    const app = CONNECTOR_APP_TITLES[keep]
+                  // Applied, so the connector was removed or switched off
+                  // since; the reconcile leaves that alone.
+                  if (!(keep in enabled))
                     return {
                       result: 'failure' as const,
                       message: (await hasNextcloudApp(keep))
@@ -692,14 +706,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
                             { app },
                           ),
                     }
-                  }
                   const rivals = OFFICE_CONNECTOR_APPS.filter(
                     (a) => a !== keep && a in enabled,
                   )
                   if (rivals.length === 0)
                     return {
                       result: 'success' as const,
-                      message: i18n('${app} is ready', { app: title }),
+                      message: i18n('${app} is enabled', { app }),
                     }
                   return {
                     result: 'failure' as const,
@@ -1285,12 +1298,9 @@ async function reconcileExternalStorage(
  * certificates out of the path entirely. The browser-facing one is relative, so
  * the editor follows whichever address the user already reached Nextcloud on.
  *
- * Nothing here runs until the chosen document server reports healthy, so every
- * step below is one we expect to succeed rather than one we retry until it
- * does. Past that gate it acts only on a change of selection, since the
- * signature check short-circuits every other start — which is what makes it
- * safe to install and switch on the connector for the suite the user just
- * chose, and to switch off the one being left behind.
+ * Runs only once the chosen document server reports healthy, and acts only on
+ * a change of selection. Past that gate a failing step throws, so the SDK
+ * re-invokes it — through the gate again first — until it succeeds.
  */
 async function reconcileOffice(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
@@ -1305,15 +1315,10 @@ async function reconcileOffice(
 ): Promise<void> {
   const { suite, backend, ownBridge, configured } = desired
 
-  // Wait for the document server before touching Nextcloud at all. Its own
-  // health check fetches the endpoint this reconcile depends on, so `success`
-  // is precisely "the work below can succeed". Waiting is a watch on its
-  // status: it runs no commands, cannot fail, and resolves the moment the
-  // service becomes ready — seconds later on an ordinary start, or whenever
-  // the user gets around to installing it. `waitFor` rejects only when the
-  // context is torn down, which is a chain rebuild, not an error.
+  // The port is bound well before the server answers, so wait on its health
+  // check rather than its address.
   if (suite) {
-    const { packageId, healthCheckId, title } = officeSuiteMeta[suite]
+    const { packageId, healthCheckId } = officeSuiteMeta[suite]
     try {
       await sdk
         .getStatus(effects, { packageId })
@@ -1322,12 +1327,10 @@ async function reconcileOffice(
       return
     }
     if (abort.aborted) return
-    console.info(`office-suite: ${title} is ready`)
   }
 
-  // ONLYOFFICE signs every request between the two services. Read after the
-  // gate: the secret is written during its install, so a healthy service has
-  // one, where a snapshot taken at chain build can predate it.
+  // Read after the gate: ONLYOFFICE writes this during its install, so a
+  // snapshot taken at chain build can predate it.
   const secret =
     suite === 'onlyoffice'
       ? await readDependencySecret(effects, {
@@ -1352,23 +1355,19 @@ async function reconcileOffice(
   })
   if (desiredSig === configured) return
 
-  const previous: { suite?: OfficeSuite | null } = (() => {
-    try {
-      return JSON.parse(configured || '{}')
-    } catch {
-      return {}
-    }
-  })()
+  const previous = appliedOfficeSuite(configured)
 
   const occ = (args: string[]) =>
     subc.exec(['php', 'occ', ...args], { user: 'www-data' })
+  const occError = (what: string, res: Awaited<ReturnType<typeof occ>>) =>
+    new Error(
+      `office-suite: ${what}: ${res.stdout.toString()} ${res.stderr.toString()}`,
+    )
 
-  // Clear the connector we are moving away from and switch it off. Its settings
-  // would otherwise point at a service that may be uninstalled next, and either
-  // connector left enabled demotes the Microsoft formats out of the other one's
-  // default-open list, so both suites end up opening neither.
-  if (previous.suite && previous.suite !== suite) {
-    const { connectorApp, settingKeys } = officeSuiteMeta[previous.suite]
+  // Left enabled, the old connector demotes the Microsoft formats out of the
+  // new one.
+  if (previous && previous !== suite) {
+    const { connectorApp, settingKeys } = officeSuiteMeta[previous]
     for (const key of settingKeys) {
       if (abort.aborted) return
       await occ(['config:app:delete', connectorApp, key])
@@ -1382,9 +1381,12 @@ async function reconcileOffice(
     return
   }
 
+  const { title, connectorApp: app, packageId } = officeSuiteMeta[suite]
+  console.info(`office-suite: ${title} is ready`)
+
   if (!backend) {
     console.warn(
-      `office-suite: ${officeSuiteMeta[suite].packageId} is not reachable yet; leaving the connector alone until it is`,
+      `office-suite: ${packageId} is not reachable yet; leaving the connector alone until it is`,
     )
     return
   }
@@ -1393,21 +1395,13 @@ async function reconcileOffice(
     console.warn(`office-suite: ${e}`)
     return {}
   })
-  const app = officeSuiteMeta[suite].connectorApp
   if (!(app in enabled)) {
-    // Both commands refuse an app with no release compatible with this
-    // Nextcloud, which is the state a major upgrade leaves behind — so the
-    // protection `Disable Non-default Apps` exists to recover holds here
-    // without a check of our own.
+    // Neither command overrides Nextcloud's compatibility check, so an app a
+    // major upgrade disabled stays disabled.
     const res = (await hasNextcloudApp(app))
       ? await occ(['app:enable', app])
       : await occ(['app:install', app])
-    if (res.exitCode !== 0) {
-      console.warn(
-        `office-suite: could not enable ${app}: ${res.stdout.toString()} ${res.stderr.toString()}`,
-      )
-      return
-    }
+    if (res.exitCode !== 0) throw occError(`could not enable ${app}`, res)
     console.info(`office-suite: enabled the ${app} app`)
   }
 
@@ -1416,11 +1410,6 @@ async function reconcileOffice(
   // it is run without `--callback-url` — and it has to be run, since it is what
   // refreshes the cached discovery document.
   if (suite === 'collabora') {
-    // That refresh is a live fetch of `/hosting/discovery` back through this
-    // container's own proxy, which is why the readiness gate above has to have
-    // passed: a fetch that fails still leaves richdocuments holding a WOPI url
-    // with no discovery behind it, and every document then opens to a spinner
-    // that never resolves.
     const res = await occ([
       'richdocuments:activate-config',
       // Our own Apache, in-container: the discovery fetch has to pass through
@@ -1429,29 +1418,19 @@ async function reconcileOffice(
       ...(ownBridge ? [`--callback-url=http://${ownBridge}`] : []),
     ])
     if (abort.aborted) return
-    if (res.exitCode !== 0) {
-      console.error(
-        `office-suite: richdocuments:activate-config failed: ${res.stdout.toString()} ${res.stderr.toString()}`,
-      )
-      return
-    }
+    if (res.exitCode !== 0)
+      throw occError('richdocuments:activate-config failed', res)
     await storeJson.merge(effects, { officeConfigured: desiredSig })
     return
   }
 
-  // Pairing on an empty secret authenticates nothing, so record nothing and let
-  // the next chain build try again.
-  if (!secret) {
-    console.error(
-      `office-suite: ${officeSuiteMeta.onlyoffice.packageId} is ready but has published no JWT secret`,
+  // An empty secret authenticates nothing, so record nothing.
+  if (!secret)
+    throw new Error(
+      `office-suite: ${packageId} is ready but has published no JWT secret`,
     )
-    return
-  }
 
-  const settings: Record<
-    (typeof officeSuiteMeta)['onlyoffice']['settingKeys'][number],
-    string
-  > = {
+  const settings: Record<OnlyofficeSettingKey, string> = {
     // Relative, so the browser resolves it against the address it is on.
     DocumentServerUrl: `${DS_VPATH}/`,
     DocumentServerInternalUrl: `http://${backend}/`,
@@ -1463,12 +1442,7 @@ async function reconcileOffice(
   for (const [key, value] of Object.entries(settings)) {
     if (abort.aborted) return
     const res = await occ(['config:app:set', app, key, `--value=${value}`])
-    if (res.exitCode !== 0) {
-      console.error(
-        `office-suite: could not set ${key}: ${res.stdout.toString()} ${res.stderr.toString()}`,
-      )
-      return
-    }
+    if (res.exitCode !== 0) throw occError(`could not set ${key}`, res)
   }
 
   await storeJson.merge(effects, { officeConfigured: desiredSig })

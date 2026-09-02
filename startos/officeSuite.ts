@@ -10,8 +10,17 @@ export const DS_VPATH = '/ds-vpath'
 export const isOfficeSuite = (v: unknown): v is OfficeSuite =>
   typeof v === 'string' && (OFFICE_SUITES as readonly string[]).includes(v)
 
-// Collabora's WOPI discovery document, proxied below and fetched back through
-// that proxy by `richdocuments:activate-config`.
+/** The suite the last successful reconcile recorded, or null. */
+export function appliedOfficeSuite(signature: string): OfficeSuite | null {
+  try {
+    const { suite } = JSON.parse(signature)
+    return isOfficeSuite(suite) ? suite : null
+  } catch {
+    return null
+  }
+}
+
+// Fetched back through the proxy below by `richdocuments:activate-config`.
 export const COLLABORA_DISCOVERY = '/hosting/discovery'
 
 // Every Nextcloud app that handles office documents. richdocuments demotes the
@@ -49,8 +58,7 @@ export const officeSuiteMeta = {
     healthCheckId: 'cool',
     title: 'Collabora Online',
     connectorApp: 'richdocuments',
-    // What `richdocuments:activate-config` writes, and so what has to be
-    // cleared when the selection moves off this backend.
+    // What `richdocuments:activate-config` writes.
     settingKeys: ['wopi_url', 'wopi_callback_url', 'public_wopi_url'],
   },
   onlyoffice: {
@@ -82,6 +90,9 @@ export const officeSuiteMeta = {
     settingKeys: readonly string[]
   }
 >
+
+export type OnlyofficeSettingKey =
+  (typeof officeSuiteMeta)['onlyoffice']['settingKeys'][number]
 
 /**
  * The Apache configuration that puts the chosen document server on Nextcloud's
