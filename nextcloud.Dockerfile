@@ -41,3 +41,6 @@ RUN printf '%s\n' \
       '</Directory>' \
       > /etc/apache2/conf-available/startos-dav-redirects.conf \
  && a2enconf startos-dav-redirects
+
+# For the office-suite proxy the package writes into conf-enabled at daemon start.
+RUN a2enmod proxy proxy_http proxy_wstunnel substitute

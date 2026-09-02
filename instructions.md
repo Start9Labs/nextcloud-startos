@@ -64,7 +64,9 @@ Nextcloud on its own shows your documents but cannot edit them. To edit in the b
 1. Install **Collabora Online**, unless you have a specific reason for the other one — see below. ONLYOFFICE Docs is in the Community Registry, so you would need that registry added to your server to find it.
 2. Run the **Office Suite** action here and pick the one you installed. Nextcloud installs the app it needs for it — **Nextcloud Office (Collabora)** or **ONLYOFFICE** — and points itself at the service.
 
-Keep only one of those apps enabled. With both on, Nextcloud stops opening Word, Excel and PowerPoint files in either, and this service's page will name the one to disable. It will also tell you if the app is ever removed or switched off while a document server is still selected.
+Switching between the two later is the same step: pick the other one, and Nextcloud sets up its app and switches the previous one off. Only one of them may be enabled — with both on, Nextcloud stops opening Word, Excel and PowerPoint files in either. If you ever remove or switch off the app yourself, this service's page will say so and name the one to turn back on.
+
+If you pick a document server that is still starting, or one you have not installed yet, this service's page shows it waiting, and the setup finishes on its own once the server is ready.
 
 Documents, spreadsheets and presentations then open in the browser from Files, and several people can edit the same file at once. The editor is served from your Nextcloud address, so it works the same on your local network, a public domain, or Tor.
 

@@ -1,5 +1,6 @@
 import { T } from '@start9labs/start-sdk'
 import { externalStorageMeta } from './externalStorage'
+import { manifest } from './manifest'
 import { storeJson } from './fileModels/store.json'
 import { sdk } from './sdk'
 import { officeSuiteMeta } from './officeSuite'
@@ -11,7 +12,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const talkTurn = await storeJson.read((s) => s.talkTurn).const(effects)
   const officeSuite = await storeJson.read((s) => s.officeSuite).const(effects)
 
-  const deps: T.CurrentDependenciesResult<any> = {}
+  const deps: T.CurrentDependenciesResult<typeof manifest> = {}
 
   // Only require a source while it's selected. `exists` (not `running`) — we
   // only need the source's volume present on disk to mount and read/write it.

@@ -90,6 +90,43 @@ export const coturnInterfaceId = 'turn'
 export const coturnMountpoint = '/mnt/coturn'
 export const coturnSecretPath = `${coturnMountpoint}/turn-secret`
 
+/**
+ * Read a secret another package publishes on one of its volumes, through a
+ * throwaway container that mounts only that subpath read-only, so a missing
+ * dependency can never take Nextcloud's own daemons down. Null if unreadable.
+ */
+export async function readDependencySecret(
+  effects: T.Effects,
+  opts: {
+    dependencyId: string
+    volumeId: string
+    subpath: string
+    mountpoint: string
+    path: string
+  },
+): Promise<string | null> {
+  const reader = sdk.SubContainer.of(
+    effects,
+    { imageId: 'valkey' },
+    sdk.Mounts.of().mountDependency({
+      dependencyId: opts.dependencyId,
+      volumeId: opts.volumeId,
+      subpath: opts.subpath,
+      mountpoint: opts.mountpoint,
+      readonly: true,
+    }),
+    `${opts.dependencyId}-secret-read`,
+  )
+  try {
+    const { stdout } = await reader.execFail(['cat', opts.path])
+    return stdout.toString().trim() || null
+  } catch {
+    return null
+  } finally {
+    await reader.destroy().catch(() => {})
+  }
+}
+
 export const nextcloudMount = sdk.Mounts.of().mountVolume({
   volumeId: 'nextcloud',
   mountpoint: NEXTCLOUD_PATH,

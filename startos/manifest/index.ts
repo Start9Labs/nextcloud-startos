@@ -1,5 +1,12 @@
 import { setupManifest } from '@start9labs/start-sdk'
-import { coturnDescription, filebrowserDescription, long, short } from './i18n'
+import {
+  collaboraDescription,
+  coturnDescription,
+  filebrowserDescription,
+  long,
+  onlyofficeDescription,
+  short,
+} from './i18n'
 
 export const manifest = setupManifest({
   id: 'nextcloud',
@@ -48,6 +55,22 @@ export const manifest = setupManifest({
       metadata: {
         title: 'Coturn',
         icon: 'https://raw.githubusercontent.com/Start9Labs/coturn-startos/d67ecaca5800a87e3300ce44c62484888f35d51b/icon.svg',
+      },
+    },
+    'collabora-online': {
+      description: collaboraDescription,
+      optional: true,
+      metadata: {
+        title: 'Collabora Online',
+        icon: 'https://raw.githubusercontent.com/Start9Labs/collabora-online-startos/f03b9c67c185bf63d55b5e6f28e6e85a46c65fcb/icon.png',
+      },
+    },
+    'onlyoffice-docs': {
+      description: onlyofficeDescription,
+      optional: true,
+      metadata: {
+        title: 'ONLYOFFICE Docs',
+        icon: 'https://raw.githubusercontent.com/Start9-Community/onlyoffice-docs-startos/fa723dfd81ec7aae30d1b29520daff139427b3e4/icon.png',
       },
     },
   },

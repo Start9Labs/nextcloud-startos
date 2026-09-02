@@ -207,20 +207,24 @@ const dict = {
   'Delete Files in Trash': 140,
   "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. By default files are kept for at least 30 days and then removed only as disk space is needed, so trash can grow without bound on a server with room to spare. Setting a limit removes them on schedule instead. Restoring a file is only possible while it is still in Deleted Files.": 141,
 
-  // actions/setConfig.ts — office suite
+  // actions/setOfficeSuite.ts
   'Office Suite': 142,
-  'Which document server opens documents, spreadsheets and presentations in your browser. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office. Install the service first, then its Nextcloud app — Nextcloud Office for Collabora, ONLYOFFICE for ONLYOFFICE Docs — and enable only that one.': 143,
+  'Which document server opens documents, spreadsheets and presentations in your browser. Install it from the Marketplace first, then pick it here — Nextcloud installs the app it needs and points itself at the service. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office.': 143,
   None: 144,
   'Choose the document server that opens office files in your browser.': 145,
-  'Office Connector': 146,
+  'Collabora Online (recommended)': 147,
 
+  // maintenance/resetAdmin.ts
   'This replaces the password on the chosen account immediately. The current one stops working, and anyone signed in as that user is signed out.': 150,
-  'Install ': 152,
-  ' is ready': 154,
-  'Disable ': 155,
-  ' on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.': 156,
-  'Enable ': 157,
-  ' in Nextcloud, or select “None” using the “Office Suite” action.': 158,
+
+  // main.ts: the office-connectors health check
+  'Office Connector': 146,
+  'Waiting for ${suite} to be ready': 159,
+  'Setting up ${app}...': 160,
+  '${app} is enabled': 154,
+  'Install ${app} in Nextcloud, or select “None” using the “Office Suite” action.': 152,
+  'Enable ${app} in Nextcloud, or select “None” using the “Office Suite” action.': 157,
+  'Disable ${app} on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.': 155,
 } as const
 
 /**

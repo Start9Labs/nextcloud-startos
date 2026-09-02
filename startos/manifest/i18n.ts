@@ -32,6 +32,32 @@ export const coturnDescription = {
     'Fournit un relais TURN/STUN pour que les appels Talk aboutissent à travers le NAT et les pare-feu restrictifs',
 }
 
+export const collaboraDescription = {
+  en_US:
+    'Opens and edits documents, spreadsheets and presentations in the browser, from Nextcloud Files',
+  es_ES:
+    'Abre y edita documentos, hojas de cálculo y presentaciones en el navegador, desde Archivos de Nextcloud',
+  de_DE:
+    'Öffnet und bearbeitet Dokumente, Tabellen und Präsentationen im Browser, direkt aus Nextcloud Dateien',
+  pl_PL:
+    'Otwiera i edytuje dokumenty, arkusze i prezentacje w przeglądarce, prosto z Plików Nextcloud',
+  fr_FR:
+    'Ouvre et modifie documents, feuilles de calcul et présentations dans le navigateur, depuis Fichiers de Nextcloud',
+}
+
+export const onlyofficeDescription = {
+  en_US:
+    'Opens and edits documents, spreadsheets and presentations in the browser, from Nextcloud Files. The heavier alternative to Collabora Online',
+  es_ES:
+    'Abre y edita documentos, hojas de cálculo y presentaciones en el navegador, desde Archivos de Nextcloud. La alternativa más pesada a Collabora Online',
+  de_DE:
+    'Öffnet und bearbeitet Dokumente, Tabellen und Präsentationen im Browser, direkt aus Nextcloud Dateien. Die schwerere Alternative zu Collabora Online',
+  pl_PL:
+    'Otwiera i edytuje dokumenty, arkusze i prezentacje w przeglądarce, prosto z Plików Nextcloud. Cięższa alternatywa dla Collabora Online',
+  fr_FR:
+    "Ouvre et modifie documents, feuilles de calcul et présentations dans le navigateur, depuis Fichiers de Nextcloud. L'alternative plus lourde à Collabora Online",
+}
+
 export const long = {
   en_US:
     'Access & share your files, calendars, contacts, mail & more from any device, on your terms.',
