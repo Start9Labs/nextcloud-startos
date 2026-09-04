@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.3:4',
+  version: '34.0.3:5',
   releaseNotes: {
     en_US: `Updated Nextcloud to 34.0.3 — a major upgrade from the Nextcloud 33 series.
 
@@ -34,6 +34,7 @@ Nextcloud backported the 34.0.1–34.0.3 maintenance fixes to the 33 line as wel
 
 - On macOS and iOS, Calendar and Contacts accounts set up with just the server address (CalDAV/CardDAV autodiscovery) would add but never sync when using an HTTPS address. They now sync.
 - The service could get stuck restarting and never finish starting, with nothing in the log to explain it.
+- On servers migrated from StartOS 0.3.5, the personal settings page (Edit profile) returned an Internal Server Error. It opens again.
 
 Full changelog: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     es_ES: `Nextcloud actualizado a 34.0.3: una actualización mayor desde la serie 33 de Nextcloud.
@@ -67,6 +68,7 @@ Nextcloud también retroportó a la serie 33 las correcciones de mantenimiento d
 
 - En macOS y iOS, las cuentas de Calendario y Contactos configuradas solo con la dirección del servidor (autodescubrimiento CalDAV/CardDAV) se añadían pero nunca sincronizaban al usar una dirección HTTPS. Ahora sincronizan.
 - El servicio podía quedarse reiniciándose sin llegar nunca a arrancar, y sin ninguna explicación en el registro.
+- En los servidores migrados desde StartOS 0.3.5, la página de ajustes personales (Editar perfil) devolvía un error interno del servidor. Vuelve a abrirse.
 
 Registro de cambios completo: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     de_DE: `Nextcloud auf 34.0.3 aktualisiert — ein Upgrade auf eine neue Hauptversion, ausgehend von der Nextcloud-Reihe 33.
@@ -100,6 +102,7 @@ Nextcloud hat die Wartungskorrekturen aus 34.0.1 bis 34.0.3 auch in die Reihe 33
 
 - Auf macOS und iOS wurden Kalender- und Kontakte-Konten, die nur mit der Serveradresse eingerichtet wurden (CalDAV/CardDAV-Autodiscovery), zwar hinzugefügt, synchronisierten über eine HTTPS-Adresse aber nie. Jetzt synchronisieren sie.
 - Der Dienst konnte in einer Neustartschleife hängen bleiben, ohne jemals vollständig hochzufahren, und das Protokoll gab keinen Hinweis darauf.
+- Auf Servern, die von StartOS 0.3.5 migriert wurden, lieferte die Seite mit den persönlichen Einstellungen (Profil bearbeiten) einen internen Serverfehler. Sie lässt sich wieder öffnen.
 
 Vollständiges Änderungsprotokoll: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.3 — to aktualizacja do nowej wersji głównej, wychodząca z serii 33.
@@ -133,6 +136,7 @@ Nextcloud przeniósł poprawki konserwacyjne z wersji 34.0.1–34.0.3 także do 
 
 - W systemach macOS i iOS konta Kalendarza i Kontaktów skonfigurowane samym adresem serwera (autowykrywanie CalDAV/CardDAV) dawały się dodać, ale przy adresie HTTPS nigdy nie synchronizowały. Teraz synchronizują.
 - Usługa mogła utknąć, wciąż się restartując i nigdy nie kończąc uruchamiania, bez żadnego wyjaśnienia w dzienniku.
+- Na serwerach zmigrowanych ze StartOS 0.3.5 strona ustawień osobistych (Edytuj profil) zwracała wewnętrzny błąd serwera. Znów się otwiera.
 
 Pełny dziennik zmian: https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
     fr_FR: `Nextcloud mis à jour vers 34.0.3 — une mise à niveau majeure depuis la série Nextcloud 33.
@@ -166,6 +170,7 @@ Nextcloud a également rétroporté vers la série 33 les correctifs de maintena
 
 - Sur macOS et iOS, les comptes Calendrier et Contacts configurés avec la seule adresse du serveur (autodécouverte CalDAV/CardDAV) s'ajoutaient mais ne se synchronisaient jamais via une adresse HTTPS. Ils se synchronisent désormais.
 - Le service pouvait rester bloqué à redémarrer sans jamais finir de se lancer, sans aucune explication dans le journal.
+- Sur les serveurs migrés depuis StartOS 0.3.5, la page des paramètres personnels (Modifier le profil) renvoyait une erreur interne du serveur. Elle s'ouvre de nouveau.
 
 Journal des modifications complet : https://github.com/nextcloud-releases/server/releases/tag/v34.0.3`,
   },

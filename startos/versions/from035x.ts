@@ -414,11 +414,8 @@ export const migrateFrom035x = async (
     await repairPermissionsFrom035x(effects, permissions)
     permissions.complete()
     await rm(START9_PATH, { recursive: true })
-    // Remove stale config.php keys from 0.3.5.1
-    await configPhp.merge(effects, {
-      'overwrite.cli.url': undefined,
-      'htaccess.RewriteBase': undefined,
-    })
+    // Remove the stale config.php key from 0.3.5.1
+    await configPhp.merge(effects, { 'htaccess.RewriteBase': undefined })
   }
 
   await relocatePostgresFromBeta(effects)

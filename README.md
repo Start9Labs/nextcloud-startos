@@ -85,6 +85,8 @@ Two models, and only one of them is upstream's.
 
 **Derived** — `trusted_domains`, rebuilt on every start from the addresses the UI interface actually publishes. It is a reactive read reduced all the way down to a sorted, de-duplicated hostname list, so the service restarts when a hostname appears or disappears and not when unrelated address metadata churns.
 
+**Defaulted** — `overwrite.cli.url` keeps whatever it is set to, but a missing or blank value is replaced with `http://localhost`, the value Nextcloud's own installer writes. Nextcloud's Teams app takes its local instance name from it and fails the personal settings page without one.
+
 **Seeded once** — `dbpassword`, written by Nextcloud's own installer during install; it is also the credential the backup's dump authenticates with.
 
 **Yours** — the five settings the Configure action owns: default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts get skeleton files.
