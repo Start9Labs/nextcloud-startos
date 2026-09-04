@@ -70,7 +70,8 @@ const shape = z.object({
   // RFC 2606 reserves `.invalid`, so this can never resolve.
   'updater.server.url': z.literal(UPDATER_SERVER_URL).catch(UPDATER_SERVER_URL),
   datadirectory: z.literal('/var/www/html/data').catch('/var/www/html/data'),
-  'overwrite.cli.url': z.string().optional().catch(undefined),
+  // Teams derives its local instance name from this; empty 500s the personal settings page.
+  'overwrite.cli.url': z.string().min(1).catch('http://localhost'),
   'htaccess.RewriteBase': z.string().optional().catch(undefined),
   skeletondirectory: z.string().optional().catch(undefined),
 })
