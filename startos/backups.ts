@@ -21,7 +21,7 @@ export const { createBackup, restoreInit } = sdk.setupBackups(async () =>
     // admin password), and three subpaths of the `nextcloud` volume below
     // (user files, config, installed apps).
     //
-    // External Storage sources (e.g. File Browser, surfaced by the
+    // External Storage sources (e.g. FileBrowser Quantum, surfaced by the
     // `external-storage` action) are deliberately NOT backed up here: their
     // files live on the SOURCE service's own volume, mounted into Nextcloud
     // at /mnt/filebrowser — never under any dataPath below — so rsync never

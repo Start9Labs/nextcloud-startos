@@ -23,7 +23,7 @@ import { I18nKey } from './i18n/dictionaries/default'
  * downloads/media/documents directory) — e.g. qBittorrent (`main`/`downloads`).
  * AVOID app-managed content-addressed stores that intermingle a database with
  * hash-named blobs (e.g. Docuseal): surfacing those exposes the DB and shows
- * unbrowsable files. File Browser is the intended shared hub other services
+ * unbrowsable files. FileBrowser Quantum is the intended shared hub other services
  * route through, so a direct source is only worth adding for a service whose
  * files live in its own volume.
  */
@@ -58,7 +58,7 @@ export const externalStorageMeta: Record<
 > = {
   filebrowser: {
     packageId: 'filebrowser',
-    label: 'File Browser',
+    label: 'FileBrowser Quantum',
     mountpoint: '/mnt/filebrowser',
     ncMountPoint: '/FileBrowser',
     // 2.62.2:1 restructured the volumes (`data` volume, files owned by uid

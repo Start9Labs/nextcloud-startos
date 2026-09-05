@@ -45,7 +45,7 @@ export const manifest = setupManifest({
       description: filebrowserDescription,
       optional: true,
       metadata: {
-        title: 'File Browser',
+        title: 'FileBrowser Quantum',
         icon: 'https://raw.githubusercontent.com/Start9Labs/filebrowser-startos/fbf1fefb51cca9731f2a9a9e6f790ca150aa9d04/icon.svg',
       },
     },

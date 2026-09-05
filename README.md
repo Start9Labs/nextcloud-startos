@@ -68,7 +68,7 @@ Three volumes.
 | `db`        | `/var/lib/postgresql` | The PostgreSQL data directory                                                |
 | `main`      | — (host side)         | `store.json`; never mounted into a container                                 |
 
-An external-storage source's volume is mounted into the Nextcloud container as well — File Browser's lands at `/mnt/filebrowser`, outside the `nextcloud` volume. **That mount uses `idmap`** to remap the source's on-disk uid to `www-data`, so Nextcloud simply owns the tree: it reads, writes, and moves files with no permission machinery, and the files it creates land back on disk under the source's own uid so the source can still manage them.
+An external-storage source's volume is mounted into the Nextcloud container as well — FileBrowser Quantum's lands at `/mnt/filebrowser`, outside the `nextcloud` volume. **That mount uses `idmap`** to remap the source's on-disk uid to `www-data`, so Nextcloud simply owns the tree: it reads, writes, and moves files with no permission machinery, and the files it creates land back on disk under the source's own uid so the source can still manage them.
 
 ## File Models
 
@@ -279,7 +279,7 @@ Mixed, and each half is scoped deliberately.
 5. **PostgreSQL and Valkey are private sidecars.** Neither can be shared with another service or replaced with an external instance.
 6. **The admin password is shown once and then discarded.** Reset Admin Password is the only recovery.
 7. **The long-running actions restart the service** to run their work, and continue after the action returns.
-8. **External storage is limited to registered sources** — currently File Browser — and only while that service is installed.
+8. **External storage is limited to registered sources** — currently FileBrowser Quantum — and only while that service is installed.
 9. **Talk's default `stun.nextcloud.com:443` is left in place** when relaying is enabled. Coturn's own STUN entry is added alongside it rather than replacing it, since removing an entry the package did not add is the admin's call; delete it in Talk's admin settings to keep reflexive discovery entirely on your own server.
 10. **Talk call relaying is Coturn or nothing.** There is no field for an external TURN server — configure one directly in Talk's admin settings instead, and leave the toggle off.
 11. **No riscv64 build.** x86_64 and aarch64 only.
