@@ -320,7 +320,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       subpath: null,
       mountpoint: externalStorageMeta.filebrowser.mountpoint,
       readonly: false,
-      // File Browser writes files as uid 1000 (`user`) → www-data (33). Files
+      // FileBrowser Quantum writes files as uid 1000 (`user`) → www-data (33). Files
       // other services drop into FB's volume under a different uid surface as
       // `nobody` until those services idmap their FB mount to 1000 as well.
       idmap: [{ fromId: 1000, toId: 33 }],
