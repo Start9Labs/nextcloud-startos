@@ -192,8 +192,10 @@ const dict = {
   Users: 131,
 
   // bootstrapNextcloud.ts: init progress phases
-  'Installing Nextcloud': 132,
-  'Upgrading Nextcloud': 133,
+  'Starting the database': 132,
+  'Copying application files': 133,
+  'Creating the database': 161,
+  'Migrating the database': 162,
 
   // versions/from035x.ts: 0.3.5x migration progress
   'Updating file permissions': 134,

@@ -1,4 +1,4 @@
-import { T } from '@start9labs/start-sdk'
+import { T, utils } from '@start9labs/start-sdk'
 import { getAdminCredentials } from '../actions/getAdminCredentials'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
@@ -19,20 +19,14 @@ import {
 // back instead of hanging forever.
 const UPGRADE_TIMEOUT = 1_800_000
 
-// Minimal structural view of the init FullProgressTracker (not exported from
-// the SDK); we only start and complete a named phase.
-type InitProgress = {
-  addPhase(
-    name: string,
-    contribution?: number | null,
-  ): { start(): void; complete(): void }
-}
-
 export const bootstrapNextcloud = sdk.setupOnInit(
   async (effects, kind, progress) => {
     if (kind === 'install') {
-      const installing = progress.addPhase(i18n('Installing Nextcloud'))
-      installing.start()
+      const starting = progress.addPhase(i18n('Starting the database'), 1)
+      const copying = progress.addPhase(i18n('Copying application files'), 3)
+      const schema = progress.addPhase(i18n('Creating the database'), 2)
+
+      starting.start()
 
       const adminPassword = getRandomPassword()
       const postgresPassword = getRandomPassword()
@@ -58,6 +52,10 @@ export const bootstrapNextcloud = sdk.setupOnInit(
               NEXTCLOUD_ADMIN_USER: 'admin',
               NEXTCLOUD_ADMIN_PASSWORD: adminPassword,
             },
+            ...entrypointProgress(starting, [
+              ['Initializing nextcloud', copying],
+              ['Starting nextcloud installation', schema],
+            ]),
           },
           ready: {
             display: null,
@@ -86,7 +84,9 @@ export const bootstrapNextcloud = sdk.setupOnInit(
         })
         .runUntilSuccess(300_000)
 
-      installing.complete()
+      starting.complete()
+      copying.complete()
+      schema.complete()
 
       await storeJson.merge(effects, { adminPassword })
 
@@ -122,7 +122,10 @@ export const bootstrapNextcloud = sdk.setupOnInit(
  * completion, then tears everything down. On failure or timeout it throws,
  * which fails init and triggers the snapshot rollback.
  */
-async function runUpstreamUpgrade(effects: T.Effects, progress: InitProgress) {
+async function runUpstreamUpgrade(
+  effects: T.Effects,
+  progress: utils.FullProgressTracker,
+) {
   // Read the installed (on-volume) and image Nextcloud versions first.
   // version.php on the volume is still the installed version — the entrypoint
   // syncs new code only once the upgrade runs.
@@ -171,8 +174,10 @@ async function runUpstreamUpgrade(effects: T.Effects, progress: InitProgress) {
     )
   }
 
-  const upgrading = progress.addPhase(i18n('Upgrading Nextcloud'))
-  upgrading.start()
+  const copying = progress.addPhase(i18n('Copying application files'), 1)
+  const migrating = progress.addPhase(i18n('Migrating the database'), 3)
+
+  copying.start()
 
   const nextcloudSub = await getNextcloudSub(effects)
   const valkeySub = await getValkeySub(effects)
@@ -190,12 +195,47 @@ async function runUpstreamUpgrade(effects: T.Effects, progress: InitProgress) {
       exec: {
         command: sdk.useEntrypoint(['true']),
         env: { ...getNextcloudEnv(postgresEnv), NEXTCLOUD_UPDATE: '1' },
+        // The pre-upgrade hook scan is the only line between the file sync and `occ upgrade`.
+        ...entrypointProgress(copying, [
+          ['=> Searching for hook scripts', migrating],
+        ]),
       },
       requires: ['chown', 'postgres', 'valkey'],
     })
     .runUntilSuccess(UPGRADE_TIMEOUT)
 
-  upgrading.complete()
+  copying.complete()
+  migrating.complete()
+}
+
+// Phase boundaries read off the stock entrypoint's own narration; wording it stops
+// printing leaves a phase indeterminate rather than stalling init.
+function entrypointProgress(
+  from: utils.PhaseHandle,
+  steps: ReadonlyArray<readonly [string, utils.PhaseHandle]>,
+) {
+  let current = from
+  let next = 0
+  let tail = ''
+
+  return {
+    onStdout: (chunk: Buffer | string) => {
+      process.stdout.write(chunk)
+
+      // A marker can straddle two chunks, so match on the carry-over too.
+      const text = tail + chunk
+      tail = text.slice(-4096)
+
+      while (next < steps.length && text.includes(steps[next][0])) {
+        current.complete()
+        current = steps[next][1]
+        current.start()
+        next++
+      }
+    },
+    // Either callback pipes all three streams, so stderr has to be drained too.
+    onStderr: (chunk: Buffer | string) => process.stderr.write(chunk),
+  }
 }
 
 // Compare dotted version tuples element-wise: negative if a < b, 0 if equal,
