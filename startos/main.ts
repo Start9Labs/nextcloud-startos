@@ -263,7 +263,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
       .const()
     if (!endpoint) return null
 
-    const secret = await readCoturnSecret()
+    const secret = await readDependencySecret(effects, {
+      dependencyId: coturnId,
+      volumeId: 'main',
+      subpath: 'shared',
+      mountpoint: coturnMountpoint,
+      path: coturnSecretPath,
+    })
     if (!secret) return null
 
     const { domain, turnPort, turnsPort } = endpoint
@@ -297,15 +303,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
       stun: turnPort ? [`${domain}:${turnPort}`] : [],
     }
   }
-
-  const readCoturnSecret = () =>
-    readDependencySecret(effects, {
-      dependencyId: coturnId,
-      volumeId: 'main',
-      subpath: 'shared',
-      mountpoint: coturnMountpoint,
-      path: coturnSecretPath,
-    })
 
   // Mount each selected source's volume into Nextcloud's container, read-write.
   // `idmap` remaps the source's on-disk uid to www-data (33) across the userns
