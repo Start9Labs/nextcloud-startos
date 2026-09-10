@@ -50,6 +50,8 @@ Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own
 | `valkey`             | The memcache, locking, and distributed cache backend             |
 | `coturn-secret-read` | Temporary; reads Coturn's shared secret through its own mount    |
 
+**Run `occ` from the host with `start-cli package attach nextcloud -n nextcloud-sub -u www-data -- php occ <command>`.** It is invoked through `php`, and it runs only as `www-data`.
+
 Six oneshots run alongside them, in order: `chown` hands the data directory to `www-data`; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts; `talk-turn` reconciles Nextcloud Talk's STUN/TURN settings.
 
 **`finish-upgrade` runs after the web daemon is ready, not before it**, which is what makes it safe. In the normal case the upgrade has already happened during init and this is a no-op; when it does have work to do, Apache is up serving the maintenance page while `occ upgrade` runs, exactly as a manual recovery would. It fails open — nothing it does can prevent the service from serving.
