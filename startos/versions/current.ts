@@ -1,23 +1,23 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.3:6',
+  version: '34.0.4:0',
   releaseNotes: {
-    en_US: `With **Relay Talk Calls Through Coturn** turned on and Coturn given a public domain, the service restarted every few seconds and never finished starting. It now starts, and Talk relays calls through Coturn.
+    en_US: `Updated Nextcloud to 34.0.4. This maintenance release fixes sharing with multiple mounts, file request uploads, notifications, Photos timestamps and trash handling, and Text synchronization conflicts.
 
-Installation and update progress show each step as it runs — copying application files, then creating or migrating the database.`,
-    es_ES: `Con **Retransmitir las llamadas de Talk a través de Coturn** activado y un dominio público asignado a Coturn, el servicio se reiniciaba cada pocos segundos y nunca terminaba de arrancar. Ahora arranca, y Talk retransmite las llamadas a través de Coturn.
+[Full release notes](https://nextcloud.com/changelog/#34-0-4)`,
+    es_ES: `Se ha actualizado Nextcloud a la versión 34.0.4. Esta versión de mantenimiento corrige el uso compartido con varios puntos de montaje, las cargas mediante solicitudes de archivos, las notificaciones, las marcas de tiempo y el manejo de la papelera en Fotos, y los conflictos de sincronización en Texto.
 
-El progreso de la instalación y de la actualización muestra cada paso a medida que se ejecuta: copiar los archivos de la aplicación y, después, crear o migrar la base de datos.`,
-    de_DE: `Mit eingeschaltetem **Talk-Anrufe über Coturn weiterleiten** und einer öffentlichen Domain für Coturn startete der Dienst alle paar Sekunden neu und fuhr nie vollständig hoch. Jetzt startet er, und Talk leitet Anrufe über Coturn weiter.
+[Notas completas de la versión](https://nextcloud.com/changelog/#34-0-4)`,
+    de_DE: `Nextcloud wurde auf 34.0.4 aktualisiert. Diese Wartungsversion behebt Fehler bei Freigaben mit mehreren Einhängepunkten, Uploads über Dateianfragen, Benachrichtigungen, Zeitstempeln und der Papierkorbverarbeitung in Fotos sowie Synchronisierungskonflikten in Text.
 
-Der Installations- und Aktualisierungsfortschritt zeigt jeden Schritt, während er läuft: Anwendungsdateien kopieren und anschließend die Datenbank erstellen oder migrieren.`,
-    pl_PL: `Przy włączonym **Przekazuj połączenia Talk przez Coturn** i publicznej domenie przypisanej do Coturn usługa restartowała się co kilka sekund i nigdy nie kończyła uruchamiania. Teraz się uruchamia, a Talk przekazuje połączenia przez Coturn.
+[Vollständige Versionshinweise](https://nextcloud.com/changelog/#34-0-4)`,
+    pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.4. To wydanie konserwacyjne naprawia udostępnianie z wieloma punktami montowania, przesyłanie plików przez żądania plików, powiadomienia, znaczniki czasu i obsługę kosza w Zdjęciach oraz konflikty synchronizacji w Tekście.
 
-Postęp instalacji i aktualizacji pokazuje każdy krok w trakcie jego wykonywania: kopiowanie plików aplikacji, a następnie tworzenie lub migrację bazy danych.`,
-    fr_FR: `Avec **Relayer les appels Talk via Coturn** activé et un domaine public attribué à Coturn, le service redémarrait toutes les quelques secondes sans jamais finir de se lancer. Il se lance désormais, et Talk relaie les appels via Coturn.
+[Pełne informacje o wydaniu](https://nextcloud.com/changelog/#34-0-4)`,
+    fr_FR: `Nextcloud a été mis à jour vers la version 34.0.4. Cette version de maintenance corrige le partage avec plusieurs points de montage, les téléversements via les demandes de fichiers, les notifications, les horodatages et la gestion de la corbeille dans Photos, ainsi que les conflits de synchronisation dans Texte.
 
-La progression de l'installation et de la mise à jour affiche chaque étape au fur et à mesure : copie des fichiers de l'application, puis création ou migration de la base de données.`,
+[Notes de version complètes](https://nextcloud.com/changelog/#34-0-4)`,
   },
   migrations: {
     up: async () => {},
