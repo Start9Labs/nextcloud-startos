@@ -1,23 +1,13 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.4:0',
+  version: '34.0.4:1',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 34.0.4. This maintenance release fixes sharing with multiple mounts, file request uploads, notifications, Photos timestamps and trash handling, and Text synchronization conflicts.
-
-[Full release notes](https://nextcloud.com/changelog/#34-0-4)`,
-    es_ES: `Se ha actualizado Nextcloud a la versión 34.0.4. Esta versión de mantenimiento corrige el uso compartido con varios puntos de montaje, las cargas mediante solicitudes de archivos, las notificaciones, las marcas de tiempo y el manejo de la papelera en Fotos, y los conflictos de sincronización en Texto.
-
-[Notas completas de la versión](https://nextcloud.com/changelog/#34-0-4)`,
-    de_DE: `Nextcloud wurde auf 34.0.4 aktualisiert. Diese Wartungsversion behebt Fehler bei Freigaben mit mehreren Einhängepunkten, Uploads über Dateianfragen, Benachrichtigungen, Zeitstempeln und der Papierkorbverarbeitung in Fotos sowie Synchronisierungskonflikten in Text.
-
-[Vollständige Versionshinweise](https://nextcloud.com/changelog/#34-0-4)`,
-    pl_PL: `Zaktualizowano Nextcloud do wersji 34.0.4. To wydanie konserwacyjne naprawia udostępnianie z wieloma punktami montowania, przesyłanie plików przez żądania plików, powiadomienia, znaczniki czasu i obsługę kosza w Zdjęciach oraz konflikty synchronizacji w Tekście.
-
-[Pełne informacje o wydaniu](https://nextcloud.com/changelog/#34-0-4)`,
-    fr_FR: `Nextcloud a été mis à jour vers la version 34.0.4. Cette version de maintenance corrige le partage avec plusieurs points de montage, les téléversements via les demandes de fichiers, les notifications, les horodatages et la gestion de la corbeille dans Photos, ainsi que les conflits de synchronisation dans Texte.
-
-[Notes de version complètes](https://nextcloud.com/changelog/#34-0-4)`,
+    en_US: `An update that would skip a Nextcloud major version is refused before anything on disk changes. Install the Nextcloud 33 release from the version list first, then update again — this also works on a server where an earlier attempt at this update failed.`,
+    es_ES: `Una actualización que saltaría una versión mayor de Nextcloud se rechaza antes de que cambie nada en el disco. Instale primero la versión con Nextcloud 33 desde la lista de versiones y vuelva a actualizar; esto también funciona en un servidor donde un intento anterior de esta actualización falló.`,
+    de_DE: `Ein Update, das eine Nextcloud-Hauptversion überspringen würde, wird abgelehnt, bevor sich etwas auf der Festplatte ändert. Installieren Sie zuerst die Version mit Nextcloud 33 aus der Versionsliste und aktualisieren Sie dann erneut — das funktioniert auch auf einem Server, auf dem ein früherer Versuch dieses Updates fehlgeschlagen ist.`,
+    pl_PL: `Aktualizacja, która pominęłaby główną wersję Nextcloud, jest odrzucana, zanim cokolwiek zmieni się na dysku. Najpierw zainstaluj wydanie z Nextcloud 33 z listy wersji, a następnie zaktualizuj ponownie — działa to również na serwerze, na którym wcześniejsza próba tej aktualizacji się nie powiodła.`,
+    fr_FR: `Une mise à jour qui sauterait une version majeure de Nextcloud est refusée avant que quoi que ce soit ne change sur le disque. Installez d'abord la version avec Nextcloud 33 depuis la liste des versions, puis mettez à jour à nouveau — cela fonctionne aussi sur un serveur où une tentative précédente de cette mise à jour a échoué.`,
   },
   migrations: {
     up: async () => {},
