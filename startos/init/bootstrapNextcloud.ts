@@ -26,6 +26,10 @@ import {
 // back instead of hanging forever.
 const UPGRADE_TIMEOUT = 1_800_000
 
+// Sideload build only: the bundled Nextcloud images, one major apart, in the
+// order an instance passes through them.
+const HOPS = ['nextcloud-33', 'nextcloud'] as const
+
 export const bootstrapNextcloud = sdk.setupOnInit(
   async (effects, kind, progress) => {
     if (kind === 'install') {
@@ -118,7 +122,7 @@ export const bootstrapNextcloud = sdk.setupOnInit(
  */
 export const guardUpstreamUpgrade = sdk.setupOnInit(async (effects, kind) => {
   if (kind !== 'update') return
-  const { installed, image } = await readNextcloudVersions(effects)
+  const { installed, image } = await readNextcloudVersions(effects, HOPS[0])
   if (!installed || !image || image[0] <= installed[0] + 1) return
 
   const dataVersion = await getDataVersion(effects)
@@ -147,10 +151,13 @@ export const guardUpstreamUpgrade = sdk.setupOnInit(async (effects, kind) => {
  * tuples. `version.php` on the volume stays at the installed release until
  * the entrypoint's upgrade has synced new code over it.
  */
-function readNextcloudVersions(effects: T.Effects) {
+function readNextcloudVersions(
+  effects: T.Effects,
+  imageId: (typeof HOPS)[number] = 'nextcloud',
+) {
   return sdk.SubContainer.withTemp(
     effects,
-    { imageId: 'nextcloud' },
+    { imageId },
     nextcloudMount,
     'nextcloud-version-check',
     async (sub) => {
@@ -202,19 +209,29 @@ async function runUpstreamUpgrade(
   effects: T.Effects,
   progress: utils.FullProgressTracker,
 ) {
-  const { installed, image } = await readNextcloudVersions(effects)
+  for (const imageId of HOPS) {
+    const { installed, image } = await readNextcloudVersions(effects, imageId)
 
-  // Skip the whole chain when there's nothing to upgrade — either we can't tell,
-  // or the image isn't newer than what's installed (e.g. a StartOS-only revision
-  // bump) — rather than spinning up containers for a no-op entrypoint run.
-  if (!installed || !image || cmpVersion(image, installed) <= 0) return
+    // Skip a hop with nothing to upgrade — either we can't tell, or its image
+    // isn't newer than what's installed (e.g. a StartOS-only revision bump) —
+    // rather than spinning up containers for a no-op entrypoint run.
+    if (!installed || !image || cmpVersion(image, installed) <= 0) continue
 
+    await upgradeWith(effects, progress, imageId)
+  }
+}
+
+async function upgradeWith(
+  effects: T.Effects,
+  progress: utils.FullProgressTracker,
+  imageId: (typeof HOPS)[number],
+) {
   const copying = progress.addPhase(i18n('Copying application files'), 1)
   const migrating = progress.addPhase(i18n('Migrating the database'), 3)
 
   copying.start()
 
-  const nextcloudSub = await getNextcloudSub(effects)
+  const nextcloudSub = await getNextcloudSub(effects, imageId)
   const valkeySub = await getValkeySub(effects)
   const postgresEnv = getPostgresEnv()
 

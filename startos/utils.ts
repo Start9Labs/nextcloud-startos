@@ -212,10 +212,13 @@ export function getValkeySub(effects: T.Effects) {
   )
 }
 
-export function getNextcloudSub(effects: T.Effects) {
+export function getNextcloudSub(
+  effects: T.Effects,
+  imageId: 'nextcloud' | 'nextcloud-33' = 'nextcloud',
+) {
   return sdk.SubContainer.of(
     effects,
-    { imageId: 'nextcloud' },
+    { imageId },
     nextcloudMount,
     'nextcloud-sub',
   )

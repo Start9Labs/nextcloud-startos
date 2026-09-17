@@ -33,6 +33,16 @@ export const manifest = setupManifest({
       },
       arch: ['x86_64', 'aarch64'],
     },
+    // Sideload build only: the hop a Nextcloud 32 instance needs on its way to 34.
+    'nextcloud-33': {
+      source: {
+        dockerBuild: {
+          dockerfile: './nextcloud.Dockerfile',
+          buildArgs: { NEXTCLOUD_VERSION: '33.0.8' },
+        },
+      },
+      arch: ['x86_64', 'aarch64'],
+    },
     valkey: {
       source: {
         dockerTag: 'valkey/valkey:9-alpine',
