@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.4:1',
+  version: '34.0.4:2',
   releaseNotes: {
     en_US: `An update that would skip a Nextcloud major version is refused before anything on disk changes. Install the Nextcloud 33 release from the version list first, then update again — this also works on a server where an earlier attempt at this update failed.`,
     es_ES: `Una actualización que saltaría una versión mayor de Nextcloud se rechaza antes de que cambie nada en el disco. Instale primero la versión con Nextcloud 33 desde la lista de versiones y vuelva a actualizar; esto también funciona en un servidor donde un intento anterior de esta actualización falló.`,
