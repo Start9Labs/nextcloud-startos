@@ -23,12 +23,12 @@ import { I18nKey } from './i18n/dictionaries/default'
  * downloads/media/documents directory) — e.g. qBittorrent (`main`/`downloads`).
  * AVOID app-managed content-addressed stores that intermingle a database with
  * hash-named blobs (e.g. Docuseal): surfacing those exposes the DB and shows
- * unbrowsable files. FileBrowser Quantum is the intended shared hub other services
+ * unbrowsable files. NextExplorer is the intended shared hub other services
  * route through, so a direct source is only worth adding for a service whose
  * files live in its own volume.
  */
 
-export const EXTERNAL_STORAGE_SOURCES = ['filebrowser'] as const
+export const EXTERNAL_STORAGE_SOURCES = ['nextexplorer', 'filebrowser'] as const
 export type ExternalStorageSource = (typeof EXTERNAL_STORAGE_SOURCES)[number]
 
 export type ExternalStorageMeta = {
@@ -38,6 +38,8 @@ export type ExternalStorageMeta = {
   label: I18nKey
   /** Where the source's volume is mounted inside Nextcloud's container. */
   mountpoint: string
+  /** The directory under `mountpoint` the `files_external` entry exposes. */
+  dataDir: string
   /**
    * The mount point (folder name) of the `files_external` entry as shown in
    * the Nextcloud Files UI. Also used to find the entry again for deletion.
@@ -56,10 +58,21 @@ export const externalStorageMeta: Record<
   ExternalStorageSource,
   ExternalStorageMeta
 > = {
+  nextexplorer: {
+    packageId: 'nextexplorer',
+    label: 'NextExplorer',
+    mountpoint: '/mnt/nextexplorer',
+    // The default drive only. The volume root also holds `_users`, one private
+    // directory per NextExplorer account, which an all-users mount would expose.
+    dataDir: '/mnt/nextexplorer/Files',
+    ncMountPoint: '/NextExplorer',
+    versionRange: '>=2.2.7:0',
+  },
   filebrowser: {
     packageId: 'filebrowser',
     label: 'FileBrowser Quantum',
     mountpoint: '/mnt/filebrowser',
+    dataDir: '/mnt/filebrowser',
     ncMountPoint: '/FileBrowser',
     // 2.62.2:1 restructured the volumes (`data` volume, files owned by uid
     // 1000) — everything the idmap mount in main.ts relies on.

@@ -16,6 +16,12 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
 
   // Only require a source while it's selected. `exists` (not `running`) — we
   // only need the source's volume present on disk to mount and read/write it.
+  if (sources.includes('nextexplorer')) {
+    deps['nextexplorer'] = {
+      kind: 'exists',
+      versionRange: externalStorageMeta.nextexplorer.versionRange,
+    }
+  }
   if (sources.includes('filebrowser')) {
     deps['filebrowser'] = {
       kind: 'exists',

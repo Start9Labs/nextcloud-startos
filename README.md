@@ -70,7 +70,7 @@ Three volumes.
 | `db`        | `/var/lib/postgresql` | The PostgreSQL data directory                                                |
 | `main`      | — (host side)         | `store.json`; never mounted into a container                                 |
 
-An external-storage source's volume is mounted into the Nextcloud container as well — FileBrowser Quantum's lands at `/mnt/filebrowser`, outside the `nextcloud` volume. **That mount uses `idmap`** to remap the source's on-disk uid to `www-data`, so Nextcloud simply owns the tree: it reads, writes, and moves files with no permission machinery, and the files it creates land back on disk under the source's own uid so the source can still manage them.
+An external-storage source's volume is mounted into the Nextcloud container as well — NextExplorer's lands at `/mnt/nextexplorer` and FileBrowser Quantum's at `/mnt/filebrowser`, outside the `nextcloud` volume. NextExplorer's `files_external` entry exposes only its `Files` drive, because the volume root also holds every account's private `_users` tree. **That mount uses `idmap`** to remap the source's on-disk uid to `www-data`, so Nextcloud simply owns the tree: it reads, writes, and moves files with no permission machinery, and the files it creates land back on disk under the source's own uid so the source can still manage them.
 
 ## File Models
 
@@ -105,13 +105,14 @@ Three settings depart from what upstream would do:
 
 ## Dependencies
 
-None are required. Both are optional and exist only while they are selected.
+None are required. All are optional and exist only while they are selected.
 
-| Dependency         | Kind      | Health checks    | Required                                                                                             |
-| ------------------ | --------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| `filebrowser`      | `exists`  | —                | Only while chosen in the External Storage action                                                     |
-| `coturn`           | `running` | **none**         | Only while Talk call relaying is on in the Configure action                                          |
-| `collabora-online` | `running` | `cool`           | Only while chosen in the Office Suite action                                                         |
+| Dependency         | Kind      | Health checks    | Required                                                                                              |
+| ------------------ | --------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `nextexplorer`     | `exists`  | —                | Only while chosen in the External Storage action                                                      |
+| `filebrowser`      | `exists`  | —                | Only while chosen in the External Storage action                                                      |
+| `coturn`           | `running` | **none**         | Only while Talk call relaying is on in the Configure action                                           |
+| `collabora-online` | `running` | `cool`           | Only while chosen in the Office Suite action                                                          |
 | `onlyoffice-docs`  | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
 
 The External Storage action offers only the sources whose backing service is actually installed, so an uninstalled one never appears in the form.
@@ -192,7 +193,7 @@ Selects the document server that opens office files — Collabora Online, ONLYOF
 
 The wait is a subscription, not a poll. It runs no commands, cannot fail, and releases the moment the service becomes ready — a few tens of seconds into an ordinary start, or whenever the user installs the service if they selected it first. A bridge address is not a usable readiness signal here: the port is bound, and the address therefore resolves, well before `coolwsd` accepts its first connection.
 
-**A step that fails past that gate is retried, not reported.** The oneshot throws, so the SDK re-invokes it on a widening backoff capped at thirty seconds, and every attempt passes through the gate first — a document server that has gone away parks the retry rather than spinning it. The command's output is in the service log on each attempt, and the Office Connector check reads *Setting up …* until an attempt succeeds. Nothing else is needed to recover: an app installed by hand, or an app store that comes back, is picked up by the next attempt.
+**A step that fails past that gate is retried, not reported.** The oneshot throws, so the SDK re-invokes it on a widening backoff capped at thirty seconds, and every attempt passes through the gate first — a document server that has gone away parks the retry rather than spinning it. The command's output is in the service log on each attempt, and the Office Connector check reads _Setting up …_ until an attempt succeeds. Nothing else is needed to recover: an app installed by hand, or an app store that comes back, is picked up by the next attempt.
 
 **The `trusted_domains` entry is load-bearing.** A document server fetches and saves files over the host bridge, and without that entry Nextcloud answers every one of those requests with `Trusted domain error` — the editor opens and then fails to load the document. Nextcloud matches on the host alone, so the bare IP covers whatever port the binding was assigned.
 
@@ -253,9 +254,9 @@ A web-interface failure after the grace period is Nextcloud itself: an app that 
 
 The transient checks — Recognize Model Download, Memories Indexing, Memories Map Setup, File Scan, Repair — exist only while their task is pending, and report `loading` with a progress message throughout.
 
-**Office Connector** (`office-connectors`) — present only while an office suite is selected, and stateless: each poll re-derives its result from `store.json`, the dependency's status and Nextcloud's enabled-app list, so every state heals on its own. Until the `office-suite` oneshot has applied the selection it reports `loading`: *Waiting for Collabora Online to be ready* while the document server's own health check is not passing — the dependency entry on the service page already says why — and *Setting up Nextcloud Office (Collabora)…* once it is, while the connector is installed and configured. Once applied, it reads the enabled-app list and fails in two distinct cases, each with its own instruction. Reading that list boots PHP, so a passing check polls every two minutes and a failing one every fifteen seconds; the loading states, which read nothing from Nextcloud, poll every five. The two-minute ceiling is also how long a connector someone has just switched off keeps reading as enabled.
+**Office Connector** (`office-connectors`) — present only while an office suite is selected, and stateless: each poll re-derives its result from `store.json`, the dependency's status and Nextcloud's enabled-app list, so every state heals on its own. Until the `office-suite` oneshot has applied the selection it reports `loading`: _Waiting for Collabora Online to be ready_ while the document server's own health check is not passing — the dependency entry on the service page already says why — and _Setting up Nextcloud Office (Collabora)…_ once it is, while the connector is installed and configured. Once applied, it reads the enabled-app list and fails in two distinct cases, each with its own instruction. Reading that list boots PHP, so a passing check polls every two minutes and a failing one every fifteen seconds; the loading states, which read nothing from Nextcloud, poll every five. The two-minute ceiling is also how long a connector someone has just switched off keeps reading as enabled.
 
-**The selected suite's connector is not enabled.** It has been removed or switched off since the package set it up. The message says *Install* or *Enable* accordingly — telling someone to install what they already have is how a message stops being read — and names the other way out: selecting `None` in the Office Suite action. Without this the failure is silent: the document server runs, and nothing in Nextcloud opens in it.
+**The selected suite's connector is not enabled.** It has been removed or switched off since the package set it up. The message says _Install_ or _Enable_ accordingly — telling someone to install what they already have is how a message stops being read — and names the other way out: selecting `None` in the Office Suite action. Without this the failure is silent: the document server runs, and nothing in Nextcloud opens in it.
 
 **More than one office connector is enabled.** Everything is running and OpenDocument files still open; what breaks is Word, Excel and PowerPoint, silently. `richdocuments` demotes those formats the moment it sees a rival connector enabled, and the rival does not claim them unless it is configured too. The message names the app to disable.
 
@@ -281,7 +282,7 @@ Mixed, and each half is scoped deliberately.
 5. **PostgreSQL and Valkey are private sidecars.** Neither can be shared with another service or replaced with an external instance.
 6. **The admin password is shown once and then discarded.** Reset Admin Password is the only recovery.
 7. **The long-running actions restart the service** to run their work, and continue after the action returns.
-8. **External storage is limited to registered sources** — currently FileBrowser Quantum — and only while that service is installed.
+8. **External storage is limited to registered sources** — NextExplorer and FileBrowser Quantum — and only while that service is installed.
 9. **Talk's default `stun.nextcloud.com:443` is left in place** when relaying is enabled. Coturn's own STUN entry is added alongside it rather than replacing it, since removing an entry the package did not add is the admin's call; delete it in Talk's admin settings to keep reflexive discovery entirely on your own server.
 10. **Talk call relaying is Coturn or nothing.** There is no field for an external TURN server — configure one directly in Talk's admin settings instead, and leave the toggle off.
 11. **No riscv64 build.** x86_64 and aarch64 only.
@@ -321,6 +322,7 @@ startos_managed_env_vars:
   - NEXTCLOUD_ADMIN_PASSWORD # install only
   - NEXTCLOUD_UPDATE # the init-time upgrade run only
 dependencies:
+  - nextexplorer # optional, exists; only while selected as an external-storage source
   - filebrowser # optional, exists; only while selected as an external-storage source
   - coturn # optional, running, no health checks; only while Talk call relaying is on
   - collabora-online # optional, running, health check `cool`; only while selected as the office suite

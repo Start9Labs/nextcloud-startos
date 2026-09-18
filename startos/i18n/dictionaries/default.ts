@@ -182,6 +182,7 @@ const dict = {
   'External Storage': 121,
   'Each selected service is mounted into Nextcloud and added to Files. FileBrowser Quantum is mounted read-write, so you can move its files into Nextcloud. Clear a selection to remove it.': 122,
   'FileBrowser Quantum': 123,
+  NextExplorer: 163,
   "Show other StartOS services' files as folders in Nextcloud Files, via the built-in External Storage app.": 124,
   'Available to Users': 125,
   'Which Nextcloud users see the selected storage in their Files. Leave empty to make it available to all users.': 126,

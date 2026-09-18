@@ -1,4 +1,5 @@
 import { manifest as filebrowserManifest } from 'filebrowser-startos/startos/manifest'
+import { manifest as nextexplorerManifest } from 'nextexplorer-startos/startos/manifest'
 import { T } from '@start9labs/start-sdk'
 import {
   EXTERNAL_STORAGE_SOURCES,
@@ -310,6 +311,16 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // writes and MOVES files with no permission machinery, and files it creates
   // land back on disk as the source's uid so the source can manage them too.
   let mounts = nextcloudMount
+  if (sources.includes('nextexplorer')) {
+    mounts = mounts.mountDependency<typeof nextexplorerManifest>({
+      dependencyId: 'nextexplorer',
+      volumeId: 'data',
+      subpath: null,
+      mountpoint: externalStorageMeta.nextexplorer.mountpoint,
+      readonly: false,
+      idmap: [{ fromId: 1000, toId: 33 }],
+    })
+  }
   if (sources.includes('filebrowser')) {
     mounts = mounts.mountDependency<typeof filebrowserManifest>({
       dependencyId: 'filebrowser',
@@ -1209,7 +1220,7 @@ async function reconcileExternalStorage(
   // previous selection: selected → ensure + set applicable; unselected → delete.
   for (const id of EXTERNAL_STORAGE_SOURCES) {
     if (abort.aborted) return
-    const { ncMountPoint, mountpoint } = externalStorageMeta[id]
+    const { ncMountPoint, dataDir } = externalStorageMeta[id]
     try {
       if (desired.includes(id)) {
         let mount = matchingMounts(await listMounts(), ncMountPoint)[0]
@@ -1220,7 +1231,7 @@ async function reconcileExternalStorage(
             'local',
             'null::null',
             '-c',
-            `datadir=${mountpoint}`,
+            `datadir=${dataDir}`,
           ])
           if (create.exitCode !== 0) {
             allOk = false
