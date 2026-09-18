@@ -143,7 +143,7 @@ Install is not a matter of writing a config and starting: the package brings the
 
 A `critical` task then asks you to reveal the admin password. **The action that does so is available only while the service is stopped, and it clears the password from the store once shown** — so save it when it is offered. If it is lost afterwards, Reset Admin Password is the way back in.
 
-**Updates run during init, inside StartOS's snapshot.** When the bundled Nextcloud release is newer than the installed one, the package runs the image's own upgrade to completion before the service ever starts; a failure or a thirty-minute timeout fails init and StartOS rolls the whole update back. Skipping more than one major version is refused up front with a clear error rather than allowed to fail mid-run, because Nextcloud only supports one major at a time.
+**Updates run during init, inside StartOS's snapshot.** When the bundled Nextcloud release is newer than the installed one, the package runs the image's own upgrade to completion before the service ever starts; a failure or a thirty-minute timeout fails init and StartOS rolls the whole update back. Skipping more than one major version is refused before the version graph runs, with a clear error rather than a failure mid-run, because Nextcloud only supports one major at a time. The refusal also sets a data version an earlier failed attempt left ahead of the installed Nextcloud back to that Nextcloud's release, so the intermediate release it names installs from the version list.
 
 ## Actions
 
@@ -276,7 +276,7 @@ Mixed, and each half is scoped deliberately.
 
 1. **The package re-asserts the settings it enforces in `config.php`.** A hand edit to one of the enforced keys listed above is overwritten — or, for `overwriteprotocol`, removed — the next time the package writes the file. Every other key, modelled or not, keeps whatever you set as long as the shape accepts it.
 2. **Nextcloud's in-app updater is disabled and its update server is unreachable by design.** Updates arrive as new StartOS package versions, and they run during init inside a snapshot so a failed one rolls back. `occ update:check` consequently reports nothing available, whatever upstream has released.
-3. **Skipping a major version is refused.** Nextcloud upgrades one major at a time, and the package fails the update up front rather than mid-run.
+3. **Skipping a major version is refused.** Nextcloud upgrades one major at a time, and the package fails the update before anything changes rather than mid-run.
 4. **The code-integrity check is disabled**, because the image adds `ffmpeg` and the package rewrites `config.php`.
 5. **PostgreSQL and Valkey are private sidecars.** Neither can be shared with another service or replaced with an external instance.
 6. **The admin password is shown once and then discarded.** Reset Admin Password is the only recovery.

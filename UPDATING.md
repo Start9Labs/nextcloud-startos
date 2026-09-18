@@ -40,7 +40,7 @@ Current pin: `valkey/valkey:9-alpine` in `startos/manifest/index.ts` (`images.va
 A **major** bump (e.g. `33.0.8` → `34.0.3`) needs four more checks:
 
 - Diff `core/shipped.json` between the two tags and add whatever the new major appends to `defaultEnabled` and `alwaysEnabled` to the `defaultApps` list in `startos/actions/maintenance/disableUnstableApps.ts`. `occ app:disable` exits non-zero on an `alwaysEnabled` app, and the action runs under `execFail`, so one missing id breaks the recovery action a locked-out user is told to run.
-- Check `$OC_VersionCanBeUpgradedFrom` in the new tag's `version.php`. Nextcloud upgrades one major at a time, so every version the registry still lists must be within one major of the new image — `startos/init/bootstrapNextcloud.ts` refuses the rest and StartOS rolls the update back.
+- Check `$OC_VersionCanBeUpgradedFrom` in the new tag's `version.php`. Nextcloud upgrades one major at a time, so every version the registry still lists must be within one major of the new image — `guardUpstreamUpgrade` in `startos/init/bootstrapNextcloud.ts` refuses the rest before the version graph runs.
 - Diff `config/config.sample.php` between the two tags against the keys `startos/fileModels/config.php.ts` models, and against the defaults the README and `instructions.md` quote.
 - Re-check the new major's system requirements page for the supported PostgreSQL and PHP versions.
 

@@ -1,8 +1,15 @@
-import { T, utils } from '@start9labs/start-sdk'
+import {
+  ExtendedVersion,
+  getDataVersion,
+  setDataVersion,
+  T,
+  utils,
+} from '@start9labs/start-sdk'
 import { getAdminCredentials } from '../actions/getAdminCredentials'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
+import { priorVersions } from '../versions'
 import {
   getBaseDaemons,
   getNextcloudEnv,
@@ -102,34 +109,46 @@ export const bootstrapNextcloud = sdk.setupOnInit(
 )
 
 /**
- * Run the upstream image's own version upgrade (sync new code → `occ upgrade` →
- * app bookkeeping) here in init, where StartOS has snapshotted the volumes so a
- * failed migration rolls the whole update back cleanly. Previously this ran at
- * daemon start via the entrypoint, where an interrupted run stranded the
- * instance on "Update needed — use the command line updater".
- *
- * This is the **upstream application** upgrade, triggered by the bundled
- * Nextcloud release being newer than the deployed one — not to be confused with
- * the one-time **StartOS layout** migration in
- * [`../versions/from035x.ts`](../versions/from035x.ts), which is driven by the
- * package version graph. Both run during init; `versionGraph` precedes
- * `bootstrapNextcloud` in `sdk.setupInit`, so the 0.3.5x migration has always
- * finished before this starts.
- *
- * `NEXTCLOUD_UPDATE=1` makes the stock entrypoint perform the upgrade with a
- * no-op command (`true`) and exit, so it never binds a port. `runUntilSuccess`
- * brings up Postgres + Valkey (occ upgrade talks to both), runs the upgrade to
- * completion, then tears everything down. On failure or timeout it throws,
- * which fails init and triggers the snapshot rollback.
+ * Refuse a Nextcloud major skip ahead of the version graph: on a volume StartOS
+ * could not snapshot — a package migrated from 0.3.5.x has none until its next
+ * boot — nothing init changes is undone, so the graph must not move the data
+ * version for a release whose Nextcloud cannot start here. A data version an
+ * earlier attempt already moved is set back to the newest vertex the installed
+ * Nextcloud satisfies, which the release the error names accepts.
  */
-async function runUpstreamUpgrade(
-  effects: T.Effects,
-  progress: utils.FullProgressTracker,
-) {
-  // Read the installed (on-volume) and image Nextcloud versions first.
-  // version.php on the volume is still the installed version — the entrypoint
-  // syncs new code only once the upgrade runs.
-  const { installed, image } = await sdk.SubContainer.withTemp(
+export const guardUpstreamUpgrade = sdk.setupOnInit(async (effects, kind) => {
+  if (kind !== 'update') return
+  const { installed, image } = await readNextcloudVersions(effects)
+  if (!installed || !image || image[0] <= installed[0] + 1) return
+
+  const dataVersion = await getDataVersion(effects)
+  const floor = priorVersions
+    .map((v) => ExtendedVersion.parse(v.options.version))
+    .filter((v) => v.upstream.number[0] <= installed[0])
+    .sort((a, b) => b.compareForSort(a))[0]
+  if (
+    floor &&
+    dataVersion instanceof ExtendedVersion &&
+    dataVersion.upstream.number[0] > installed[0] + 1
+  ) {
+    await setDataVersion(effects, floor)
+  }
+
+  throw new Error(
+    `Cannot update Nextcloud from major version ${installed[0]} directly to ${image[0]}. ` +
+      `Nextcloud only supports upgrading one major version at a time. Update to a release ` +
+      `bundling Nextcloud ${installed[0] + 1} first — open this service in the Marketplace and ` +
+      `pick it from the version list — then update again.`,
+  )
+})
+
+/**
+ * The Nextcloud release on the volume and the one in the image, as version
+ * tuples. `version.php` on the volume stays at the installed release until
+ * the entrypoint's upgrade has synced new code over it.
+ */
+function readNextcloudVersions(effects: T.Effects) {
+  return sdk.SubContainer.withTemp(
     effects,
     { imageId: 'nextcloud' },
     nextcloudMount,
@@ -156,23 +175,39 @@ async function runUpstreamUpgrade(
       }
     },
   )
+}
+
+/**
+ * Run the upstream image's own version upgrade (sync new code → `occ upgrade` →
+ * app bookkeeping) here in init, where StartOS has snapshotted the volumes so a
+ * failed migration rolls the whole update back cleanly. Previously this ran at
+ * daemon start via the entrypoint, where an interrupted run stranded the
+ * instance on "Update needed — use the command line updater".
+ *
+ * This is the **upstream application** upgrade, triggered by the bundled
+ * Nextcloud release being newer than the deployed one — not to be confused with
+ * the one-time **StartOS layout** migration in
+ * [`../versions/from035x.ts`](../versions/from035x.ts), which is driven by the
+ * package version graph. Both run during init; `versionGraph` precedes
+ * `bootstrapNextcloud` in `sdk.setupInit`, so the 0.3.5x migration has always
+ * finished before this starts.
+ *
+ * `NEXTCLOUD_UPDATE=1` makes the stock entrypoint perform the upgrade with a
+ * no-op command (`true`) and exit, so it never binds a port. `runUntilSuccess`
+ * brings up Postgres + Valkey (occ upgrade talks to both), runs the upgrade to
+ * completion, then tears everything down. On failure or timeout it throws,
+ * which fails init and triggers the snapshot rollback.
+ */
+async function runUpstreamUpgrade(
+  effects: T.Effects,
+  progress: utils.FullProgressTracker,
+) {
+  const { installed, image } = await readNextcloudVersions(effects)
 
   // Skip the whole chain when there's nothing to upgrade — either we can't tell,
   // or the image isn't newer than what's installed (e.g. a StartOS-only revision
   // bump) — rather than spinning up containers for a no-op entrypoint run.
   if (!installed || !image || cmpVersion(image, installed) <= 0) return
-
-  // Nextcloud only supports upgrading one major version at a time. Fail up front
-  // with a clear message rather than letting the entrypoint refuse mid-run and
-  // spin until the init timeout.
-  if (image[0] > installed[0] + 1) {
-    throw new Error(
-      `Cannot update Nextcloud from major version ${installed[0]} directly to ${image[0]}. ` +
-        `Nextcloud only supports upgrading one major version at a time. Update to a release ` +
-        `bundling Nextcloud ${installed[0] + 1} first — open this service in the Marketplace and ` +
-        `pick it from the version list — then update again.`,
-    )
-  }
 
   const copying = progress.addPhase(i18n('Copying application files'), 1)
   const migrating = progress.addPhase(i18n('Migrating the database'), 3)
