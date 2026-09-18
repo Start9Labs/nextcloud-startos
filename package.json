@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "@start9labs/start-sdk": "2.0.9",
-    "filebrowser-startos": "github:Start9Labs/filebrowser-startos#next"
+    "filebrowser-startos": "github:Start9Labs/filebrowser-startos#next",
+    "nextexplorer-startos": "github:Start9Labs/nextexplorer-startos#next"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",

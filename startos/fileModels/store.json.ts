@@ -32,7 +32,7 @@ const shape = z.object({
   // `external-storage` action, read reactively in setupMain/setDependencies.
   // Keep the enum in sync with EXTERNAL_STORAGE_SOURCES.
   externalStorages: z
-    .array(z.enum(['filebrowser']))
+    .array(z.enum(['nextexplorer', 'filebrowser']))
     .catch([])
     .default([]),
   // Per-source applicable users: source id -> Nextcloud user list. An empty or
