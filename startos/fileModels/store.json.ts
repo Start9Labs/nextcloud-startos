@@ -36,7 +36,7 @@ const shape = z.object({
     .catch([])
     .default([]),
   // Per-source applicable users: source id -> Nextcloud user list. An empty or
-  // absent list for a selected source means "all users" (occ `--add-all`).
+  // absent list for a selected source means "all users".
   // Written by the `external-storage` action, read reactively in setupMain so a
   // change reconfigures just that source's mount applicability.
   externalStorageUsers: z
@@ -44,9 +44,10 @@ const shape = z.object({
     .catch({})
     .default({}),
   // ACTUAL state: an opaque signature of the last successfully-applied config
-  // (selected sources + applicable users). The reconcile oneshot compares it to
-  // the desired signature and only does occ work when they differ, then writes
-  // the new signature. Read NON-reactively (`.once()`) in setupMain — like
+  // (selected sources + applicable users + discovered drives). The reconcile
+  // oneshot compares it to the desired signature and only does occ work when
+  // they differ, then writes the new signature. Read NON-reactively (`.once()`)
+  // in setupMain — like
   // `actions.completed`, so the oneshot's write never triggers a chain rebuild.
   // A plain string so FileHelper.merge replaces it wholesale.
   externalStoragesConfigured: z.string().catch('').default(''),

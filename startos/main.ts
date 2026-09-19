@@ -11,7 +11,6 @@ import {
   driveOf,
   drivesOf,
   externalStorageMeta,
-  mountDataDir,
 } from './externalStorage'
 import { configPhp } from './fileModels/config.php'
 import {
@@ -1106,6 +1105,7 @@ type OccMount = ExternalMountRow & {
   mount_id: number | string
   mount_point: string
   applicable_users?: string[]
+  applicable_groups?: string[]
   options?: { filesystem_check_changes?: string | number }
 }
 
@@ -1118,12 +1118,12 @@ const normMountPoint = (s: string) => s.replace(/^\/+/, '')
  * matches that source's selection (empty = all users); for each KNOWN-but-
  * unselected source it deletes any matching mount. A source whose volume is a
  * list of drives gets one mount per drive found there instead, under the same
- * users, and loses the mount of a drive that has gone. State is tracked by an opaque
- * signature of (sources + per-source users + drives found): if it already
+ * users, and loses the mount of a drive that has gone. State is tracked by an
+ * opaque signature of (sources + per-source users + drives found): if it already
  * matches, nothing runs; otherwise the full reconcile runs and — only if every
- * structural step (enable/create/delete) succeeded — the new signature is
- * recorded, so a failure retries on the next chain build. Failures are logged
- * rather than thrown, so one bad source never takes down the whole service.
+ * step succeeded — the new signature is recorded, so a failure retries on the
+ * next chain build. Failures are logged rather than thrown, so one bad source
+ * never takes down the whole service.
  */
 async function reconcileExternalStorage(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
@@ -1212,46 +1212,51 @@ async function reconcileExternalStorage(
         normMountPoint(ncMountPoint),
     )
 
-  // Bring a mount's applicable users in line with `desiredUsers`.
-  //
-  // Nextcloud semantics: a system mount with NO applicable users (and no
-  // group/global entry) is available to ALL users; adding any user entry
-  // restricts it to exactly those users. So:
-  //   - empty desiredUsers  -> remove every currently-applicable user, leaving
-  //                            it empty == available to all.
-  //   - non-empty           -> `--remove-all` first (it clears the global flag
-  //                            AND every existing user/group entry), THEN add
-  //                            every desired user. We must re-add ALL of them,
-  //                            including ones that were already in `current`,
-  //                            because --remove-all just dropped them. (Skipping
-  //                            "already-current" users was the cross-source bug:
-  //                            a kept user got wiped and never re-added, so the
-  //                            mount fell back to "available to everyone".)
-  // Per-user `--add-user` calls keep this resilient to a user deleted in
-  // Nextcloud since the selection was made (only that user's call fails).
+  // A system mount with no applicable users or groups is available to all.
+  // Add wanted users before removing stale entries, so a failed grant never
+  // clears the restrictions that were already in place.
   const applyApplicable = async (
     mountId: string,
-    current: string[],
+    currentUsers: string[],
+    currentGroups: string[],
     desiredUsers: string[],
-  ) => {
+  ): Promise<boolean> => {
     const applicable = (...args: string[]) =>
       occ(['files_external:applicable', mountId, ...args])
+    const update = async (args: string[], description: string) => {
+      const result = await applicable(...args)
+      if (result.exitCode !== 0) {
+        console.error(
+          `external-storage: could not ${description} on mount ${mountId}: ${result.stderr.toString()}`,
+        )
+        return false
+      }
+      return true
+    }
 
-    if (desiredUsers.length === 0) {
-      // Available to all users == no specific applicable users.
-      for (const u of current) await applicable('--remove-user', u)
-    } else {
-      // Restrict to exactly `desiredUsers`.
-      await applicable('--remove-all')
-      for (const u of desiredUsers) {
-        const r = await applicable('--add-user', u)
-        if (r.exitCode !== 0) {
-          console.error(
-            `external-storage: could not grant mount ${mountId} to user "${u}" (deleted in Nextcloud?): ${r.stderr.toString()}`,
-          )
-        }
+    const missing = desiredUsers.filter((user) => !currentUsers.includes(user))
+    for (const user of missing) {
+      if (!(await update(['--add-user', user], `grant user "${user}"`))) {
+        return false
       }
     }
+
+    let ok = true
+    for (const user of currentUsers.filter(
+      (current) => !desiredUsers.includes(current),
+    )) {
+      if (!(await update(['--remove-user', user], `remove user "${user}"`))) {
+        ok = false
+      }
+    }
+    for (const group of currentGroups) {
+      if (
+        !(await update(['--remove-group', group], `remove group "${group}"`))
+      ) {
+        ok = false
+      }
+    }
+    return ok
   }
 
   let allOk = true
@@ -1269,8 +1274,7 @@ async function reconcileExternalStorage(
   }
 
   // Make sure a mount exists — `find` picks it out of the current list — with
-  // the wanted applicable users and the rescan option. False when a structural
-  // step failed.
+  // the wanted applicable users and the rescan option. False when a step failed.
   const ensureMount = async (
     find: (mounts: OccMount[]) => OccMount | undefined,
     ncMountPoint: string,
@@ -1314,25 +1318,38 @@ async function reconcileExternalStorage(
       return true
     }
     const mountId = String(mount.mount_id)
-    // Left alone when already right: re-applying a restricted set goes through
-    // `--remove-all`, which opens the mount to everyone until the users are
-    // added back.
-    const current = [...(mount.applicable_users ?? [])].sort()
-    if (JSON.stringify(current) !== JSON.stringify(wanted)) {
-      await applyApplicable(mountId, current, wanted)
-      console.info(
-        `external-storage: ${ncMountPoint} (mount ${mountId}) available to ${to}`,
-      )
+    const currentUsers = [...(mount.applicable_users ?? [])].sort()
+    const currentGroups = [...(mount.applicable_groups ?? [])].sort()
+    let ok = true
+    if (
+      JSON.stringify(currentUsers) !== JSON.stringify(wanted) ||
+      currentGroups.length > 0
+    ) {
+      if (
+        !(await applyApplicable(mountId, currentUsers, currentGroups, wanted))
+      ) {
+        ok = false
+      } else {
+        console.info(
+          `external-storage: ${ncMountPoint} (mount ${mountId}) available to ${to}`,
+        )
+      }
     }
     if (String(mount.options?.filesystem_check_changes ?? '') !== '1') {
-      await occ([
+      const option = await occ([
         'files_external:option',
         mountId,
         'filesystem_check_changes',
         '1',
       ])
+      if (option.exitCode !== 0) {
+        ok = false
+        console.error(
+          `external-storage: could not enable change detection on mount ${mountId}: ${option.stderr.toString()}`,
+        )
+      }
     }
-    return true
+    return ok
   }
 
   // Removes the mount only; the files it pointed at are never touched.
@@ -1392,7 +1409,7 @@ async function reconcileExternalStorage(
         if (abort.aborted) return
         const dir = driveDataDir(meta, drive)
         const ok = await ensureMount(
-          (mounts) => mounts.find((m) => mountDataDir(m) === dir),
+          (mounts) => mounts.find((m) => driveOf(meta, m) === drive),
           driveMountPoint(meta, drive),
           dir,
           usersFor(id),
@@ -1413,8 +1430,8 @@ async function reconcileExternalStorage(
   }
 
   if (abort.aborted) return
-  // Record the new signature only if every structural step succeeded, so a
-  // failure retries next build. Written non-reactively (setupMain reads
+  // Record the new signature only if every step succeeded, so a failure retries
+  // next build. Written non-reactively (setupMain reads
   // externalStorages / externalStorageUsers, not this field, reactively) so the
   // write never rebuilds the chain. Plain string → merge replaces it wholesale.
   if (allOk) {

@@ -56,8 +56,7 @@ export type ExternalStorageMeta = {
   /**
    * Version range the source's StartOS package must satisfy. Floor it at the
    * release whose on-disk layout this integration mounts (volume id, file
-   * ownership), with a caret so a future major restructure isn't silently
-   * claimed compatible.
+   * ownership), and cap it below the next incompatible major.
    */
   versionRange: string
 }
