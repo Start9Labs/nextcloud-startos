@@ -3,7 +3,13 @@ import { manifest as nextexplorerManifest } from 'nextexplorer-startos/startos/m
 import { T } from '@start9labs/start-sdk'
 import {
   EXTERNAL_STORAGE_SOURCES,
+  ExternalMountRow,
   ExternalStorageSource,
+  LOCAL_STORAGE,
+  driveDataDir,
+  driveMountPoint,
+  driveOf,
+  drivesOf,
   externalStorageMeta,
 } from './externalStorage'
 import { configPhp } from './fileModels/config.php'
@@ -1095,10 +1101,12 @@ function parseTalkTurnApplied(configured: string): {
   }
 }
 
-type OccMount = {
+type OccMount = ExternalMountRow & {
   mount_id: number | string
   mount_point: string
   applicable_users?: string[]
+  applicable_groups?: string[]
+  options?: { filesystem_check_changes?: string | number }
 }
 
 const normMountPoint = (s: string) => s.replace(/^\/+/, '')
@@ -1108,12 +1116,14 @@ const normMountPoint = (s: string) => s.replace(/^\/+/, '')
  * and each source's chosen applicable users. For each selected source it
  * ensures a `files_external` mount exists and that its applicable-users set
  * matches that source's selection (empty = all users); for each KNOWN-but-
- * unselected source it deletes any matching mount. State is tracked by an
- * opaque signature of (sources + per-source users): if it already matches,
- * nothing runs; otherwise the full reconcile runs and — only if every
- * structural step (enable/create/delete) succeeded — the new signature is
- * recorded, so a failure retries on the next chain build. Failures are logged
- * rather than thrown, so one bad source never takes down the whole service.
+ * unselected source it deletes any matching mount. A source whose volume is a
+ * list of drives gets one mount per drive found there instead, under the same
+ * users, and loses the mount of a drive that has gone. State is tracked by an
+ * opaque signature of (sources + per-source users + drives found): if it already
+ * matches, nothing runs; otherwise the full reconcile runs and — only if every
+ * step succeeded — the new signature is recorded, so a failure retries on the
+ * next chain build. Failures are logged rather than thrown, so one bad source
+ * never takes down the whole service.
  */
 async function reconcileExternalStorage(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
@@ -1127,6 +1137,40 @@ async function reconcileExternalStorage(
   // The applicable-user signature for a source (sorted, de-duped; [] = all).
   const usersFor = (id: ExternalStorageSource): string[] =>
     [...new Set(usersBySource[id] ?? [])].sort()
+  // The drives at the top of each selected multi-drive source's volume. Read
+  // on every build, ahead of the signature check, because a drive appears and
+  // disappears with no change to the selection: one `find`, no PHP. Null when
+  // the volume could not be read, which must never be taken for "no drives" —
+  // that would delete every drive's mount, and with it the folder name and the
+  // sharing option an admin may have set on it.
+  const drives: Partial<Record<ExternalStorageSource, string[] | null>> = {}
+  for (const id of enabled) {
+    const meta = externalStorageMeta[id]
+    if (!meta.drives) continue
+    const res = await subc.exec(
+      // Only what www-data can open: a drive another service has just made
+      // under its own uid would otherwise surface as a broken folder.
+      // prettier-ignore
+      [
+        'find', meta.mountpoint,
+        '-mindepth', '1', '-maxdepth', '1',
+        '-type', 'd', '-readable', '-executable',
+        '-printf', '%f\\0',
+      ],
+      { user: 'www-data' },
+    )
+    if (res.exitCode === 0) {
+      drives[id] = drivesOf(meta, res.stdout.toString().split('\0'))
+    } else {
+      drives[id] = null
+      console.error(
+        `external-storage: could not read the drives of ${id}: ${res.stderr.toString()}`,
+      )
+    }
+  }
+  const foundDrives = Object.fromEntries(
+    enabled.flatMap((id) => (drives[id] ? [[id, drives[id]]] : [])),
+  )
   // `v` bumps whenever the applied semantics change, so an existing install
   // re-reconciles once on upgrade even if the selection itself is unchanged
   // (v2: fixed applicable-users handling — see applyApplicable).
@@ -1134,6 +1178,9 @@ async function reconcileExternalStorage(
     v: 2,
     sources: enabled,
     users: Object.fromEntries(enabled.map((id) => [id, usersFor(id)])),
+    // Present only with a multi-drive source selected, so every other install
+    // keeps the signature it already recorded.
+    ...(Object.keys(foundDrives).length ? { drives: foundDrives } : {}),
   })
   // Treat a never-written signature ('') as "nothing selected" so a fresh
   // install with no selection short-circuits with zero occ calls (and never
@@ -1144,14 +1191,19 @@ async function reconcileExternalStorage(
   const occ = (args: string[]) =>
     subc.exec(['php', 'occ', ...args], { user: 'www-data' })
 
-  const listMounts = async (): Promise<OccMount[]> => {
+  // Null when the listing failed. Never an empty list: "no mounts" would make
+  // the caller create a twin of every entry and skip every removal.
+  const listMounts = async (): Promise<OccMount[] | null> => {
     const res = await occ(['files_external:list', '--output=json'])
-    if (res.exitCode !== 0) return []
     try {
-      return JSON.parse(res.stdout.toString()) as OccMount[]
-    } catch {
-      return []
-    }
+      if (res.exitCode === 0) {
+        return JSON.parse(res.stdout.toString()) as OccMount[]
+      }
+    } catch {}
+    console.error(
+      `external-storage: could not list mounts: ${res.stderr.toString()}`,
+    )
+    return null
   }
   const matchingMounts = (mounts: OccMount[], ncMountPoint: string) =>
     mounts.filter(
@@ -1160,46 +1212,51 @@ async function reconcileExternalStorage(
         normMountPoint(ncMountPoint),
     )
 
-  // Bring a mount's applicable users in line with `desiredUsers`.
-  //
-  // Nextcloud semantics: a system mount with NO applicable users (and no
-  // group/global entry) is available to ALL users; adding any user entry
-  // restricts it to exactly those users. So:
-  //   - empty desiredUsers  -> remove every currently-applicable user, leaving
-  //                            it empty == available to all.
-  //   - non-empty           -> `--remove-all` first (it clears the global flag
-  //                            AND every existing user/group entry), THEN add
-  //                            every desired user. We must re-add ALL of them,
-  //                            including ones that were already in `current`,
-  //                            because --remove-all just dropped them. (Skipping
-  //                            "already-current" users was the cross-source bug:
-  //                            a kept user got wiped and never re-added, so the
-  //                            mount fell back to "available to everyone".)
-  // Per-user `--add-user` calls keep this resilient to a user deleted in
-  // Nextcloud since the selection was made (only that user's call fails).
+  // A system mount with no applicable users or groups is available to all.
+  // Add wanted users before removing stale entries, so a failed grant never
+  // clears the restrictions that were already in place.
   const applyApplicable = async (
     mountId: string,
-    current: string[],
+    currentUsers: string[],
+    currentGroups: string[],
     desiredUsers: string[],
-  ) => {
+  ): Promise<boolean> => {
     const applicable = (...args: string[]) =>
       occ(['files_external:applicable', mountId, ...args])
+    const update = async (args: string[], description: string) => {
+      const result = await applicable(...args)
+      if (result.exitCode !== 0) {
+        console.error(
+          `external-storage: could not ${description} on mount ${mountId}: ${result.stderr.toString()}`,
+        )
+        return false
+      }
+      return true
+    }
 
-    if (desiredUsers.length === 0) {
-      // Available to all users == no specific applicable users.
-      for (const u of current) await applicable('--remove-user', u)
-    } else {
-      // Restrict to exactly `desiredUsers`.
-      await applicable('--remove-all')
-      for (const u of desiredUsers) {
-        const r = await applicable('--add-user', u)
-        if (r.exitCode !== 0) {
-          console.error(
-            `external-storage: could not grant mount ${mountId} to user "${u}" (deleted in Nextcloud?): ${r.stderr.toString()}`,
-          )
-        }
+    const missing = desiredUsers.filter((user) => !currentUsers.includes(user))
+    for (const user of missing) {
+      if (!(await update(['--add-user', user], `grant user "${user}"`))) {
+        return false
       }
     }
+
+    let ok = true
+    for (const user of currentUsers.filter(
+      (current) => !desiredUsers.includes(current),
+    )) {
+      if (!(await update(['--remove-user', user], `remove user "${user}"`))) {
+        ok = false
+      }
+    }
+    for (const group of currentGroups) {
+      if (
+        !(await update(['--remove-group', group], `remove group "${group}"`))
+      ) {
+        ok = false
+      }
+    }
+    return ok
   }
 
   let allOk = true
@@ -1216,69 +1273,155 @@ async function reconcileExternalStorage(
     }
   }
 
+  // Make sure a mount exists — `find` picks it out of the current list — with
+  // the wanted applicable users and the rescan option. False when a step failed.
+  const ensureMount = async (
+    find: (mounts: OccMount[]) => OccMount | undefined,
+    ncMountPoint: string,
+    dataDir: string,
+    wanted: string[],
+  ): Promise<boolean> => {
+    const listed = await listMounts()
+    if (!listed) return false
+    const mount = find(listed)
+    const to = wanted.length ? wanted.join(', ') : 'all users'
+    if (!mount) {
+      // Imported rather than created, so the mount is born with its users and
+      // its options: `files_external:create` makes it available to everyone
+      // until a second command narrows it.
+      const create = await subc.exec(
+        ['php', 'occ', 'files_external:import', '-'],
+        {
+          user: 'www-data',
+          input: JSON.stringify([
+            {
+              mount_point: ncMountPoint,
+              storage: LOCAL_STORAGE,
+              authentication_type: 'null::null',
+              configuration: { datadir: dataDir },
+              // Rescan on access so out-of-band writes by the source service
+              // appear in Nextcloud without a manual file scan.
+              options: { filesystem_check_changes: 1 },
+              applicable_users: wanted,
+              applicable_groups: [],
+            },
+          ]),
+        },
+      )
+      if (create.exitCode !== 0) {
+        console.error(
+          `external-storage: failed to create ${ncMountPoint}: ${create.stdout.toString()} ${create.stderr.toString()}`,
+        )
+        return false
+      }
+      console.info(`external-storage: ${ncMountPoint} available to ${to}`)
+      return true
+    }
+    const mountId = String(mount.mount_id)
+    const currentUsers = [...(mount.applicable_users ?? [])].sort()
+    const currentGroups = [...(mount.applicable_groups ?? [])].sort()
+    let ok = true
+    if (
+      JSON.stringify(currentUsers) !== JSON.stringify(wanted) ||
+      currentGroups.length > 0
+    ) {
+      if (
+        !(await applyApplicable(mountId, currentUsers, currentGroups, wanted))
+      ) {
+        ok = false
+      } else {
+        console.info(
+          `external-storage: ${ncMountPoint} (mount ${mountId}) available to ${to}`,
+        )
+      }
+    }
+    if (String(mount.options?.filesystem_check_changes ?? '') !== '1') {
+      const option = await occ([
+        'files_external:option',
+        mountId,
+        'filesystem_check_changes',
+        '1',
+      ])
+      if (option.exitCode !== 0) {
+        ok = false
+        console.error(
+          `external-storage: could not enable change detection on mount ${mountId}: ${option.stderr.toString()}`,
+        )
+      }
+    }
+    return ok
+  }
+
+  // Removes the mount only; the files it pointed at are never touched.
+  const deleteMount = async (m: OccMount): Promise<boolean> => {
+    const del = await occ([
+      'files_external:delete',
+      String(m.mount_id),
+      '--yes',
+    ])
+    if (del.exitCode !== 0) {
+      console.error(
+        `external-storage: failed to delete ${m.mount_point} (id ${m.mount_id}): ${del.stderr.toString()}`,
+      )
+    }
+    return del.exitCode === 0
+  }
+
   // Walk every KNOWN source so removals are handled without remembering the
   // previous selection: selected → ensure + set applicable; unselected → delete.
   for (const id of EXTERNAL_STORAGE_SOURCES) {
     if (abort.aborted) return
-    const { ncMountPoint, dataDir } = externalStorageMeta[id]
+    const meta = externalStorageMeta[id]
+    const { ncMountPoint, dataDir } = meta
+    const selected = desired.includes(id)
     try {
-      if (desired.includes(id)) {
-        let mount = matchingMounts(await listMounts(), ncMountPoint)[0]
-        if (!mount) {
-          const create = await occ([
-            'files_external:create',
+      if (!meta.drives) {
+        // One tree, one mount, known by its folder name.
+        if (selected) {
+          const ok = await ensureMount(
+            (mounts) => matchingMounts(mounts, ncMountPoint)[0],
             ncMountPoint,
-            'local',
-            'null::null',
-            '-c',
-            `datadir=${dataDir}`,
-          ])
-          if (create.exitCode !== 0) {
-            allOk = false
-            console.error(
-              `external-storage: failed to create ${ncMountPoint}: ${create.stdout.toString()} ${create.stderr.toString()}`,
-            )
-            continue
-          }
-          mount = matchingMounts(await listMounts(), ncMountPoint)[0]
-        }
-        if (!mount) {
-          allOk = false
-          console.error(
-            `external-storage: created ${ncMountPoint} but could not resolve its mount id`,
+            dataDir,
+            usersFor(id),
           )
-          continue
-        }
-        const mountId = String(mount.mount_id)
-        const wanted = usersFor(id)
-        await applyApplicable(mountId, mount.applicable_users ?? [], wanted)
-        console.info(
-          `external-storage: ${ncMountPoint} (mount ${mountId}) available to ${
-            wanted.length ? wanted.join(', ') : 'all users'
-          }`,
-        )
-        // Rescan on access so out-of-band writes by the source service appear
-        // in Nextcloud without a manual file scan.
-        await occ([
-          'files_external:option',
-          mountId,
-          'filesystem_check_changes',
-          '1',
-        ])
-      } else {
-        for (const m of matchingMounts(await listMounts(), ncMountPoint)) {
-          const del = await occ([
-            'files_external:delete',
-            String(m.mount_id),
-            '--yes',
-          ])
-          if (del.exitCode !== 0) {
-            allOk = false
-            console.error(
-              `external-storage: failed to delete ${ncMountPoint} (id ${m.mount_id}): ${del.stderr.toString()}`,
-            )
+          if (!ok) allOk = false
+        } else {
+          const listed = await listMounts()
+          if (!listed) allOk = false
+          for (const m of matchingMounts(listed ?? [], ncMountPoint)) {
+            if (!(await deleteMount(m))) allOk = false
           }
         }
+        continue
+      }
+
+      // One mount per drive found, under the source's own users; none once the
+      // source is cleared. Only a drive that exists gets one — `dataDir` too,
+      // or a source that has never started would surface as a broken folder.
+      // An unreadable volume leaves every mount as it is and the signature
+      // unrecorded, so the next build tries again.
+      const found = selected ? drives[id] : []
+      if (found == null) {
+        allOk = false
+        continue
+      }
+      for (const drive of found) {
+        if (abort.aborted) return
+        const dir = driveDataDir(meta, drive)
+        const ok = await ensureMount(
+          (mounts) => mounts.find((m) => driveOf(meta, m) === drive),
+          driveMountPoint(meta, drive),
+          dir,
+          usersFor(id),
+        )
+        if (!ok) allOk = false
+      }
+      const listed = await listMounts()
+      if (!listed) allOk = false
+      for (const m of listed ?? []) {
+        const drive = driveOf(meta, m)
+        if (drive === null || found.includes(drive)) continue
+        if (!(await deleteMount(m))) allOk = false
       }
     } catch (e) {
       allOk = false
@@ -1287,8 +1430,8 @@ async function reconcileExternalStorage(
   }
 
   if (abort.aborted) return
-  // Record the new signature only if every structural step succeeded, so a
-  // failure retries next build. Written non-reactively (setupMain reads
+  // Record the new signature only if every step succeeded, so a failure retries
+  // next build. Written non-reactively (setupMain reads
   // externalStorages / externalStorageUsers, not this field, reactively) so the
   // write never rebuilds the chain. Plain string → merge replaces it wholesale.
   if (allOk) {

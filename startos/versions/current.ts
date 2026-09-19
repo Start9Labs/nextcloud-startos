@@ -1,23 +1,13 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '34.0.4:3',
+  version: '34.0.4:4',
   releaseNotes: {
-    en_US: `**External Storage** can now surface NextExplorer, the recommended file server: its Files drive appears as a NextExplorer folder in Nextcloud Files.
-
-An update that would skip a Nextcloud major version is refused before anything on disk changes. Install the Nextcloud 33 release from the version list first, then update again — this also works on a server where an earlier attempt at this update failed.`,
-    es_ES: `**Almacenamiento externo** ahora puede mostrar NextExplorer, el servidor de archivos recomendado: su unidad Files aparece como una carpeta NextExplorer en Archivos de Nextcloud.
-
-Una actualización que saltaría una versión mayor de Nextcloud se rechaza antes de que cambie nada en el disco. Instale primero la versión con Nextcloud 33 desde la lista de versiones y vuelva a actualizar; esto también funciona en un servidor donde un intento anterior de esta actualización falló.`,
-    de_DE: `**Externer Speicher** kann jetzt NextExplorer einbinden, den empfohlenen Dateiserver: sein Laufwerk Files erscheint als Ordner NextExplorer in Nextcloud Dateien.
-
-Ein Update, das eine Nextcloud-Hauptversion überspringen würde, wird abgelehnt, bevor sich etwas auf der Festplatte ändert. Installieren Sie zuerst die Version mit Nextcloud 33 aus der Versionsliste und aktualisieren Sie dann erneut — das funktioniert auch auf einem Server, auf dem ein früherer Versuch dieses Updates fehlgeschlagen ist.`,
-    pl_PL: `**Magazyn zewnętrzny** może teraz pokazać NextExplorer, zalecany serwer plików: jego dysk Files pojawia się jako folder NextExplorer w Plikach Nextcloud.
-
-Aktualizacja, która pominęłaby główną wersję Nextcloud, jest odrzucana, zanim cokolwiek zmieni się na dysku. Najpierw zainstaluj wydanie z Nextcloud 33 z listy wersji, a następnie zaktualizuj ponownie — działa to również na serwerze, na którym wcześniejsza próba tej aktualizacji się nie powiodła.`,
-    fr_FR: `**Stockage externe** peut désormais présenter NextExplorer, le serveur de fichiers recommandé : son lecteur Files apparaît comme un dossier NextExplorer dans Fichiers de Nextcloud.
-
-Une mise à jour qui sauterait une version majeure de Nextcloud est refusée avant que quoi que ce soit ne change sur le disque. Installez d'abord la version avec Nextcloud 33 depuis la liste des versions, puis mettez à jour à nouveau — cela fonctionne aussi sur un serveur où une tentative précédente de cette mise à jour a échoué.`,
+    en_US: `**External Storage** now shows every NextExplorer drive, not only Files: each other drive appears as its own folder, such as NextExplorer (FileBrowser) for files imported from File Browser. Nextcloud looks for drives when it starts, so restart it after adding one.`,
+    es_ES: `**Almacenamiento externo** ahora muestra todas las unidades de NextExplorer, no solo Files: cada una de las demás aparece como su propia carpeta, por ejemplo NextExplorer (FileBrowser) para los archivos importados desde File Browser. Nextcloud busca las unidades al iniciarse, así que reinícielo después de añadir una.`,
+    de_DE: `**Externer Speicher** zeigt jetzt alle Laufwerke von NextExplorer an, nicht nur Files: jedes weitere Laufwerk erscheint als eigener Ordner, zum Beispiel NextExplorer (FileBrowser) für die aus File Browser importierten Dateien. Nextcloud sucht beim Start nach Laufwerken — starten Sie es also neu, nachdem Sie eines hinzugefügt haben.`,
+    pl_PL: `**Magazyn zewnętrzny** pokazuje teraz wszystkie dyski NextExplorer, a nie tylko Files: każdy kolejny dysk pojawia się jako osobny folder, na przykład NextExplorer (FileBrowser) dla plików zaimportowanych z File Browser. Nextcloud szuka dysków podczas uruchamiania, więc uruchom go ponownie po dodaniu nowego.`,
+    fr_FR: `**Stockage externe** affiche désormais tous les lecteurs de NextExplorer, et plus seulement Files : chaque autre lecteur apparaît comme un dossier à part, par exemple NextExplorer (FileBrowser) pour les fichiers importés depuis File Browser. Nextcloud recherche les lecteurs à son démarrage : redémarrez-le après en avoir ajouté un.`,
   },
   migrations: {
     up: async () => {},
