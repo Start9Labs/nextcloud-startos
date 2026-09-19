@@ -73,6 +73,7 @@ export const disableUnstableApps = sdk.Action.withoutInput(
           'serverinfo',
           'settings',
           'sharebymail',
+          'sharing',
           'support',
           'survey_client',
           'suspicious_login',
