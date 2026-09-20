@@ -5,6 +5,11 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
+# PHP's JIT segfaults every worker on aarch64 once an app update replaces
+# compiled files. See https://github.com/nextcloud/docker/issues/2576
+RUN printf 'opcache.jit=0\nopcache.jit_buffer_size=0\n' \
+      > "$PHP_INI_DIR/conf.d/startos-opcache-jit.ini"
+
 # Hold idle HTTP connections open longer than every hop in front of Apache.
 # The StartOS reverse proxy pins each client connection to this one backend
 # connection (no re-dial) and keeps idle client connections up to 60s, and

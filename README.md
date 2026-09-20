@@ -35,7 +35,7 @@
 
 ## Image and Container Runtime
 
-Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own Apache image with `ffmpeg` added for the media-handling apps and Apache's connection timeouts raised for the StartOS reverse proxy (see Network Access and Interfaces).
+Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own Apache image with `ffmpeg` added for the media-handling apps, Apache's connection timeouts raised for the StartOS reverse proxy (see Network Access and Interfaces), and PHP's OPcache JIT turned off (`startos-opcache-jit.ini`): the upstream image enables it, and on aarch64 it segfaults every Apache worker after an app install or update replaces files the JIT has compiled, so the site answers 502 until the service restarts — <https://github.com/nextcloud/docker/issues/2576>.
 
 | Property      | Value                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------ |
