@@ -1,7 +1,8 @@
 id: nextcloud
 title: Nextcloud
-version: 33.0.8
+version: 33.0.8.1
 release-notes: |
+  * Fixes a crash after installing or updating an app on aarch64 servers that left Nextcloud unreachable until it was restarted.
   * Update to v33.0.8 - See [full changelog](https://nextcloud.com/changelog/)
   * After updating, start Nextcloud and wait for all health checks to pass. The database upgrade only completes while the service is running, so let it finish before updating StartOS to 0.4.0.
 license: AGPL-3.0

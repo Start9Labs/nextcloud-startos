@@ -23,6 +23,11 @@ RUN apt update && apt install -y --no-install-recommends \
   && chmod a+rx /usr/local/bin/yt-dlp && \
   apt clean && rm -rf /var/lib/apt/lists/*
 
+# PHP's JIT segfaults every worker on aarch64 once an app update replaces
+# compiled files. See https://github.com/nextcloud/docker/issues/2576
+RUN printf 'opcache.jit=0\nopcache.jit_buffer_size=0\n' \
+      > "$PHP_INI_DIR/conf.d/startos-opcache-jit.ini"
+
 # # Set environment variables
 ENV POSTGRES_DB=nextcloud
 ENV POSTGRES_USER=nextcloud
