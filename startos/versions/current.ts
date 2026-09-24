@@ -19,6 +19,10 @@ export const current = VersionInfo.of({
 - The update migrates the database schema, so it can take longer than a maintenance release.
 - Nextcloud Desktop clients older than 3.3.50 are no longer supported.
 
+**Fixed**
+
+- Fixes a crash after installing or updating an app on aarch64 servers that left Nextcloud unreachable until it was restarted.
+
 [Full release notes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     es_ES: `Nextcloud se ha actualizado a la versión 35.0.0, una actualización mayor desde la serie Nextcloud 34.
 
@@ -35,6 +39,10 @@ export const current = VersionInfo.of({
 - Las aplicaciones instaladas desde la tienda de Nextcloud pueden necesitar actualizaciones compatibles y podrían desactivarse durante la actualización.
 - La actualización migra el esquema de la base de datos, por lo que puede tardar más que una versión de mantenimiento.
 - Los clientes de Nextcloud Desktop anteriores a la versión 3.3.50 ya no son compatibles.
+
+**Correcciones**
+
+- Corrige un fallo tras instalar o actualizar una aplicación en servidores aarch64 que dejaba Nextcloud inaccesible hasta reiniciarlo.
 
 [Notas completas de la versión](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     de_DE: `Nextcloud wurde auf 35.0.0 aktualisiert — ein Hauptversionssprung von der Nextcloud-Reihe 34.
@@ -53,6 +61,10 @@ export const current = VersionInfo.of({
 - Das Update migriert das Datenbankschema und kann daher länger dauern als eine Wartungsversion.
 - Nextcloud-Desktop-Clients vor Version 3.3.50 werden nicht mehr unterstützt.
 
+**Behoben**
+
+- Behebt einen Absturz nach dem Installieren oder Aktualisieren einer App auf aarch64-Servern, der Nextcloud bis zu einem Neustart unerreichbar machte.
+
 [Vollständige Versionshinweise](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 35.0.0 — jest to aktualizacja główna z serii Nextcloud 34.
 
@@ -70,6 +82,10 @@ export const current = VersionInfo.of({
 - Aktualizacja migruje schemat bazy danych, więc może potrwać dłużej niż wydanie konserwacyjne.
 - Klienty Nextcloud Desktop starsze niż 3.3.50 nie są już obsługiwane.
 
+**Poprawki**
+
+- Naprawia awarię po zainstalowaniu lub zaktualizowaniu aplikacji na serwerach aarch64, po której Nextcloud był niedostępny do czasu ponownego uruchomienia.
+
 [Pełne informacje o wydaniu](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     fr_FR: `Nextcloud a été mis à jour vers la version 35.0.0, une mise à niveau majeure depuis la série Nextcloud 34.
 
@@ -86,6 +102,10 @@ export const current = VersionInfo.of({
 - Les applications installées depuis la boutique Nextcloud peuvent nécessiter des mises à jour compatibles et être désactivées pendant la mise à niveau.
 - La mise à jour migre le schéma de la base de données et peut donc prendre plus de temps qu'une version de maintenance.
 - Les clients Nextcloud Desktop antérieurs à la version 3.3.50 ne sont plus pris en charge.
+
+**Corrections**
+
+- Corrige un plantage après l'installation ou la mise à jour d'une application sur les serveurs aarch64, qui rendait Nextcloud inaccessible jusqu'à son redémarrage.
 
 [Notes de version complètes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
   },
