@@ -22,6 +22,7 @@ export const current = VersionInfo.of({
 **Fixed**
 
 - Fixes a crash after installing or updating an app on aarch64 servers that left Nextcloud unreachable until it was restarted.
+- Moving a large Nextcloud from StartOS 0.3.5 no longer fails partway through the migration.
 
 [Full release notes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     es_ES: `Nextcloud se ha actualizado a la versión 35.0.0, una actualización mayor desde la serie Nextcloud 34.
@@ -43,6 +44,7 @@ export const current = VersionInfo.of({
 **Correcciones**
 
 - Corrige un fallo tras instalar o actualizar una aplicación en servidores aarch64 que dejaba Nextcloud inaccesible hasta reiniciarlo.
+- Migrar una instalación grande de Nextcloud desde StartOS 0.3.5 ya no falla a mitad de la migración.
 
 [Notas completas de la versión](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     de_DE: `Nextcloud wurde auf 35.0.0 aktualisiert — ein Hauptversionssprung von der Nextcloud-Reihe 34.
@@ -64,6 +66,7 @@ export const current = VersionInfo.of({
 **Behoben**
 
 - Behebt einen Absturz nach dem Installieren oder Aktualisieren einer App auf aarch64-Servern, der Nextcloud bis zu einem Neustart unerreichbar machte.
+- Die Migration einer großen Nextcloud-Installation von StartOS 0.3.5 bricht nicht mehr mittendrin ab.
 
 [Vollständige Versionshinweise](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     pl_PL: `Zaktualizowano Nextcloud do wersji 35.0.0 — jest to aktualizacja główna z serii Nextcloud 34.
@@ -85,6 +88,7 @@ export const current = VersionInfo.of({
 **Poprawki**
 
 - Naprawia awarię po zainstalowaniu lub zaktualizowaniu aplikacji na serwerach aarch64, po której Nextcloud był niedostępny do czasu ponownego uruchomienia.
+- Migracja dużej instalacji Nextcloud ze StartOS 0.3.5 nie kończy się już błędem w trakcie.
 
 [Pełne informacje o wydaniu](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
     fr_FR: `Nextcloud a été mis à jour vers la version 35.0.0, une mise à niveau majeure depuis la série Nextcloud 34.
@@ -106,6 +110,7 @@ export const current = VersionInfo.of({
 **Corrections**
 
 - Corrige un plantage après l'installation ou la mise à jour d'une application sur les serveurs aarch64, qui rendait Nextcloud inaccessible jusqu'à son redémarrage.
+- La migration d'une installation Nextcloud volumineuse depuis StartOS 0.3.5 n'échoue plus en cours de route.
 
 [Notes de version complètes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
   },
