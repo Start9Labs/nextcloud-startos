@@ -157,9 +157,11 @@ const relocatePostgresFrom035x = async (
           user: 'root',
         },
       )
-      await sub.execFail(['chown', '-R', 'postgres:postgres', POSTGRES_PATH], {
-        user: 'root',
-      })
+      await sub.execFail(
+        ['chown', '-R', 'postgres:postgres', POSTGRES_PATH],
+        { user: 'root' },
+        null,
+      )
       await sub.exec(['rm', '-f', `${PGDATA}/postmaster.pid`], {
         user: 'postgres',
       })
@@ -236,6 +238,7 @@ const repairPermissionsFrom035x = async (
           '+',
         ],
         { user: 'root' },
+        null,
       )
       // occ must be executable for Nextcloud CLI operations
       await sub.execFail(['chmod', 'u+x', `${NEXTCLOUD_PATH}/occ`], {
@@ -289,6 +292,7 @@ const repairPermissionsFrom035x = async (
             dir,
           ],
           { user: 'root' },
+          null,
         )
         const { stdout } = await sub.execFail(
           [
@@ -303,6 +307,7 @@ const repairPermissionsFrom035x = async (
             '-print0',
           ],
           { user: 'root' },
+          null,
         )
         const subdirs = stdout
           .toString()
