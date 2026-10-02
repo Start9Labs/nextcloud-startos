@@ -289,6 +289,7 @@ Mixed, and each half is scoped deliberately.
 9. **Talk's default `stun.nextcloud.com:443` is left in place** when relaying is enabled. Coturn's own STUN entry is added alongside it rather than replacing it, since removing an entry the package did not add is the admin's call; delete it in Talk's admin settings to keep reflexive discovery entirely on your own server.
 10. **Talk call relaying is Coturn or nothing.** There is no field for an external TURN server — configure one directly in Talk's admin settings instead, and leave the toggle off.
 11. **No riscv64 build.** x86_64 and aarch64 only.
+12. **A single request is capped at 1 GiB.** Apache's `LimitRequestBody` is the upstream image's `APACHE_BODY_LIMIT` default (1073741824), which the package doesn't set, so a one-request WebDAV `PUT` above it gets `413` and `PHP_UPLOAD_LIMIT` (`20480M`) never binds. Chunked uploads — the web uploader and the desktop and mobile clients, 100 MiB chunks by default (`max_chunk_size`) — have no per-file cap but free disk space.
 
 ---
 
