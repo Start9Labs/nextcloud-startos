@@ -16,9 +16,6 @@ const dict = {
   // bootstrapNextcloud.ts
   'Display your admin password so you can administer your Nextcloud instance': 8,
 
-  // v32.0.5.0.ts
-  'Admin password could not be recovered from migration. Please reset it.': 9,
-
   // setConfig.ts
   Configure: 10,
   'Basic configuration options for your Nextcloud instance': 11,
@@ -197,9 +194,6 @@ const dict = {
   'Copying application files': 133,
   'Creating the database': 161,
   'Migrating the database': 162,
-
-  // versions/from035x.ts: 0.3.5x migration progress
-  'Updating file permissions': 134,
 
   // disableUnstableApps.ts: per-app outcome report
   'Partially Successful': 137,

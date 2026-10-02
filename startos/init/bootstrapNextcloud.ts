@@ -184,14 +184,6 @@ function readNextcloudVersions(effects: T.Effects) {
  * daemon start via the entrypoint, where an interrupted run stranded the
  * instance on "Update needed — use the command line updater".
  *
- * This is the **upstream application** upgrade, triggered by the bundled
- * Nextcloud release being newer than the deployed one — not to be confused with
- * the one-time **StartOS layout** migration in
- * [`../versions/from035x.ts`](../versions/from035x.ts), which is driven by the
- * package version graph. Both run during init; `versionGraph` precedes
- * `bootstrapNextcloud` in `sdk.setupInit`, so the 0.3.5x migration has always
- * finished before this starts.
- *
  * `NEXTCLOUD_UPDATE=1` makes the stock entrypoint perform the upgrade with a
  * no-op command (`true`) and exit, so it never binds a port. `runUntilSuccess`
  * brings up Postgres + Valkey (occ upgrade talks to both), runs the upgrade to
