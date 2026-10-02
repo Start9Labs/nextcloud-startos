@@ -69,6 +69,8 @@ const shape = z.object({
   // applied, and the record of what to clear on the next change. Same
   // desired-vs-actual split, and the same non-reactive read, as the two above.
   officeConfigured: z.string().catch('').default(''),
+  // Set when a migration retires a 0.3.5 binding; cleared once reattachUiOnions succeeds.
+  reattachUiOnions: z.boolean().catch(false).default(false),
 })
 
 export type Store = z.infer<typeof shape>
