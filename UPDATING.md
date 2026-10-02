@@ -22,7 +22,7 @@ curl -fsSL "https://hub.docker.com/v2/repositories/library/postgres/tags?page_si
   | jq -r '.results[].name' | grep -E '^17.*alpine' | head
 ```
 
-Current pin: `postgres:17-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`). Changing the major also means changing `PG_MAJOR` in `startos/versions/from035x.ts`, which the 0.3.5x migration compares against the cluster's `PG_VERSION`.
+Current pin: `postgres:17-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`).
 
 **Valkey** ([valkey/valkey](https://hub.docker.com/r/valkey/valkey) on Docker Hub):
 
@@ -37,10 +37,11 @@ Current pin: `valkey/valkey:9-alpine` in `startos/manifest/index.ts` (`images.va
 
 **Nextcloud** — bump the `NEXTCLOUD_VERSION` `ARG` default in `nextcloud.Dockerfile` to the new patch version (e.g. `32.0.9` → `32.0.10`). The `-apache` suffix is appended by the `FROM` line; don't include it in the ARG value.
 
-A **major** bump (e.g. `33.0.8` → `34.0.3`) needs four more checks:
+A **major** bump (e.g. `33.0.8` → `34.0.3`) needs five more checks:
 
 - Diff `core/shipped.json` between the two tags and add whatever the new major appends to `defaultEnabled` and `alwaysEnabled` to the `defaultApps` list in `startos/actions/maintenance/disableUnstableApps.ts`. `occ app:disable` exits non-zero on an `alwaysEnabled` app, and the action runs under `execFail`, so one missing id breaks the recovery action a locked-out user is told to run.
 - Check `$OC_VersionCanBeUpgradedFrom` in the new tag's `version.php`. Nextcloud upgrades one major at a time, so every version the registry still lists must be within one major of the new image — `guardUpstreamUpgrade` in `startos/init/bootstrapNextcloud.ts` refuses the rest before the version graph runs.
+- Move the version graph's floor to the previous major: `startos/versions/` declares only `current` and a `<previous major>.0.0:0` floor whose `up` is `IMPOSSIBLE`. A floor left a major lower lets `canMigrateFrom` accept installs the guard then refuses, so StartOS offers them this release instead of the previous major's.
 - Diff `config/config.sample.php` between the two tags against the keys `startos/fileModels/config.php.ts` models, and against the defaults the README and `instructions.md` quote.
 - Re-check the new major's system requirements page for the supported PostgreSQL and PHP versions.
 
