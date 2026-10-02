@@ -1,9 +1,9 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.0:0',
+  version: '35.0.1:0',
   releaseNotes: {
-    en_US: `Updated Nextcloud to 35.0.0 — a major upgrade from the Nextcloud 34 series.
+    en_US: `Updated Nextcloud to 35.0.1 — a major upgrade from the Nextcloud 34 series.
 
 **New in Nextcloud 35**
 
@@ -19,8 +19,8 @@ export const current = VersionInfo.of({
 - The update migrates the database schema, so it can take longer than a maintenance release.
 - Nextcloud Desktop clients older than 3.3.50 are no longer supported.
 
-[Full release notes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
-    es_ES: `Nextcloud se ha actualizado a la versión 35.0.0, una actualización mayor desde la serie Nextcloud 34.
+[Full release notes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.1)`,
+    es_ES: `Nextcloud se ha actualizado a la versión 35.0.1, una actualización mayor desde la serie Nextcloud 34.
 
 **Novedades de Nextcloud 35**
 
@@ -36,8 +36,8 @@ export const current = VersionInfo.of({
 - La actualización migra el esquema de la base de datos, por lo que puede tardar más que una versión de mantenimiento.
 - Los clientes de Nextcloud Desktop anteriores a la versión 3.3.50 ya no son compatibles.
 
-[Notas completas de la versión](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
-    de_DE: `Nextcloud wurde auf 35.0.0 aktualisiert — ein Hauptversionssprung von der Nextcloud-Reihe 34.
+[Notas completas de la versión](https://github.com/nextcloud-releases/server/releases/tag/v35.0.1)`,
+    de_DE: `Nextcloud wurde auf 35.0.1 aktualisiert — ein Hauptversionssprung von der Nextcloud-Reihe 34.
 
 **Neu in Nextcloud 35**
 
@@ -53,8 +53,8 @@ export const current = VersionInfo.of({
 - Das Update migriert das Datenbankschema und kann daher länger dauern als eine Wartungsversion.
 - Nextcloud-Desktop-Clients vor Version 3.3.50 werden nicht mehr unterstützt.
 
-[Vollständige Versionshinweise](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
-    pl_PL: `Zaktualizowano Nextcloud do wersji 35.0.0 — jest to aktualizacja główna z serii Nextcloud 34.
+[Vollständige Versionshinweise](https://github.com/nextcloud-releases/server/releases/tag/v35.0.1)`,
+    pl_PL: `Zaktualizowano Nextcloud do wersji 35.0.1 — jest to aktualizacja główna z serii Nextcloud 34.
 
 **Nowości w Nextcloud 35**
 
@@ -70,8 +70,8 @@ export const current = VersionInfo.of({
 - Aktualizacja migruje schemat bazy danych, więc może potrwać dłużej niż wydanie konserwacyjne.
 - Klienty Nextcloud Desktop starsze niż 3.3.50 nie są już obsługiwane.
 
-[Pełne informacje o wydaniu](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
-    fr_FR: `Nextcloud a été mis à jour vers la version 35.0.0, une mise à niveau majeure depuis la série Nextcloud 34.
+[Pełne informacje o wydaniu](https://github.com/nextcloud-releases/server/releases/tag/v35.0.1)`,
+    fr_FR: `Nextcloud a été mis à jour vers la version 35.0.1, une mise à niveau majeure depuis la série Nextcloud 34.
 
 **Nouveautés de Nextcloud 35**
 
@@ -87,7 +87,7 @@ export const current = VersionInfo.of({
 - La mise à jour migre le schéma de la base de données et peut donc prendre plus de temps qu'une version de maintenance.
 - Les clients Nextcloud Desktop antérieurs à la version 3.3.50 ne sont plus pris en charge.
 
-[Notes de version complètes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.0)`,
+[Notes de version complètes](https://github.com/nextcloud-releases/server/releases/tag/v35.0.1)`,
   },
   migrations: {
     up: async () => {},
