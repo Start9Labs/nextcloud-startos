@@ -21,10 +21,8 @@ import {
   nextcloudMount,
 } from '../utils'
 
-// occ upgrade completes in minutes even on large instances, but cap it so a
-// genuinely stuck migration eventually fails init and StartOS rolls the update
-// back instead of hanging forever.
-const UPGRADE_TIMEOUT = 1_800_000
+// slow storage stretches install and occ upgrade far past a healthy box's minutes
+const INIT_TIMEOUT = 1_800_000
 
 export const bootstrapNextcloud = sdk.setupOnInit(
   async (effects, kind, progress) => {
@@ -89,7 +87,7 @@ export const bootstrapNextcloud = sdk.setupOnInit(
           },
           requires: ['chown', 'postgres', 'valkey'],
         })
-        .runUntilSuccess(300_000)
+        .runUntilSuccess(INIT_TIMEOUT)
 
       starting.complete()
       copying.complete()
@@ -229,7 +227,7 @@ async function runUpstreamUpgrade(
       },
       requires: ['chown', 'postgres', 'valkey'],
     })
-    .runUntilSuccess(UPGRADE_TIMEOUT)
+    .runUntilSuccess(INIT_TIMEOUT)
 
   copying.complete()
   migrating.complete()

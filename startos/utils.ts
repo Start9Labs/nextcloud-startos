@@ -266,7 +266,8 @@ export function getBaseDaemons(
       subcontainer: postgresSub,
       exec: {
         command: sdk.useEntrypoint(),
-        env: postgresEnv,
+        // the entrypoint's first-run pg_ctl stop otherwise gives up after 60s
+        env: { ...postgresEnv, PGCTLTIMEOUT: '300' },
       },
       ready: {
         display: null,

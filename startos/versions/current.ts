@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.1:0',
+  version: '35.0.1:1',
   releaseNotes: {
     en_US: `Updated Nextcloud to 35.0.1 — a major upgrade from the Nextcloud 34 series.
 
