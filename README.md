@@ -140,7 +140,7 @@ Neither is masked. The addresses published for `ui` are what init writes into `t
 
 ## Installation and First-Run Flow
 
-Install is not a matter of writing a config and starting: the package brings the whole stack up under `runUntilSuccess`, lets Nextcloud's own installer run to completion against the bundled database, and tears it down again. The admin account is created as `admin` with a generated password, and the PostgreSQL password is generated at the same time.
+Install is not a matter of writing a config and starting: the package brings the whole stack up under `runUntilSuccess`, lets Nextcloud's own installer run to completion against the bundled database, and tears it down again; if that takes more than thirty minutes, init fails. The admin account is created as `admin` with a generated password, and the PostgreSQL password is generated at the same time.
 
 A `critical` task then asks you to reveal the admin password. **The action that does so is available only while the service is stopped, and it clears the password from the store once shown** — so save it when it is offered. If it is lost afterwards, Reset Admin Password is the way back in.
 
