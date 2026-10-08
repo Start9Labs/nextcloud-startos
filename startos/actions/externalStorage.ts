@@ -36,7 +36,9 @@ async function listUsers(effects: T.Effects): Promise<Record<string, string>> {
 const sourceUnion = (name: string) =>
   Value.union({
     name,
-    description: null,
+    description: i18n(
+      "- Not mounted: this service's files do not appear in Nextcloud.\n- Available to all users: every Nextcloud user sees them in Files.\n- Available to specific users: only the users you pick see them.",
+    ),
     default: 'off',
     variants: Variants.of({
       off: { name: i18n('Not mounted'), spec: InputSpec.of({}) },

@@ -6,7 +6,9 @@ export const repair = queuedTaskAction('repair', 'repair', {
   description: i18n(
     'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.',
   ),
-  warning: null,
+  warning: i18n(
+    "The service restarts, then runs Nextcloud's repair routine in the background.",
+  ),
   allowedStatuses: 'any',
   group: 'Maintenance',
   visibility: 'enabled',

@@ -1,13 +1,5 @@
 import { setupManifest } from '@start9labs/start-sdk'
-import {
-  collaboraDescription,
-  coturnDescription,
-  filebrowserDescription,
-  long,
-  nextexplorerDescription,
-  onlyofficeDescription,
-  short,
-} from './i18n'
+import { long, short } from './i18n'
 
 export const manifest = setupManifest({
   id: 'nextcloud',
@@ -39,48 +31,6 @@ export const manifest = setupManifest({
         dockerTag: 'valkey/valkey:9-alpine',
       },
       arch: ['x86_64', 'aarch64'],
-    },
-  },
-  dependencies: {
-    nextexplorer: {
-      description: nextexplorerDescription,
-      optional: true,
-      metadata: {
-        title: 'NextExplorer',
-        icon: 'https://raw.githubusercontent.com/Start9Labs/nextexplorer-startos/04f7ecbfc31ad2205e0222dd7568fb881aa06c79/icon.svg',
-      },
-    },
-    filebrowser: {
-      description: filebrowserDescription,
-      optional: true,
-      metadata: {
-        title: 'FileBrowser Quantum',
-        icon: 'https://raw.githubusercontent.com/Start9Labs/filebrowser-quantum-startos/e936a6c85a97b930b43cad5e9c0dd4898a2df567/icon.svg',
-      },
-    },
-    coturn: {
-      description: coturnDescription,
-      optional: true,
-      metadata: {
-        title: 'Coturn',
-        icon: 'https://raw.githubusercontent.com/Start9Labs/coturn-startos/d67ecaca5800a87e3300ce44c62484888f35d51b/icon.svg',
-      },
-    },
-    'collabora-online': {
-      description: collaboraDescription,
-      optional: true,
-      metadata: {
-        title: 'Collabora Online',
-        icon: 'https://raw.githubusercontent.com/Start9Labs/collabora-online-startos/f03b9c67c185bf63d55b5e6f28e6e85a46c65fcb/icon.png',
-      },
-    },
-    'onlyoffice-docs': {
-      description: onlyofficeDescription,
-      optional: true,
-      metadata: {
-        title: 'ONLYOFFICE Docs',
-        icon: 'https://raw.githubusercontent.com/Start9-Community/onlyoffice-docs-startos/fa723dfd81ec7aae30d1b29520daff139427b3e4/icon.png',
-      },
     },
   },
 })

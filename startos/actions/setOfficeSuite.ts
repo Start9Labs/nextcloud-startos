@@ -9,7 +9,7 @@ export const inputSpec = InputSpec.of({
   office_suite: Value.select({
     name: i18n('Office Suite'),
     description: i18n(
-      'Which document server opens documents, spreadsheets and presentations in your browser. Install it from the Marketplace first, then pick it here — Nextcloud installs the app it needs and points itself at the service. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office.',
+      'Which document server opens documents, spreadsheets and presentations in your browser. Install it from the Marketplace first, then pick it here — Nextcloud installs the app it needs and points itself at the service.\n- None: Nextcloud uses no document server, and the office app this service turned on is turned off again.\n- Collabora Online: needs about a quarter of the memory of ONLYOFFICE Docs and opens more formats.\n- ONLYOFFICE Docs: from the Community Registry. Worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office.',
     ),
     default: 'none',
     values: {
@@ -52,7 +52,7 @@ export const setOfficeSuite = sdk.Action.withInput(
   // the execution function
   async ({ effects, input }) => {
     // `main` reads this, resolves the document server's bridge address and
-    // reconciles the connector app's settings; setDependencies reads it to add
+    // reconciles the connector app's settings; dependencies.ts reads it to add
     // or drop the dependency.
     await storeJson.merge(effects, {
       officeSuite:

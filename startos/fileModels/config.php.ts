@@ -8,7 +8,7 @@ type Locale = keyof typeof locales
 type PhoneRegion = keyof typeof phoneRegions
 type TrashRetention = keyof typeof trashRetention
 
-const shape = z.object({
+const shape = z.looseObject({
   dbtype: z.literal('pgsql').catch('pgsql'),
   dbname: z.literal('nextcloud').catch('nextcloud'),
   dbhost: z.literal('localhost').catch('localhost'),
@@ -56,7 +56,7 @@ const shape = z.object({
     .literal('\\OC\\Memcache\\Redis')
     .catch('\\OC\\Memcache\\Redis'),
   redis: z
-    .object({
+    .looseObject({
       host: z.literal('localhost').catch('localhost'),
       port: z.literal(6379).catch(6379),
     })

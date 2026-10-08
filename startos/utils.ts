@@ -1,6 +1,7 @@
 import { sdk } from './sdk'
 import { SubContainer, T, utils } from '@start9labs/start-sdk'
 import { manifest } from './manifest'
+import { i18n } from './i18n'
 
 export const uiPort = 80 as const
 export const NEXTCLOUD_PATH = '/var/www/html' as const
@@ -179,13 +180,13 @@ export const locales = {
 // a floor — not offered here, since a floor can hold files past the maximum a
 // user picked to reclaim space.
 export const trashRetention = {
-  auto: 'Default (at least 30 days, then as space is needed)',
-  'auto, 7': 'Delete after 7 days',
-  'auto, 30': 'Delete after 30 days',
-  'auto, 90': 'Delete after 90 days',
-  'auto, 180': 'Delete after 180 days',
-  'auto, 365': 'Delete after 365 days',
-  disabled: 'Never delete automatically',
+  auto: i18n('Default (at least 30 days, then as space is needed)'),
+  'auto, 7': i18n('Delete after 7 days'),
+  'auto, 30': i18n('Delete after 30 days'),
+  'auto, 90': i18n('Delete after 90 days'),
+  'auto, 180': i18n('Delete after 180 days'),
+  'auto, 365': i18n('Delete after 365 days'),
+  disabled: i18n('Never delete automatically'),
 } as const
 
 export const phoneRegions = {

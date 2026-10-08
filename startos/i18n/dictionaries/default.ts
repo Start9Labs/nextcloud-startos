@@ -43,13 +43,11 @@ const dict = {
 
   // disableMaintenanceMode.ts
   'Disable Maintenance Mode': 25,
-  'Use this if your UI has gotten stuck in "Maintenance Mode". Please keep in mind that it is normal for this mode to engage (temporarily) following an update (including some NC app updates) or restart. The typical solution is to BE PATIENT and allow the opportunity for organic progress. Resort to this action only if necessary. Being in maintenance mode for more than 15min likely constitutes "being stuck."': 26,
   'Maintenance Mode has been disabled. You may need to wait 1-2 minutes and refresh the browser': 27,
 
   // disableUnstableApps.ts
   'Disable Non-default Apps': 28,
   'Use this if unstable apps were installed resulting in the UI becoming inaccessible with an Internal Server Error: "The server was unable to complete your request".': 29,
-  'Running this action will disable ALL non-default app(s). Stable apps will need to be individually re-enabled.': 30,
   'The following apps have been disabled:': 31,
 
   // getAdminCredentials.ts
@@ -59,46 +57,23 @@ const dict = {
   // downloadModels.ts
   'Download Machine Learning Models for Recognize': 34,
   // Legacy keys 35-37 (synchronous wording) replaced by 47-57 (async wording).
-  'This downloads the machine learning models required for identifying objects and faces with the Recognize app. You MUST install the Recognize app in your Nextcloud instance before running this action.': 35,
-  'This process can take up to 15 minutes on a 2023 Server One. It will consume approximately 1-2 GB of disk space.': 36,
-  'The machine learning models have been downloaded successfully.': 37,
-  'Queues a background download of the machine learning models required for identifying objects and faces with the Recognize app. Progress is shown as a "Recognize Model Download" health check on the service status page. You MUST install the Recognize app in your Nextcloud instance before running this action.': 47,
-  'The download can take up to 15 minutes on a 2023 Server One and consumes approximately 1-2 GB of disk space. Watch the "Recognize Model Download" health check for progress.': 48,
   'Already in Progress': 49,
-  'A model download is already running or queued. Watch the "Recognize Model Download" health check on the service status page.': 50,
   Queued: 51,
-  'Model download has been queued. Watch the "Recognize Model Download" health check on the service status page for progress.': 52,
   // main.ts: recognize-models health check
   'Recognize Model Download': 53,
-  'No download requested.': 54,
   'Downloading machine learning models...': 55,
-  'Models downloaded successfully.': 56,
-  'Download failed. Last log lines: ${tail}': 57,
 
   // indexMemories.ts (legacy 38-40 retained for translations of prior versions)
   'Index Media for Memories': 38,
-  'Indexes all media for the Memories media app and enables video support and previews. Indexing is now done automatically by Memories when Nextcloud background tasks are triggered (every 5min by default), so you only need to use this if you want to force a re-index, or do not want to wait for the initial index. You MUST install the Memories app and select your media path (on the Memories welcome screen) before running this Action.': 39,
-  'Photos have been indexed for the Memories application. You may need to restart your Nextcloud service if changes do not take effect right away.': 40,
-  'Queues a background re-index of media for the Memories app. Indexing normally runs automatically every 5 minutes via Nextcloud background tasks; use this only to force a re-index. Progress is shown as the "Memories Indexing" health check on the service status page. You MUST install the Memories app and select your media path before running this action.': 63,
-  'Photo indexing has been queued. Watch the "Memories Indexing" health check on the service status page for progress.': 64,
-  'A photo indexing run is already running or queued. Watch the "Memories Indexing" health check on the service status page.': 65,
 
   // indexPlaces.ts (legacy 41-44 retained)
   'Setup Map for Memories': 41,
-  'This sets up the map for reverse geotagging (finding the location of) your photos in the Memories application. This mostly consists of downloading map data. A re-index will be triggered at the end of this process. You MUST install the Memories app before running this Action.': 42,
-  "This is an intensive process that will require non-trivial system resources and time. If you are on a device with lower resources, it is best to not perform other intensive processes (such as Bitcoin's initial blockchain download) at the same time. This action will consume approximately 2-3 GB of disk space, and you can check progress by viewing the amount of geometries populated to the database under Admin Settings -> Memories -> Reverse Geotagging (complete set is ~561,000)": 43,
-  'You can now use the Map inside your Memories application.': 44,
-  'Queues a background download of map data and a re-index for reverse geotagging your photos in the Memories app. Progress is shown as the "Memories Map Setup" health check on the service status page. You MUST install the Memories app before running this action.': 66,
-  'The map setup downloads approximately 2-3 GB of geometry data (~561,000 places). On a low-resource device, avoid running other intensive processes (e.g., Bitcoin initial block download) at the same time. Watch the "Memories Map Setup" health check for progress.': 67,
-  'Map setup has been queued. Watch the "Memories Map Setup" health check on the service status page for progress.': 68,
-  'A map setup run is already running or queued. Watch the "Memories Map Setup" health check on the service status page.': 69,
 
   // main.ts: shared health check messages
   'Memories Indexing': 58,
   'Indexing photos for the Memories app...': 59,
   'Memories Map Setup': 60,
   'Setting up map data for the Memories app...': 61,
-  'Task failed. Last log lines: ${tail}': 62,
 
   // missing-prerequisite errors (thrown at run time when the required app
   // isn't installed; previously also used as disabled-reason text)
@@ -106,7 +81,6 @@ const dict = {
   'Install the Memories app in Nextcloud first.': 71,
 
   // downloadModels.ts (revised wording)
-  'Queues a background download of the machine learning models required for identifying objects and faces with the Recognize app. Progress is shown as a "Recognize Model Download" health check on the service status page. You must install the Recognize app in Nextcloud before running this action.': 72,
   'The download can take up to 15 minutes and will consume approximately 1-2 GB of disk space.': 73,
 
   // App-command actions: tightened wording. Long-running actions share
@@ -177,13 +151,9 @@ const dict = {
   'Nextcloud found an unfinished update but could not finish it automatically. The web interface is still reachable — check the service logs, or run the command-line updater ("occ upgrade").': 120,
   // externalStorage.ts: External Storage action + FileBrowser Quantum source
   'External Storage': 121,
-  'Each selected service is mounted into Nextcloud and added to Files. FileBrowser Quantum is mounted read-write, so you can move its files into Nextcloud. Clear a selection to remove it.': 122,
   'FileBrowser Quantum': 123,
   NextExplorer: 163,
   "Show other StartOS services' files as folders in Nextcloud Files, via the built-in External Storage app.": 124,
-  'Available to Users': 125,
-  'Which Nextcloud users see the selected storage in their Files. Leave empty to make it available to all users.': 126,
-  'Available to Users — ${source}': 127,
   'Not mounted': 128,
   'Available to all users': 129,
   'Available to specific users': 130,
@@ -202,11 +172,11 @@ const dict = {
 
   // setConfig.ts: trash retention
   'Delete Files in Trash': 140,
-  "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. By default files are kept for at least 30 days and then removed only as disk space is needed, so trash can grow without bound on a server with room to spare. Setting a limit removes them on schedule instead. Restoring a file is only possible while it is still in Deleted Files.": 141,
+  "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. Restoring a file is only possible while it is still in Deleted Files.\n- Default: kept for at least 30 days, then removed only as disk space is needed, so trash can grow without bound on a server with room to spare.\n- Delete after 7, 30, 90, 180 or 365 days: removed once it has been in Deleted Files that long, or sooner if disk space is needed.\n- Never delete automatically: kept until it is deleted from Deleted Files by hand.": 141,
 
   // actions/setOfficeSuite.ts
   'Office Suite': 142,
-  'Which document server opens documents, spreadsheets and presentations in your browser. Install it from the Marketplace first, then pick it here — Nextcloud installs the app it needs and points itself at the service. Collabora Online is recommended: it needs about a quarter of the memory and opens more formats. ONLYOFFICE Docs, from the Community Registry, is worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office.': 143,
+  'Which document server opens documents, spreadsheets and presentations in your browser. Install it from the Marketplace first, then pick it here — Nextcloud installs the app it needs and points itself at the service.\n- None: Nextcloud uses no document server, and the office app this service turned on is turned off again.\n- Collabora Online: needs about a quarter of the memory of ONLYOFFICE Docs and opens more formats.\n- ONLYOFFICE Docs: from the Community Registry. Worth its size only if you shuttle a large body of style-heavy documents back and forth with Microsoft Office.': 143,
   None: 144,
   'Choose the document server that opens office files in your browser.': 145,
   'Collabora Online (recommended)': 147,
@@ -222,6 +192,17 @@ const dict = {
   'Install ${app} in Nextcloud, or select “None” using the “Office Suite” action.': 152,
   'Enable ${app} in Nextcloud, or select “None” using the “Office Suite” action.': 157,
   'Disable ${app} on Nextcloud’s Apps page. With two office apps enabled, Word, Excel and PowerPoint files open in neither.': 155,
+  "- Not mounted: this service's files do not appear in Nextcloud.\n- Available to all users: every Nextcloud user sees them in Files.\n- Available to specific users: only the users you pick see them.": 164,
+  'Nextcloud leaves maintenance mode and serves users again, even if an update that turned it on has not finished.': 165,
+  "The service restarts, then runs Nextcloud's repair routine in the background.": 166,
+  "The service restarts, then rescans every user's files in the background.": 167,
+  'Default (at least 30 days, then as space is needed)': 168,
+  'Delete after 7 days': 169,
+  'Delete after 30 days': 170,
+  'Delete after 90 days': 171,
+  'Delete after 180 days': 172,
+  'Delete after 365 days': 173,
+  'Never delete automatically': 174,
 } as const
 
 /**
