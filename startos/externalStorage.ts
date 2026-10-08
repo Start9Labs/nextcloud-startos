@@ -15,8 +15,8 @@ import { I18nKey } from './i18n/dictionaries/default'
  *      (its `packageId`, display `label`, mountpoint, Files folder, version)
  *   2. add it to the `z.enum([...])` in fileModels/store.json.ts
  *   3. add a typed `mountDependency` block in main.ts (the one part that needs
- *      the source package's manifest type) + a dependency in dependencies.ts
- *      and the manifest, and its `label` to the i18n dictionaries
+ *      the source package's manifest type) + a dependency in dependencies.ts,
+ *      and its `label` to the i18n dictionaries
  * The action then surfaces it automatically — but only when it's installed.
  *
  * Good candidates expose real, browsable files on their OWN volume (a

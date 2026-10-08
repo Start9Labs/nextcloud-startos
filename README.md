@@ -81,7 +81,7 @@ Two models, and only one of them is upstream's.
 | `config/config.php` | `nextcloud` | PHP    | Yes — `FileHelper.raw`  | Every start, and the Configure action |
 | `store.json`        | `main`      | JSON   | Yes — `FileHelper.json` | Install, and several actions          |
 
-`config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. **A key outside the shape survives**: the SDK's `z.object` is loose, so `instanceid`, `passwordsalt`, `secret` and anything a Nextcloud app or an admin adds are read, kept and written back. A key the shape models keeps its value too, unless the shape rejects it or pins it to a literal — the enforced list below. A value written in a form the grammar does not model is left exactly as it was found, so a setting the package cannot interpret can never stop it from starting.
+`config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. **A key outside the shape survives**: every level of the shape is a `z.looseObject`, so `instanceid`, `passwordsalt`, `secret` and anything a Nextcloud app or an admin adds are read, kept and written back. A key the shape models keeps its value too, unless the shape rejects it or pins it to a literal — the enforced list below. A value written in a form the grammar does not model is left exactly as it was found, so a setting the package cannot interpret can never stop it from starting.
 
 **Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, port, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, `overwriteprotocol` (held unset, so a value set by hand is removed), and the three in the table below.
 
@@ -202,8 +202,8 @@ The wait is a subscription, not a poll. It runs no commands, cannot fail, and re
 
 ### Maintenance — Reset Admin Password, Disable Maintenance Mode, Disable Non-default Apps, Scan Files, Repair
 
-- **Reset Admin Password** generates a new password for a chosen admin account and shows it once. Only while running; the account list is read live. It carries a warning, so StartOS asks for confirmation first — it replaces on invocation rather than revealing the current password, and signs that user out.
-- **Disable Maintenance Mode** clears a stuck maintenance flag. Only while running. **Wait first** — brief maintenance mode after an update or a restart is normal, and this is for when it has lasted more than about fifteen minutes.
+- **Reset Admin Password** generates a new password for a chosen admin account and shows it once. Only while running; the account list is read live, and holds only members of Nextcloud's `admin` group. It carries a warning, so StartOS asks for confirmation first — it replaces on invocation rather than revealing the current password, and signs that user out.
+- **Disable Maintenance Mode** clears a stuck maintenance flag. Only while running. **Wait first** — brief maintenance mode after an update or a restart is normal, and this is for when it has lasted more than about fifteen minutes. It carries a warning, so StartOS asks for confirmation first: it ends maintenance mode even under an update that is still running.
 - **Disable Non-default Apps** turns off every enabled app that Nextcloud does not ship, preserving the bundled set plus Calendar and Contacts. It is the recovery for an app that has made the UI return an Internal Server Error. Apps are disabled one at a time, and the result lists any that could not be — a fataling app is exactly what this action targets, so its own failure must not hide what did get disabled. Only while running, and **stable apps must be re-enabled individually afterwards.**
 - **Scan Files** rebuilds the file-cache index, which is what makes files added outside Nextcloud — over WebDAV's back door, rsync, or an external-storage mount — appear with correct sizes and turn up in search.
 - **Repair** runs Nextcloud's built-in repair routine against database inconsistencies, stale cache entries, and broken shares.
@@ -218,7 +218,7 @@ Three commands belonging to Nextcloud apps you install yourself. Each refuses up
 
 ### Queued tasks, and what "restarts the service" means
 
-Scan Files, Repair, and the three App Commands do not run inline — each records a pending timestamp and returns immediately, and the service restarts so the `long-running-tasks` oneshot picks the work up in the main container.
+Scan Files, Repair, and the three App Commands do not run inline — each records a pending timestamp and returns immediately, and the service restarts so the `long-running-tasks` oneshot picks the work up in the main container. Each carries a warning, so StartOS asks for confirmation before queuing it.
 
 - **Cost:** minutes to hours, plus the restart. The work continues after the action returns.
 - **Repeat safety:** invoking one while it is already queued or running is a no-op that says so. All of the underlying commands are idempotent, so an interrupted run simply resumes on the next start.

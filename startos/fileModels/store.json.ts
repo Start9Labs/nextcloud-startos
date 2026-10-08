@@ -10,7 +10,7 @@ export const ACTION_IDS = [
 ] as const
 export type ActionId = (typeof ACTION_IDS)[number]
 
-const actionTimestamps = z.object({
+const actionTimestamps = z.looseObject({
   downloadModels: z.number().optional(),
   indexMemories: z.number().optional(),
   indexPlaces: z.number().optional(),
@@ -18,10 +18,10 @@ const actionTimestamps = z.object({
   repair: z.number().optional(),
 })
 
-const shape = z.object({
+const shape = z.looseObject({
   adminPassword: z.string().optional().catch(undefined),
   actions: z
-    .object({
+    .looseObject({
       pending: actionTimestamps.catch({}).default({}),
       completed: actionTimestamps.catch({}).default({}),
     })
@@ -29,7 +29,7 @@ const shape = z.object({
     .default({ pending: {}, completed: {} }),
   // External Storage sources the user has chosen to surface in Nextcloud Files
   // (see startos/externalStorage.ts). DESIRED state: written by the
-  // `external-storage` action, read reactively in setupMain/setDependencies.
+  // `external-storage` action, read reactively in setupMain and dependencies.ts.
   // Keep the enum in sync with EXTERNAL_STORAGE_SOURCES.
   externalStorages: z
     .array(z.enum(['nextexplorer', 'filebrowser']))
@@ -53,7 +53,7 @@ const shape = z.object({
   externalStoragesConfigured: z.string().catch('').default(''),
   // Advertise the Coturn package to Nextcloud Talk as its STUN/TURN relay.
   // DESIRED state: written by the Configure action, read reactively in
-  // setupMain/setDependencies.
+  // setupMain and dependencies.ts.
   talkTurn: z.boolean().catch(false).default(false),
   // ACTUAL state: the Talk STUN/TURN entries this package last applied, as an
   // opaque signature. Doubles as the record of what to delete on the next
@@ -63,7 +63,7 @@ const shape = z.object({
   talkTurnConfigured: z.string().catch('').default(''),
   // Which document server serves the office editors, if any. DESIRED state:
   // written by the Office Suite action, read reactively in
-  // setupMain/setDependencies.
+  // setupMain and dependencies.ts.
   officeSuite: z.enum(['collabora', 'onlyoffice']).optional().catch(undefined),
   // ACTUAL state: an opaque signature of the office settings this package last
   // applied, and the record of what to clear on the next change. Same

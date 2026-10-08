@@ -1473,7 +1473,7 @@ async function reconcileOffice(
     try {
       await sdk
         .getStatus(effects, { packageId })
-        .waitFor((s) => s?.health[healthCheckId]?.result === 'success')
+        .waitFor((s) => s?.health[healthCheckId]?.result === 'success', abort)
     } catch {
       return
     }

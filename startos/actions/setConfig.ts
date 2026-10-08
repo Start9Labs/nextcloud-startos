@@ -26,7 +26,7 @@ export const inputSpec = InputSpec.of({
   trashbin_retention_obligation: Value.select({
     name: i18n('Delete Files in Trash'),
     description: i18n(
-      "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. By default files are kept for at least 30 days and then removed only as disk space is needed, so trash can grow without bound on a server with room to spare. Setting a limit removes them on schedule instead. Restoring a file is only possible while it is still in Deleted Files.",
+      "How long Nextcloud keeps a deleted file in each user's Deleted Files before removing it for good. Restoring a file is only possible while it is still in Deleted Files.\n- Default: kept for at least 30 days, then removed only as disk space is needed, so trash can grow without bound on a server with room to spare.\n- Delete after 7, 30, 90, 180 or 365 days: removed once it has been in Deleted Files that long, or sooner if disk space is needed.\n- Never delete automatically: kept until it is deleted from Deleted Files by hand.",
     ),
     default: 'auto',
     values: trashRetention,
@@ -100,7 +100,7 @@ export const setConfig = sdk.Action.withInput(
       skeletondirectory: disable_skeleton_files ? '' : undefined,
     })
     // `main` reads this, resolves the Coturn endpoint and reconciles Talk's
-    // STUN/TURN entries; setDependencies reads it to add or drop the dependency.
+    // STUN/TURN entries; dependencies.ts reads it to add or drop the dependency.
     await storeJson.merge(effects, { talkTurn: talk_turn })
   },
 )

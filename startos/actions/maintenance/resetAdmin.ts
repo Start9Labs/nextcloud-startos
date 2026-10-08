@@ -6,23 +6,39 @@ const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
   user: Value.dynamicSelect(async ({ effects }) => {
-    const res = await sdk.SubContainer.withTemp(
+    const admins = await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'nextcloud' },
       nextcloudMount,
       'list-admin-users',
-      async (subc) =>
-        subc.execFail(
-          ['php', 'occ', 'user:list', '--limit=1000', '--output=json'],
-          { user: 'www-data' },
-        ),
+      async (subc) => {
+        const occJson = async (args: string[]) =>
+          JSON.parse(
+            (
+              await subc.execFail(['php', 'occ', ...args, '--output=json'], {
+                user: 'www-data',
+              })
+            ).stdout.toString(),
+          )
+        // `group:list <search>` matches by substring, so pick the `admin` group itself.
+        const groups: Record<string, string[]> = await occJson([
+          'group:list',
+          'admin',
+          '--limit=1000',
+        ])
+        const users: Record<string, string> = await occJson([
+          'user:list',
+          '--limit=1000',
+        ])
+        return Object.fromEntries(
+          (groups.admin ?? []).map((uid) => [uid, users[uid] ?? uid]),
+        )
+      },
     )
-
-    const admins = JSON.parse(res.stdout as string) as Record<string, string>
 
     return {
       name: i18n('Admin User'),
-      default: admins[0],
+      default: null,
       values: admins,
     }
   }),

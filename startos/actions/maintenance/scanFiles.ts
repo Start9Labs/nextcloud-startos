@@ -6,7 +6,9 @@ export const scanFiles = queuedTaskAction('scan-files', 'scanFiles', {
   description: i18n(
     'Rebuilds the file cache index. Run this after syncing files externally (e.g. via rclone, rsync, or SFTP). Without a scan, externally added or modified files may appear stale, show incorrect sizes, or be missing from search.',
   ),
-  warning: null,
+  warning: i18n(
+    "The service restarts, then rescans every user's files in the background.",
+  ),
   allowedStatuses: 'any',
   group: 'Maintenance',
   visibility: 'enabled',
