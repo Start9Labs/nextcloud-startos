@@ -5,6 +5,7 @@ import { setInterfaces } from '../interfaces'
 import { sdk } from '../sdk'
 import { versionGraph } from '../versions'
 import { bootstrapNextcloud, guardUpstreamUpgrade } from './bootstrapNextcloud'
+import { reattachUiOnions } from './reattachUiOnions'
 import { seedFiles } from './seedFiles'
 
 export const init = sdk.setupInit(
@@ -16,6 +17,7 @@ export const init = sdk.setupInit(
   actions,
   dependencies,
   bootstrapNextcloud,
+  reattachUiOnions,
 )
 
 export const uninit = sdk.setupUninit(versionGraph)
