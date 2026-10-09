@@ -27,6 +27,10 @@ Nextcloud auto-generates an admin password on first install and posts a critical
 
 Open the **Web UI** interface to reach Nextcloud's web interface. From there you install apps from the Nextcloud App Store, manage users and groups, and use Files, Calendar, Contacts, Photos, Talk, and anything else you install.
 
+### Keeping an existing .onion address after an update
+
+If your server carried Nextcloud over from StartOS 0.3.5, updating frees its old network bindings and reattaches an unused .onion address to the Web UI while keeping its hostname. Install or update Tor to `0.4.9.13:1` or newer to complete that reattachment; Nextcloud can update without Tor and waits for it to become available. Use the updated Web UI or WebDAV interface address when reconnecting clients: the reattached onion uses plain HTTP, which Tor encrypts in transit.
+
 ### WebDAV
 
 Point a Nextcloud desktop or mobile client (or any WebDAV client) at the **WebDAV** interface address to sync files. Use the username and password of the Nextcloud account you want to sync, not the admin account if it's a personal device.
