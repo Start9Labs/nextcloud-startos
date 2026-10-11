@@ -247,7 +247,25 @@ export function getBaseDaemons(
     .addOneshot('chown', {
       subcontainer: nextcloudSub,
       exec: {
-        command: ['chown', '-R', 'www-data:www-data', NEXTCLOUD_PATH],
+        command: [
+          'find',
+          NEXTCLOUD_PATH,
+          '(',
+          '!',
+          '-user',
+          'www-data',
+          '-o',
+          '!',
+          '-group',
+          'www-data',
+          ')',
+          '-exec',
+          'chown',
+          '-h',
+          'www-data:www-data',
+          '{}',
+          '+',
+        ],
       },
       requires: [],
     })
