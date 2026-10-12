@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "@start9labs/start-sdk": "3.0.6",
-    "filebrowser-startos": "github:Start9Labs/filebrowser-startos#next",
+    "filebrowser-quantum-startos": "github:Start9Labs/filebrowser-quantum-startos#next",
     "nextexplorer-startos": "github:Start9Labs/nextexplorer-startos#next",
     "tor-startos": "github:Start9Labs/tor-startos#next"
   },
