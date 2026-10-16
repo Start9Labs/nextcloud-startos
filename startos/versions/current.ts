@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.1:3',
+  version: '35.0.2:0',
   releaseNotes: {
-    en_US: `- Nextcloud starts faster on servers holding many files.
-- Restarting Nextcloud while it is still starting stops every process of the previous run, including its database.`,
-    es_ES: `- Nextcloud se inicia más rápido en servidores con muchos archivos.
-- Reiniciar Nextcloud mientras aún se está iniciando detiene todos los procesos de la ejecución anterior, incluida su base de datos.`,
-    de_DE: `- Nextcloud startet schneller auf Servern mit vielen Dateien.
-- Ein Neustart von Nextcloud, während es noch startet, beendet alle Prozesse des vorherigen Laufs, einschließlich seiner Datenbank.`,
-    pl_PL: `- Nextcloud uruchamia się szybciej na serwerach z dużą liczbą plików.
-- Ponowne uruchomienie Nextcloud w trakcie jego uruchamiania zatrzymuje wszystkie procesy poprzedniego uruchomienia, w tym bazę danych.`,
-    fr_FR: `- Nextcloud démarre plus vite sur les serveurs contenant de nombreux fichiers.
-- Redémarrer Nextcloud pendant son démarrage arrête tous les processus de l'exécution précédente, y compris sa base de données.`,
+    en_US:
+      'Updated Nextcloud to 35.0.2. Fixes remembered login sessions, share permissions and expiration defaults, and preservation of external-storage mount options. Full release notes: https://nextcloud.com/changelog/#35-0-2',
+    es_ES:
+      'Nextcloud actualizado a 35.0.2. Corrige las sesiones de inicio de sesión recordadas, los permisos y la caducidad predeterminada de los recursos compartidos, y la conservación de las opciones de montaje del almacenamiento externo. Notas completas: https://nextcloud.com/changelog/#35-0-2',
+    de_DE:
+      'Nextcloud auf 35.0.2 aktualisiert. Behebt Fehler bei gespeicherten Anmeldesitzungen, Freigabeberechtigungen und voreingestellten Ablaufzeiten sowie beim Erhalt der Einbindungsoptionen externer Speicher. Vollständige Versionshinweise: https://nextcloud.com/changelog/#35-0-2',
+    pl_PL:
+      'Zaktualizowano Nextcloud do 35.0.2. Naprawiono zapamiętane sesje logowania, uprawnienia i domyślne terminy wygaśnięcia udostępnień oraz zachowywanie opcji montowania pamięci zewnętrznej. Pełne informacje o wydaniu: https://nextcloud.com/changelog/#35-0-2',
+    fr_FR:
+      'Nextcloud mis à jour vers 35.0.2. Corrige les sessions de connexion mémorisées, les autorisations et les délais d’expiration par défaut des partages, ainsi que la conservation des options de montage du stockage externe. Notes complètes : https://nextcloud.com/changelog/#35-0-2',
   },
   migrations: {
     up: async () => {},
