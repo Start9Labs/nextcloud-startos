@@ -251,7 +251,7 @@ Four fixed checks and up to five that appear only while a queued task is running
 | `nextcloud` | "Web Interface" | Port 80 is listening | 5 min |
 | `cron`      | Hidden          | Always healthy       | —     |
 
-The database and cache checks report `loading` rather than failing while they come up, and are not displayed because there is nothing for a user to do about either.
+The database check reports `starting` until `pg_isready` succeeds; the cache check reports `failure` until `valkey-cli ping` returns `PONG`. Neither check is displayed.
 
 **The five-minute grace on the web check is upgrade cover.** Restoring an older backup can still leave the image's entrypoint to run `occ upgrade` before it binds the port, with the UI legitimately down for the migration. Treating that window as "starting" is what stops the status page from inviting a restart mid-upgrade — which is the thing that corrupts it.
 

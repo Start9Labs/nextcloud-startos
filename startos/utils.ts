@@ -300,7 +300,7 @@ export function getBaseDaemons(
 
           if (exitCode !== 0) {
             return {
-              result: 'loading',
+              result: 'starting',
               message: null,
             }
           }
