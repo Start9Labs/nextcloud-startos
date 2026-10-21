@@ -102,6 +102,8 @@ Four settings depart from what upstream would do:
 | `integrity.check.disabled`         | `true`                               | The image adds `ffmpeg` and the package rewrites `config.php`, so the signature check would fail on a correct install         |
 | `default_certificates_bundle_path` | `/etc/ssl/certs/ca-certificates.crt` | Nextcloud's shipped CA bundle changes only with a Nextcloud release; the system store is current with every image build       |
 
+The `35.0.2:1` migration removes the generated `data/files_external/rootcerts.crt` bundle, preserving imported certificates in `data/files_external/uploads/`. Nextcloud rebuilds it from the system trust store on demand even when the previous bundle was generated after the image was built.
+
 `store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, the Talk STUN/TURN relay toggle, and the office-suite choice — each of the last two alongside a signature of what was last applied for it, which is how a reconcile knows what to clear before it writes.
 
 ## Dependencies

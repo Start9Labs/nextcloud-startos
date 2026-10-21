@@ -1,4 +1,6 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { rm } from 'node:fs/promises'
+import { sdk } from '../sdk'
 
 export const current = VersionInfo.of({
   version: '35.0.2:1',
@@ -14,7 +16,12 @@ export const current = VersionInfo.of({
     fr_FR: `Met à jour PHP pour corriger deux vulnérabilités critiques d'exécution de code à distance (PHP2Shell, CVE-2026-109618 et CVE-2026-109619). Ne fait plus confiance non plus aux certificats d'une autorité de certification compromise (eMudhra).`,
   },
   migrations: {
-    up: async () => {},
+    up: async () => {
+      await rm(
+        sdk.volumes.nextcloud.subpath('data/files_external/rootcerts.crt'),
+        { force: true },
+      )
+    },
     down: IMPOSSIBLE,
   },
 })
