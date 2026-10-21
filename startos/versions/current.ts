@@ -17,6 +17,7 @@ export const current = VersionInfo.of({
   },
   migrations: {
     up: async () => {
+      // Nextcloud reuses this cached bundle until the default bundle's mtime is newer than it.
       await rm(
         sdk.volumes.nextcloud.subpath('data/files_external/rootcerts.crt'),
         { force: true },
