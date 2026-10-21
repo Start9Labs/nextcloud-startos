@@ -3,6 +3,7 @@ import { sdk } from '../sdk'
 import { locales, phoneRegions, trashRetention } from '../utils'
 
 const UPDATER_SERVER_URL = 'http://updates.disabled.invalid/'
+const SYSTEM_CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt'
 
 type Locale = keyof typeof locales
 type PhoneRegion = keyof typeof phoneRegions
@@ -70,6 +71,10 @@ const shape = z.looseObject({
   // RFC 2606 reserves `.invalid`, so this can never resolve.
   'updater.server.url': z.literal(UPDATER_SERVER_URL).catch(UPDATER_SERVER_URL),
   datadirectory: z.literal('/var/www/html/data').catch('/var/www/html/data'),
+  // Nextcloud's shipped bundle changes only with a Nextcloud release; the image's system store with every build.
+  default_certificates_bundle_path: z
+    .literal(SYSTEM_CA_BUNDLE)
+    .catch(SYSTEM_CA_BUNDLE),
   // Teams derives its local instance name from this; empty 500s the personal settings page.
   'overwrite.cli.url': z.string().min(1).catch('http://localhost'),
   'htaccess.RewriteBase': z.string().optional().catch(undefined),

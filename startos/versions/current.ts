@@ -1,21 +1,28 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { rm } from 'node:fs/promises'
+import { sdk } from '../sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.2:0',
+  version: '35.0.2:1',
   releaseNotes: {
     en_US:
-      'Updated Nextcloud to 35.0.2. Fixes remembered login sessions, share permissions and expiration defaults, and preservation of external-storage mount options. Full release notes: https://nextcloud.com/changelog/#35-0-2',
+      'Updates PHP to fix two critical remote code execution vulnerabilities (PHP2Shell, CVE-2026-109618 and CVE-2026-109619). Also stops trusting certificates from a compromised certificate authority (eMudhra).',
     es_ES:
-      'Nextcloud actualizado a 35.0.2. Corrige las sesiones de inicio de sesión recordadas, los permisos y la caducidad predeterminada de los recursos compartidos, y la conservación de las opciones de montaje del almacenamiento externo. Notas completas: https://nextcloud.com/changelog/#35-0-2',
+      'Actualiza PHP para corregir dos vulnerabilidades críticas de ejecución remota de código (PHP2Shell, CVE-2026-109618 y CVE-2026-109619). También deja de confiar en los certificados de una autoridad de certificación comprometida (eMudhra).',
     de_DE:
-      'Nextcloud auf 35.0.2 aktualisiert. Behebt Fehler bei gespeicherten Anmeldesitzungen, Freigabeberechtigungen und voreingestellten Ablaufzeiten sowie beim Erhalt der Einbindungsoptionen externer Speicher. Vollständige Versionshinweise: https://nextcloud.com/changelog/#35-0-2',
+      'Aktualisiert PHP und behebt zwei kritische Sicherheitslücken zur Remotecodeausführung (PHP2Shell, CVE-2026-109618 und CVE-2026-109619). Vertraut außerdem Zertifikaten einer kompromittierten Zertifizierungsstelle (eMudhra) nicht mehr.',
     pl_PL:
-      'Zaktualizowano Nextcloud do 35.0.2. Naprawiono zapamiętane sesje logowania, uprawnienia i domyślne terminy wygaśnięcia udostępnień oraz zachowywanie opcji montowania pamięci zewnętrznej. Pełne informacje o wydaniu: https://nextcloud.com/changelog/#35-0-2',
-    fr_FR:
-      'Nextcloud mis à jour vers 35.0.2. Corrige les sessions de connexion mémorisées, les autorisations et les délais d’expiration par défaut des partages, ainsi que la conservation des options de montage du stockage externe. Notes complètes : https://nextcloud.com/changelog/#35-0-2',
+      'Aktualizuje PHP, usuwając dwie krytyczne luki umożliwiające zdalne wykonanie kodu (PHP2Shell, CVE-2026-109618 i CVE-2026-109619). Przestaje też ufać certyfikatom przejętego urzędu certyfikacji (eMudhra).',
+    fr_FR: `Met à jour PHP pour corriger deux vulnérabilités critiques d'exécution de code à distance (PHP2Shell, CVE-2026-109618 et CVE-2026-109619). Ne fait plus confiance non plus aux certificats d'une autorité de certification compromise (eMudhra).`,
   },
   migrations: {
-    up: async () => {},
+    up: async () => {
+      // Nextcloud reuses this cached bundle until the default bundle's mtime is newer than it.
+      await rm(
+        sdk.volumes.nextcloud.subpath('data/files_external/rootcerts.crt'),
+        { force: true },
+      )
+    },
     down: IMPOSSIBLE,
   },
 })
