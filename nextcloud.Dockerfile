@@ -2,7 +2,7 @@ ARG NEXTCLOUD_VERSION=35.0.2
 FROM nextcloud:${NEXTCLOUD_VERSION}-apache
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg \
+ && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
 # PHP's JIT segfaults every worker on aarch64 once an app update replaces

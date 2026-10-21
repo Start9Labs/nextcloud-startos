@@ -83,7 +83,7 @@ Two models, and only one of them is upstream's.
 
 `config.php` is PHP, not a config format any parser handles, so the model carries a **PEG grammar** (`php.pegjs`) to read it and a serializer to write it back. **A key outside the shape survives**: every level of the shape is a `z.looseObject`, so `instanceid`, `passwordsalt`, `secret` and anything a Nextcloud app or an admin adds are read, kept and written back. A key the shape models keeps its value too, unless the shape rejects it or pins it to a literal — the enforced list below. A value written in a form the grammar does not model is left exactly as it was found, so a setting the package cannot interpret can never stop it from starting.
 
-**Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, port, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, `overwriteprotocol` (held unset, so a value set by hand is removed), and the three in the table below.
+**Enforced** — re-asserted whenever the package writes: the database connection (type, name, host, port, user, table prefix), the Valkey memcache trio and its connection, `datadirectory`, `trusted_proxies` (the service bridge's subnet), `filelocking.enabled`, `check_for_working_wellknown_setup`, `overwriteprotocol` (held unset, so a value set by hand is removed), and the four in the table below.
 
 **Derived** — `trusted_domains`, rebuilt on every start from the addresses the UI interface actually publishes. It is a reactive read reduced all the way down to a sorted, de-duplicated hostname list, so the service restarts when a hostname appears or disappears and not when unrelated address metadata churns.
 
@@ -93,13 +93,14 @@ Two models, and only one of them is upstream's.
 
 **Yours** — the five settings the Configure action owns: default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts get skeleton files.
 
-Three settings depart from what upstream would do:
+Four settings depart from what upstream would do:
 
-| Key                        | Here                               | Why                                                                                                                           |
-| -------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `updatechecker`            | `false`                            | Nextcloud's own updater is not the update path here — StartOS ships the new image                                             |
-| `updater.server.url`       | a reserved never-resolving address | `occ update:check` is the one path `updatechecker` does not gate, and it would otherwise reach Nextcloud's real update server |
-| `integrity.check.disabled` | `true`                             | The image adds `ffmpeg` and the package rewrites `config.php`, so the signature check would fail on a correct install         |
+| Key                                | Here                                 | Why                                                                                                                           |
+| ---------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `updatechecker`                    | `false`                              | Nextcloud's own updater is not the update path here — StartOS ships the new image                                             |
+| `updater.server.url`               | a reserved never-resolving address   | `occ update:check` is the one path `updatechecker` does not gate, and it would otherwise reach Nextcloud's real update server |
+| `integrity.check.disabled`         | `true`                               | The image adds `ffmpeg` and the package rewrites `config.php`, so the signature check would fail on a correct install         |
+| `default_certificates_bundle_path` | `/etc/ssl/certs/ca-certificates.crt` | Nextcloud's shipped CA bundle changes only with a Nextcloud release; the system store is current with every image build       |
 
 `store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, the Talk STUN/TURN relay toggle, and the office-suite choice — each of the last two alongside a signature of what was last applied for it, which is how a reconcile knows what to clear before it writes.
 
