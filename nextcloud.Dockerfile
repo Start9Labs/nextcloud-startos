@@ -48,4 +48,8 @@ RUN printf '%s\n' \
  && a2enconf startos-dav-redirects
 
 # For the office-suite proxy the package writes into conf-enabled at daemon start.
-RUN a2enmod proxy proxy_http proxy_wstunnel substitute
+# A virtual host does not inherit AllowEncodedSlashes from the server config, so
+# the office proxies' encoded paths (Collabora's /cool/<url>/ws) need it here.
+RUN a2enmod proxy proxy_http proxy_wstunnel substitute \
+ && sed -i 's|<VirtualHost \*:80>|&\n\tAllowEncodedSlashes NoDecode|' /etc/apache2/sites-available/000-default.conf \
+ && grep -q 'AllowEncodedSlashes NoDecode' /etc/apache2/sites-available/000-default.conf

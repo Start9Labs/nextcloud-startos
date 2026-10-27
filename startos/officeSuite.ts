@@ -106,7 +106,6 @@ export function renderOfficeProxyConf(
 ): string {
   if (suite === 'collabora') {
     return `# StartOS: Collabora Online on Nextcloud's own origin
-AllowEncodedSlashes NoDecode
 ProxyPreserveHost On
 
 ProxyPass        /browser http://${backend}/browser retry=0
@@ -138,7 +137,6 @@ ProxyPassReverse /cool http://${backend}/cool
   }
 
   return `# StartOS: ONLYOFFICE Docs on Nextcloud's own origin
-AllowEncodedSlashes NoDecode
 ProxyPreserveHost On
 
 # ONLYOFFICE builds its public URLs from these per request, so the editor
