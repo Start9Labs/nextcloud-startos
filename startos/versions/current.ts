@@ -1,28 +1,21 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { rm } from 'node:fs/promises'
-import { sdk } from '../sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.2:1',
+  version: '35.0.2:2',
   releaseNotes: {
     en_US:
-      'Updates PHP to fix two critical remote code execution vulnerabilities (PHP2Shell, CVE-2026-109618 and CVE-2026-109619). Also stops trusting certificates from a compromised certificate authority (eMudhra).',
+      "Fixes Collabora Online's fallback connection, which the editor uses when it cannot connect the usual way.",
     es_ES:
-      'Actualiza PHP para corregir dos vulnerabilidades críticas de ejecución remota de código (PHP2Shell, CVE-2026-109618 y CVE-2026-109619). También deja de confiar en los certificados de una autoridad de certificación comprometida (eMudhra).',
+      'Corrige la conexión alternativa de Collabora Online, que el editor usa cuando no puede conectarse de la forma habitual.',
     de_DE:
-      'Aktualisiert PHP und behebt zwei kritische Sicherheitslücken zur Remotecodeausführung (PHP2Shell, CVE-2026-109618 und CVE-2026-109619). Vertraut außerdem Zertifikaten einer kompromittierten Zertifizierungsstelle (eMudhra) nicht mehr.',
+      'Behebt die Ausweichverbindung von Collabora Online, die der Editor nutzt, wenn er sich nicht auf dem üblichen Weg verbinden kann.',
     pl_PL:
-      'Aktualizuje PHP, usuwając dwie krytyczne luki umożliwiające zdalne wykonanie kodu (PHP2Shell, CVE-2026-109618 i CVE-2026-109619). Przestaje też ufać certyfikatom przejętego urzędu certyfikacji (eMudhra).',
-    fr_FR: `Met à jour PHP pour corriger deux vulnérabilités critiques d'exécution de code à distance (PHP2Shell, CVE-2026-109618 et CVE-2026-109619). Ne fait plus confiance non plus aux certificats d'une autorité de certification compromise (eMudhra).`,
+      'Naprawia połączenie zapasowe Collabora Online, z którego edytor korzysta, gdy nie może połączyć się w zwykły sposób.',
+    fr_FR:
+      'Corrige la connexion de secours de Collabora Online, que l’éditeur utilise lorsqu’il ne peut pas se connecter de la manière habituelle.',
   },
   migrations: {
-    up: async () => {
-      // Nextcloud reuses this cached bundle until the default bundle's mtime is newer than it.
-      await rm(
-        sdk.volumes.nextcloud.subpath('data/files_external/rootcerts.crt'),
-        { force: true },
-      )
-    },
+    up: async () => {},
     down: IMPOSSIBLE,
   },
 })

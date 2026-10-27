@@ -1512,7 +1512,7 @@ async function reconcileOffice(
     subc.exec(['php', 'occ', ...args], { user: 'www-data' })
   const occError = (what: string, res: Awaited<ReturnType<typeof occ>>) =>
     new Error(
-      `office-suite: ${what}: ${res.stdout.toString()} ${res.stderr.toString()}`,
+      `office-suite: ${what} (exit ${res.exitCode ?? res.exitSignal}): ${res.stdout.toString()} ${res.stderr.toString()}`,
     )
 
   // Left enabled, the old connector demotes the Microsoft formats out of the
