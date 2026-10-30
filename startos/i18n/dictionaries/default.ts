@@ -126,7 +126,7 @@ const dict = {
   'Scan Files': 101,
   'Rebuilds the file cache index. Run this after syncing files externally (e.g. via rclone, rsync, or SFTP). Without a scan, externally added or modified files may appear stale, show incorrect sizes, or be missing from search.': 102,
   Repair: 105,
-  'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.': 106,
+  'Runs the built-in Nextcloud repair routine, including its slow steps, and adds any missing database indices. Fixes database inconsistencies, stale cache entries, broken shares, and the database and file type warnings in administration settings. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.': 106,
 
   // main.ts: scan-files / repair health checks (the repair check reuses 'Repair')
   'File Scan': 115,
@@ -203,6 +203,12 @@ const dict = {
   'Delete after 180 days': 172,
   'Delete after 365 days': 173,
   'Never delete automatically': 174,
+
+  // main.ts: post-update task (queued by bootstrapNextcloud on every update)
+  'Post-Update Maintenance': 175,
+  'Adding missing database indices and migrating file types...': 176,
+  'Post-Update Maintenance Failed': 177,
+  'Adding missing database indices or migrating file types after the update exited with an error — tap for the last log lines. Run the "Repair" action to retry.': 178,
 } as const
 
 /**

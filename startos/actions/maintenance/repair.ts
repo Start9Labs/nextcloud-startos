@@ -4,7 +4,7 @@ import { queuedTaskAction } from '../queuedTask'
 export const repair = queuedTaskAction('repair', 'repair', {
   name: i18n('Repair'),
   description: i18n(
-    'Runs the built-in Nextcloud repair routine. Fixes database inconsistencies, stale cache entries, and broken shares. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.',
+    'Runs the built-in Nextcloud repair routine, including its slow steps, and adds any missing database indices. Fixes database inconsistencies, stale cache entries, broken shares, and the database and file type warnings in administration settings. Run this if files appear missing, shares return errors, or after a crash or abrupt shutdown.',
   ),
   warning: i18n(
     "The service restarts, then runs Nextcloud's repair routine in the background.",
