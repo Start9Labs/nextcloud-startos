@@ -149,6 +149,8 @@ A `critical` task then asks you to reveal the admin password. **The action that 
 
 **Updates run during init, inside StartOS's snapshot.** When the bundled Nextcloud release is newer than the installed one, the package runs the image's own upgrade to completion before the service ever starts; a failure or a thirty-minute timeout fails init and StartOS rolls the whole update back. Skipping more than one major version is refused before the version graph runs, with a clear error rather than a failure mid-run, because Nextcloud only supports one major at a time. The refusal also sets a data version an earlier failed attempt left ahead of the installed Nextcloud back to that Nextcloud's release, so the intermediate release it names installs from the version list.
 
+**Every update also queues post-update maintenance**: `occ db:add-missing-indices`, then `occ maintenance:repair --include-expensive`, run as a queued task once the service is up. Nextcloud leaves both out of `occ upgrade` because they can take a long time on a large instance, and its administration settings warn about missing indices and mimetype migrations until they run. Only a failure posts a notification; it names the Repair action, which runs the same two commands.
+
 ## Actions
 
 Eleven actions in three groups, plus one hidden.
@@ -209,7 +211,7 @@ The wait is a subscription, not a poll. It runs no commands, cannot fail, and re
 - **Disable Maintenance Mode** clears a stuck maintenance flag. Only while running. **Wait first** — brief maintenance mode after an update or a restart is normal, and this is for when it has lasted more than about fifteen minutes. It carries a warning, so StartOS asks for confirmation first: it ends maintenance mode even under an update that is still running.
 - **Disable Non-default Apps** turns off every enabled app that Nextcloud does not ship, preserving the bundled set plus Calendar and Contacts. It is the recovery for an app that has made the UI return an Internal Server Error. Apps are disabled one at a time, and the result lists any that could not be — a fataling app is exactly what this action targets, so its own failure must not hide what did get disabled. Only while running, and **stable apps must be re-enabled individually afterwards.**
 - **Scan Files** rebuilds the file-cache index, which is what makes files added outside Nextcloud — over WebDAV's back door, rsync, or an external-storage mount — appear with correct sizes and turn up in search.
-- **Repair** runs Nextcloud's built-in repair routine against database inconsistencies, stale cache entries, and broken shares.
+- **Repair** runs `occ db:add-missing-indices`, then Nextcloud's built-in repair routine including its expensive steps (`maintenance:repair --include-expensive`), against database inconsistencies, stale cache entries, broken shares, and the missing-indices and mimetype-migration warnings in administration settings.
 
 ### App Commands — Download Machine Learning Models for Recognize, Index Media for Memories, Setup Map for Memories
 
@@ -225,7 +227,7 @@ Scan Files, Repair, and the three App Commands do not run inline — each record
 
 - **Cost:** minutes to hours, plus the restart. The work continues after the action returns.
 - **Repeat safety:** invoking one while it is already queued or running is a no-op that says so. All of the underlying commands are idempotent, so an interrupted run simply resumes on the next start.
-- **Where progress shows.** While one runs it has its own health check on the service's status page. When it finishes, that check disappears — so the durable signal is a **notification**, posted whether it succeeded or failed. A failure's notification carries the exit code and the last sixty lines of output; the full log is in the service logs.
+- **Where progress shows.** While one runs it has its own health check on the service's status page. When it finishes, that check disappears — so the durable signal is a **notification**, posted whether it succeeded or failed (post-update maintenance posts one only on failure). A failure's notification carries the exit code and the last sixty lines of output; the full log is in the service logs.
 
 ### Get Admin Credentials (hidden)
 
@@ -243,7 +245,7 @@ One task, raised at install.
 
 ## Health Checks
 
-Four fixed checks and up to five that appear only while a queued task is running.
+Four fixed checks and up to six that appear only while a queued task is running.
 
 | Check       | Displayed       | Method               | Grace |
 | ----------- | --------------- | -------------------- | ----- |
@@ -258,7 +260,7 @@ The database check reports `starting` until `pg_isready` succeeds; the cache che
 
 A web-interface failure after the grace period is Nextcloud itself: an app that fails to load, a `config.php` value it rejects, or a database it cannot reach. It names the cause in the service logs. A UI reporting "Update needed — use the command line updater" is the case `finish-upgrade` handles automatically on the next start.
 
-The transient checks — Recognize Model Download, Memories Indexing, Memories Map Setup, File Scan, Repair — exist only while their task is pending, and report `loading` with a progress message throughout.
+The transient checks — Post-Update Maintenance, Recognize Model Download, Memories Indexing, Memories Map Setup, File Scan, Repair — exist only while their task is pending, and report `loading` with a progress message throughout.
 
 **Office Connector** (`office-connectors`) — present only while an office suite is selected, and stateless: each poll re-derives its result from `store.json`, the dependency's status and Nextcloud's enabled-app list, so every state heals on its own. Until the `office-suite` oneshot has applied the selection it reports `loading`: _Waiting for Collabora Online to be ready_ while the document server's own health check is not passing — the dependency entry on the service page already says why — and _Setting up Nextcloud Office (Collabora)…_ once it is, while the connector is installed and configured. Once applied, it reads the enabled-app list and fails in two distinct cases, each with its own instruction. Reading that list boots PHP, so a passing check polls every two minutes and a failing one every fifteen seconds; the loading states, which read nothing from Nextcloud, poll every five. The two-minute ceiling is also how long a connector someone has just switched off keeps reading as enabled.
 
@@ -358,6 +360,7 @@ health_checks:
   - nextcloud # displayed "Web Interface"
   - cron # hidden
   - office-connectors # only while an office suite is selected
+  - post-update # only while that task is pending; queued on every update
   - recognize-models # only while that task is pending
   - memories-indexing # only while that task is pending
   - memories-map-setup # only while that task is pending

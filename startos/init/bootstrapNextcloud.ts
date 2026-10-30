@@ -104,6 +104,9 @@ export const bootstrapNextcloud = sdk.setupOnInit(
       })
     } else if (kind === 'update') {
       await runUpstreamUpgrade(effects, progress)
+      await storeJson.merge(effects, {
+        actions: { pending: { postUpdate: Date.now() } },
+      })
     }
   },
 )

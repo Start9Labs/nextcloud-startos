@@ -2,6 +2,7 @@ import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 
 export const ACTION_IDS = [
+  'postUpdate',
   'downloadModels',
   'indexMemories',
   'indexPlaces',
@@ -11,6 +12,7 @@ export const ACTION_IDS = [
 export type ActionId = (typeof ACTION_IDS)[number]
 
 const actionTimestamps = z.looseObject({
+  postUpdate: z.number().optional(),
   downloadModels: z.number().optional(),
   indexMemories: z.number().optional(),
   indexPlaces: z.number().optional(),

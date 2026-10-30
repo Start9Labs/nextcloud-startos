@@ -57,12 +57,20 @@ import {
   uiPort,
 } from './utils'
 
-const OCC_ARGS: Record<ActionId, string[]> = {
-  downloadModels: ['recognize:download-models'],
-  indexMemories: ['memories:index'],
-  indexPlaces: ['memories:places-setup'],
-  scanFiles: ['files:scan', '--all'],
-  repair: ['maintenance:repair', '--no-interaction'],
+// Nextcloud leaves both out of `occ upgrade` and nags in admin settings until they run.
+const DEFERRED_UPGRADE_STEPS = [
+  ['db:add-missing-indices', '--no-interaction'],
+  ['maintenance:repair', '--include-expensive', '--no-interaction'],
+]
+
+// Run in order; the first failure ends the task.
+const OCC_ARGS: Record<ActionId, string[][]> = {
+  postUpdate: DEFERRED_UPGRADE_STEPS,
+  downloadModels: [['recognize:download-models']],
+  indexMemories: [['memories:index']],
+  indexPlaces: [['memories:places-setup']],
+  scanFiles: [['files:scan', '--all']],
+  repair: DEFERRED_UPGRADE_STEPS,
 }
 
 // On failure a task's notification shows the last LOG_TAIL_LINES lines of its
@@ -74,7 +82,7 @@ const LOG_TAIL_LINES = 60
 
 // Notification copy posted to the StartOS notifications panel when a
 // long-running task's oneshot exits — `ok` on a clean exit (code 0), `failed`
-// otherwise. The per-task health check disappears on the next chain rebuild,
+// otherwise; a null `ok` posts nothing on success. The per-task health check disappears on the next chain rebuild,
 // so this panel entry is the user's only durable signal that the work finished
 // (and, on failure, that it needs re-running). Title + one-line message; on
 // failure the notification also carries the exit code (or terminating signal)
@@ -82,10 +90,19 @@ const LOG_TAIL_LINES = 60
 const TASK_NOTICE: Record<
   ActionId,
   {
-    ok: { title: string; message: string }
+    ok: { title: string; message: string } | null
     failed: { title: string; message: string }
   }
 > = {
+  postUpdate: {
+    ok: null,
+    failed: {
+      title: i18n('Post-Update Maintenance Failed'),
+      message: i18n(
+        'Adding missing database indices or migrating file types after the update exited with an error — tap for the last log lines. Run the "Repair" action to retry.',
+      ),
+    },
+  },
   downloadModels: {
     ok: {
       title: i18n('Recognize Models Downloaded'),
@@ -745,6 +762,22 @@ export const main = sdk.setupMain(async ({ effects }) => {
             }
           : null,
       )
+      .addHealthCheck('post-update', () =>
+        isPending(pending, completed, 'postUpdate')
+          ? {
+              ready: {
+                display: i18n('Post-Update Maintenance'),
+                fn: taskHealth(
+                  'postUpdate',
+                  i18n(
+                    'Adding missing database indices and migrating file types...',
+                  ),
+                ),
+              },
+              requires: ['nextcloud'] as const,
+            }
+          : null,
+      )
       .addHealthCheck('recognize-models', () =>
         isPending(pending, completed, 'downloadModels')
           ? {
@@ -872,7 +905,7 @@ async function spawnOcc(
 }
 
 /**
- * Run a long-running `php occ` command for action `id` as www-data, streaming
+ * Run the long-running `php occ` commands for action `id` as www-data, streaming
  * output to StartOS service logs. On exit — success or failure — posts a
  * completion notification to the StartOS notifications panel (see TASK_NOTICE):
  * the task's health check vanishes on the next chain rebuild, so this is the
@@ -895,17 +928,22 @@ async function runOcc(
   effects: T.Effects,
   id: ActionId,
 ): Promise<number | null> {
-  const result = await spawnOcc(subc, abort, OCC_ARGS[id])
+  let result: Awaited<ReturnType<typeof spawnOcc>> = null
+  for (const args of OCC_ARGS[id]) {
+    result = await spawnOcc(subc, abort, args)
+    if (result?.code !== 0) break
+  }
   if (result == null) return null
 
   const failed = result.code !== 0
   const notice = failed ? TASK_NOTICE[id].failed : TASK_NOTICE[id].ok
-  await sdk.notification.create(effects, {
-    level: failed ? 'error' : 'success',
-    title: notice.title,
-    message: notice.message,
-    data: failed ? logDetails(notice.title, result, result.tail) : null,
-  })
+  if (notice)
+    await sdk.notification.create(effects, {
+      level: failed ? 'error' : 'success',
+      title: notice.title,
+      message: notice.message,
+      data: failed ? logDetails(notice.title, result, result.tail) : null,
+    })
 
   const ts = Date.now()
   await storeJson.merge(effects, {
