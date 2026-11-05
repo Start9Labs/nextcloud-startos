@@ -82,7 +82,7 @@ export const bootstrapNextcloud = sdk.setupOnInit(
               } else {
                 return {
                   result: 'failure',
-                  message: null,
+                  message: i18n('Starting Nextcloud...'),
                 }
               }
             },
