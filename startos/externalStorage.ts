@@ -92,9 +92,9 @@ export const externalStorageMeta: Record<
     mountpoint: '/mnt/filebrowser',
     dataDir: '/mnt/filebrowser',
     ncMountPoint: '/FileBrowser',
-    // 2.62.2:1 restructured the volumes (`data` volume, files owned by uid
-    // 1000) — everything the idmap mount in main.ts relies on.
-    versionRange: '^2.62.2:1',
+    // Quantum's `data` volume is its user root, owned by uid 1000, as the
+    // idmap mount in main.ts expects.
+    versionRange: '>=#quantum:2.0.2-stable:3',
   },
 }
 
