@@ -289,8 +289,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
     const secret = await readDependencySecret(effects, {
       dependencyId: coturnId,
-      volumeId: 'main',
-      subpath: 'shared',
+      volumeId: 'public',
+      subpath: null,
       mountpoint: coturnMountpoint,
       path: coturnSecretPath,
     })
@@ -1518,14 +1518,14 @@ async function reconcileOffice(
     if (abort.aborted) return
   }
 
-  // Read after the gate: ONLYOFFICE writes this during its install, so a
+  // Read after the gate: ONLYOFFICE writes this during its init, so a
   // snapshot taken at chain build can predate it.
   const secret =
     suite === 'onlyoffice'
       ? await readDependencySecret(effects, {
           dependencyId: officeSuiteMeta.onlyoffice.packageId,
-          volumeId: 'startos',
-          subpath: 'shared',
+          volumeId: 'public',
+          subpath: null,
           mountpoint: officeMountpoint,
           path: officeSecretPath,
         })

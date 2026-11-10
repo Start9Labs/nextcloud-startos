@@ -81,27 +81,24 @@ export const TALK_APP = 'spreed'
 
 // The external Coturn package Talk relays calls through.
 export const coturnId = 'coturn'
-export const coturnVersionRange = '>=4.14.0:0'
+export const coturnVersionRange = '>=4.18.0:6'
 export const coturnHostId = 'turn'
 export const coturnInterfaceId = 'turn'
-// Coturn publishes its shared secret at `shared/turn-secret` on its `main`
-// volume. Mounting that subpath alone keeps the rest of that volume —
-// turnserver.conf, which holds the same secret in plaintext, and the coturn
-// database — out of view.
+// Coturn publishes its shared secret at `turn-secret` on its `public` volume.
 export const coturnMountpoint = '/mnt/coturn'
 export const coturnSecretPath = `${coturnMountpoint}/turn-secret`
 
 /**
  * Read a secret another package publishes on one of its volumes, through a
- * throwaway container that mounts only that subpath read-only, so a missing
- * dependency can never take Nextcloud's own daemons down. Null if unreadable.
+ * throwaway container that mounts it read-only, so a missing dependency can
+ * never take Nextcloud's own daemons down. Null if unreadable.
  */
 export async function readDependencySecret(
   effects: T.Effects,
   opts: {
     dependencyId: string
     volumeId: string
-    subpath: string
+    subpath: string | null
     mountpoint: string
     path: string
   },
