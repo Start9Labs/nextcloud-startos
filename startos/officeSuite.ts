@@ -63,7 +63,7 @@ export const officeSuiteMeta = {
   },
   onlyoffice: {
     packageId: 'onlyoffice-docs',
-    versionRange: '>=9.4.0:0',
+    versionRange: '>=10.0.0:1',
     hostId: 'main',
     internalPort: 80,
     healthCheckId: 'documentserver',

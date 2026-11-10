@@ -120,7 +120,7 @@ The External Storage action offers only the sources whose backing service is act
 
 **Coturn declares no health check, deliberately.** Coturn's own `TURN Server` check fails until you attach a public domain to it, and naming it here would leave Nextcloud showing a permanently unmet dependency even though Talk works fine without a relay. Coturn's own check already says what is missing.
 
-The shared secret is read through a throwaway container that mounts only Coturn's `shared` subpath read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and the rest of Coturn's volume stays out of view. ONLYOFFICE's JWT secret is read the same way, from its own `shared` subpath.
+The shared secret is read through a throwaway container that mounts Coturn's `public` volume read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and nothing else of Coturn's is in view. ONLYOFFICE's JWT secret is read the same way, from its own `public` volume.
 
 **The office backends are mutually exclusive**, and only the chosen one is declared. Unlike Coturn they do name a health check: Nextcloud can hand a document to a document server that is up, and cannot to one that is starting.
 
