@@ -96,7 +96,7 @@ const dict = {
   'Downloads approximately 2-3 GB of geometry data (~561,000 places). On a low-resource device, avoid running other intensive processes at the same time.': 80,
 
   // Maintenance actions: tightened wording.
-  'Use this if the UI is stuck in "Maintenance Mode" for more than 15 minutes. Brief maintenance mode is normal after updates (including some Nextcloud app updates) or restarts — wait first before resorting to this action.': 81,
+  'Use this if the UI is stuck in "Maintenance Mode". Brief maintenance mode is normal after updates or restarts, and the Post-Update Maintenance and Repair tasks hold it for their whole run, which can take hours — wait first, unless their health check has shown "no output" for over an hour.': 81,
   'Disables ALL non-default apps. Stable apps must be re-enabled individually.': 82,
 
   // main.ts: long-running task completion notifications (posted from runOcc)
@@ -209,6 +209,8 @@ const dict = {
   'Adding missing database indices and migrating file types...': 176,
   'Post-Update Maintenance Failed': 177,
   'Adding missing database indices or migrating file types after the update exited with an error — tap for the last log lines. Run the "Repair" action to retry.': 178,
+  'Maintenance mode: ${step}': 179,
+  'no output for ${time}': 180,
 } as const
 
 /**

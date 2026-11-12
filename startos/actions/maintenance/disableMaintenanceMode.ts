@@ -10,7 +10,7 @@ export const disableMaintenanceMode = sdk.Action.withoutInput(
   async ({ effects }) => ({
     name: i18n('Disable Maintenance Mode'),
     description: i18n(
-      'Use this if the UI is stuck in "Maintenance Mode" for more than 15 minutes. Brief maintenance mode is normal after updates (including some Nextcloud app updates) or restarts — wait first before resorting to this action.',
+      'Use this if the UI is stuck in "Maintenance Mode". Brief maintenance mode is normal after updates or restarts, and the Post-Update Maintenance and Repair tasks hold it for their whole run, which can take hours — wait first, unless their health check has shown "no output" for over an hour.',
     ),
     warning: i18n(
       'Nextcloud leaves maintenance mode and serves users again, even if an update that turned it on has not finished.',
