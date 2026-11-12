@@ -23,6 +23,7 @@ import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { createHash } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
+import { createInterface } from 'node:readline'
 import {
   appliedOfficeSuite,
   CONNECTOR_APP_TITLES,
@@ -908,14 +909,19 @@ async function spawnOcc(
     stream: NodeJS.ReadableStream | null,
     mirror: NodeJS.WritableStream,
   ) => {
+    if (progress && stream) {
+      createInterface({ input: stream, crlfDelay: Infinity }).on(
+        'line',
+        (line) => {
+          // `maintenance:repair` announces each step as " - <name>".
+          const step = /^ - (.+)$/.exec(line)?.[1]
+          if (step) progress.step = step.trim()
+        },
+      )
+    }
     stream?.on('data', (chunk: Buffer) => {
       mirror.write(chunk)
-      if (progress) {
-        progress.lastOutput = Date.now()
-        // `maintenance:repair` announces each step as " - <name>".
-        for (const [, step] of chunk.toString().matchAll(/^ - (.+)$/gm))
-          progress.step = step.trim()
-      }
+      if (progress) progress.lastOutput = Date.now()
       tail = (tail + chunk.toString())
         .split('\n')
         .slice(-(LOG_TAIL_LINES + 1))
