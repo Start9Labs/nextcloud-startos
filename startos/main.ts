@@ -23,6 +23,7 @@ import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { createHash } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
+import { createInterface } from 'node:readline'
 import {
   appliedOfficeSuite,
   CONNECTOR_APP_TITLES,
@@ -79,6 +80,10 @@ const OCC_ARGS: Record<ActionId, string[][]> = {
 // a chatty command that prints thousands of progress lines never accumulates
 // more than ~LOG_TAIL_LINES of them here.
 const LOG_TAIL_LINES = 60
+
+type TaskProgress = { command: string; step: string | null; lastOutput: number }
+const taskProgress = new Map<ActionId, TaskProgress>()
+const QUIET_NOTICE_MS = 10 * 60_000
 
 // Notification copy posted to the StartOS notifications panel when a
 // long-running task's oneshot exits — `ok` on a clean exit (code 0), `failed`
@@ -415,7 +420,25 @@ export const main = sdk.setupMain(async ({ effects }) => {
       id,
     )
     if (live) {
-      return { result: 'loading' as const, message: loadingMessage }
+      const p = taskProgress.get(id)
+      const step = p?.step ?? '…'
+      const message =
+        p?.command === 'maintenance:repair'
+          ? i18n('Maintenance mode: ${step}', {
+              step: step.length > 40 ? `${step.slice(0, 39)}…` : step,
+            })
+          : loadingMessage
+      const quiet = p ? Date.now() - p.lastOutput : 0
+      if (quiet < QUIET_NOTICE_MS)
+        return { result: 'loading' as const, message }
+      const h = Math.floor(quiet / 3_600_000)
+      const m = Math.floor(quiet / 60_000) % 60
+      return {
+        result: 'loading' as const,
+        message: `${message} · ${i18n('no output for ${time}', {
+          time: h ? `${h}h ${m}m` : `${m}m`,
+        })}`,
+      }
     }
     // pending cleared — task finished (success or failure). The check
     // disappears on the next chain rebuild; until then, show success briefly.
@@ -860,6 +883,7 @@ async function spawnOcc(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
   abort: AbortSignal,
   args: string[],
+  progress?: TaskProgress,
 ): Promise<{
   code: number | null
   signal: NodeJS.Signals | null
@@ -885,8 +909,19 @@ async function spawnOcc(
     stream: NodeJS.ReadableStream | null,
     mirror: NodeJS.WritableStream,
   ) => {
+    if (progress && stream) {
+      createInterface({ input: stream, crlfDelay: Infinity }).on(
+        'line',
+        (line) => {
+          // `maintenance:repair` announces each step as " - <name>".
+          const step = /^ - (.+)$/.exec(line)?.[1]
+          if (step) progress.step = step.trim()
+        },
+      )
+    }
     stream?.on('data', (chunk: Buffer) => {
       mirror.write(chunk)
+      if (progress) progress.lastOutput = Date.now()
       tail = (tail + chunk.toString())
         .split('\n')
         .slice(-(LOG_TAIL_LINES + 1))
@@ -930,9 +965,21 @@ async function runOcc(
 ): Promise<number | null> {
   let result: Awaited<ReturnType<typeof spawnOcc>> = null
   for (const args of OCC_ARGS[id]) {
-    result = await spawnOcc(subc, abort, args)
+    const progress: TaskProgress = {
+      command: args[0],
+      step: null,
+      lastOutput: Date.now(),
+    }
+    taskProgress.set(id, progress)
+    result = await spawnOcc(subc, abort, args, progress)
+    // `maintenance:repair` restores the flag it found, which a killed earlier run left on.
+    if (result && args[0] === 'maintenance:repair')
+      await subc
+        .exec(['php', 'occ', 'maintenance:mode', '--off'], { user: 'www-data' })
+        .catch(() => null)
     if (result?.code !== 0) break
   }
+  taskProgress.delete(id)
   if (result == null) return null
 
   const failed = result.code !== 0
