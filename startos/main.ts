@@ -1276,7 +1276,9 @@ async function reconcileTalk(
         throw new Error(`config:app:get exited ${current.exitCode}`)
       }
       const raw = current.stdout.toString().trim()
-      const signaling = (raw ? JSON.parse(raw.slice(raw.indexOf('{'))) : {}) as {
+      const signaling = (
+        raw ? JSON.parse(raw.slice(raw.indexOf('{'))) : {}
+      ) as {
         servers?: { server: string }[]
       }
       if (signaling.servers?.some((s) => !ownedSignaling.has(s.server))) {
