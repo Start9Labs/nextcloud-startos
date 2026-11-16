@@ -61,8 +61,9 @@ const shape = z.looseObject({
     .catch('direct')
     .default('direct'),
   // ACTUAL state: the Talk STUN, TURN and signaling entries this package last
-  // applied, as an opaque signature. Doubles as the record of what to delete on
-  // the next change, so nothing the user added by hand is ever touched. Same
+  // applied, as an opaque signature. Pending signaling URLs retain ownership
+  // across interruptions. This records what to delete on the next change, so
+  // nothing the user added by hand is ever touched. Same
   // desired-vs-actual split (and the same non-reactive read) as
   // `externalStoragesConfigured` above.
   talkConfigured: z.string().catch('').default(''),

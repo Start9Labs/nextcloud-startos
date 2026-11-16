@@ -175,7 +175,9 @@ The five general settings — default locale, default phone region, how long del
 
 Either mode does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
 
-**Only the entries this package added are ever touched.** The `talk` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Removing that default is a deliberate choice left to the admin — see Limitations.
+**Only the entries this package added are ever touched.** The `talk` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Pending signaling URLs are recorded before writes so an interrupted reconcile can retry without claiming an admin's entry. Removing the default STUN server is a deliberate choice left to the admin — see Limitations.
+
+**Talk has one secret shared by all signaling servers.** An admin-configured signaling entry therefore blocks HPB setup before any Talk settings are changed; the service logs explain the conflict. Remove that entry in Nextcloud's Talk administration settings and restart Nextcloud to use the packaged HPB, or leave Talk Calls on Direct only to manage signaling manually.
 
 ### External Storage
 

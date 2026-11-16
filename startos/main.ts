@@ -280,7 +280,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
       : talkCalls === 'hpb'
         ? await resolveTalkHpb()
         : null
-  const talkConfigured = (await storeJson.read().once())?.talkConfigured ?? ''
 
   // A relay's TURN endpoint plus its shared secret. Its `turn` interface
   // carries the plain `turn:` address (ssl:false) and the edge-terminated
@@ -792,7 +791,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         subcontainer: nextcloudSub,
         exec: {
           fn: async (subc, abort) => {
-            await reconcileTalk(subc, abort, effects, talk, talkConfigured)
+            await reconcileTalk(subc, abort, effects, talk)
             return null
           },
         },
@@ -1173,6 +1172,8 @@ type TalkApplied = {
   stun: string[]
   secret: string
   signaling?: TalkSignaling
+  // Retains ownership across an interrupted reconcile.
+  pendingSignaling?: string[]
 }
 
 const EMPTY_TALK: TalkApplied = {
@@ -1191,11 +1192,12 @@ const secretHash = (secret: string) =>
  * at.
  *
  * Only entries this package added are ever touched. The last-applied set is
- * kept verbatim in `store.json.talkConfigured` and deleted before the new set
- * is added, so Talk's default `stun.nextcloud.com:443` — and anything the admin
- * added by hand — survives untouched. The signature carries hashes of the
- * shared secrets rather than the secrets themselves: enough for a rotated
- * secret to re-apply, without a second copy of it on this volume.
+ * kept in `store.json.talkConfigured`, including pending signaling URLs, and
+ * deleted before the new set is added. Talk's default `stun.nextcloud.com:443`
+ * and anything the admin added by hand survive untouched. The signature carries
+ * hashes of the shared secrets rather than the secrets themselves.
+ *
+ * Unowned signaling entries block HPB setup; Talk shares one signaling secret.
  *
  * Talk is installed by the user from the Nextcloud app store, and `occ` exposes
  * its `talk:*` namespace only while the app is enabled — which a major
@@ -1208,8 +1210,8 @@ async function reconcileTalk(
   abort: AbortSignal,
   effects: T.Effects,
   desired: Talk | null,
-  configured: string,
 ): Promise<void> {
+  const configured = (await storeJson.read().once())?.talkConfigured ?? ''
   const applied: TalkApplied = {
     v: 1,
     turn: desired?.turn ?? [],
@@ -1232,6 +1234,7 @@ async function reconcileTalk(
     previous.turn.length === 0 &&
     previous.stun.length === 0 &&
     !previous.signaling &&
+    !previous.pendingSignaling?.length &&
     !desired
   ) {
     // Nothing applied and nothing wanted — record it and skip the app check, so
@@ -1255,11 +1258,54 @@ async function reconcileTalk(
   const occ = (args: string[]) =>
     subc.exec(['php', 'occ', ...args], { user: 'www-data' })
 
+  const ownedSignaling = new Set(
+    [previous.signaling?.server, ...(previous.pendingSignaling ?? [])].filter(
+      (s): s is string => !!s,
+    ),
+  )
+  if (desired?.signaling) {
+    try {
+      const current = await occ([
+        'config:app:get',
+        TALK_APP,
+        'signaling_servers',
+        '--default-value',
+        '{}',
+      ])
+      if (current.exitCode !== 0) {
+        throw new Error(`config:app:get exited ${current.exitCode}`)
+      }
+      const raw = current.stdout.toString().trim()
+      const signaling = (raw ? JSON.parse(raw.slice(raw.indexOf('{'))) : {}) as {
+        servers?: { server: string }[]
+      }
+      if (signaling.servers?.some((s) => !ownedSignaling.has(s.server))) {
+        console.error(
+          'talk: an admin-configured signaling server prevents HPB setup. Remove it in Nextcloud’s Talk administration settings and restart Nextcloud, or select Direct only to manage signaling manually. Leaving Talk unchanged.',
+        )
+        return
+      }
+    } catch (e) {
+      console.error(
+        'talk: could not inspect signaling settings; leaving Talk unchanged',
+        e,
+      )
+      return
+    }
+    ownedSignaling.add(desired.signaling.server)
+    await storeJson.merge(effects, {
+      talkConfigured: JSON.stringify({
+        ...previous,
+        pendingSignaling: [...ownedSignaling],
+      }),
+    })
+  }
+
   // Delete what we last applied AND what we are about to add. The first clears
   // a stale endpoint; the second is what makes a retry after a partial failure
-  // idempotent instead of leaving a duplicate entry behind. Both are best
-  // effort — an entry the admin already removed by hand is in the desired end
-  // state, and failing to delete it must not block the adds below.
+  // idempotent instead of leaving a duplicate entry behind. TURN/STUN deletions
+  // are best effort — an entry the admin already removed is already absent.
+  // Signaling deletion must succeed before a replacement is added.
   for (const e of [...previous.turn, ...(desired?.turn ?? [])]) {
     if (abort.aborted) return
     await occ(['talk:turn:delete', e.schemes, e.server, e.protocols])
@@ -1268,13 +1314,13 @@ async function reconcileTalk(
     if (abort.aborted) return
     await occ(['talk:stun:delete', s])
   }
-  for (const server of new Set(
-    [previous.signaling?.server, desired?.signaling?.server].filter(
-      (s): s is string => !!s,
-    ),
-  )) {
+  for (const server of ownedSignaling) {
     if (abort.aborted) return
-    await occ(['talk:signaling:delete', server])
+    const removed = await occ(['talk:signaling:delete', server])
+    if (removed.exitCode !== 0) {
+      console.error(`talk: could not remove signaling server ${server}`)
+      return
+    }
   }
 
   let allOk = true
@@ -1334,17 +1380,22 @@ async function reconcileTalk(
   }
 }
 
-/** The entries recorded by the last successful `reconcileTalk`, or none. */
-function parseTalkApplied(configured: string): {
-  turn: TalkTurnEntry[]
-  stun: string[]
-  signaling: { server: string } | null
-} {
+/** Completed settings and signaling URLs reserved by an unfinished reconcile. */
+function parseTalkApplied(configured: string): TalkApplied {
   try {
-    const { turn, stun, signaling } = JSON.parse(configured) as TalkApplied
-    return { turn: turn ?? [], stun: stun ?? [], signaling: signaling ?? null }
+    const { turn, stun, secret, signaling, pendingSignaling } = JSON.parse(
+      configured,
+    ) as TalkApplied
+    return {
+      v: 1,
+      turn: turn ?? [],
+      stun: stun ?? [],
+      secret: secret ?? '',
+      ...(signaling && { signaling }),
+      ...(pendingSignaling?.length && { pendingSignaling }),
+    }
   } catch {
-    return { turn: [], stun: [], signaling: null }
+    return EMPTY_TALK
   }
 }
 
