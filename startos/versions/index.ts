@@ -3,8 +3,9 @@ import { current } from './current'
 import { v_34_0_0_0 } from './v34.0.0.0'
 import { v_35_0_1_2 } from './v35.0.1.2'
 import { v_35_0_2_1 } from './v35.0.2.1'
+import { v_35_0_3_1 } from './v35.0.3.1'
 
-export const priorVersions = [v_35_0_2_1, v_35_0_1_2, v_34_0_0_0]
+export const priorVersions = [v_35_0_3_1, v_35_0_2_1, v_35_0_1_2, v_34_0_0_0]
 
 export const versionGraph = VersionGraph.of({
   current,

@@ -761,6 +761,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
         // concurrently with a task (which would hit maintenance mode).
         requires: ['nextcloud', 'finish-upgrade'],
       })
+      // The three reconciles below run after finish-upgrade and the queued
+      // tasks, either of which can hold maintenance mode, where occ refuses
+      // their commands and a half-applied change waits for the next start.
+      //
       // Reconcile Nextcloud's files_external entries to match the selected
       // sources: create/enable for newly selected sources, delete for cleared
       // ones, then record the actual state. Always present; a no-op when
@@ -780,13 +784,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
             return null
           },
         },
-        requires: ['nextcloud'],
+        requires: ['nextcloud', 'finish-upgrade', 'long-running-tasks'],
       })
       // Point Talk's STUN, TURN and signaling settings at Coturn or the HPB, or
       // clear what we previously set. Always present; a no-op when desired ==
       // configured.
-      // Behind finish-upgrade so these occ calls never land during a recovery
-      // migration's maintenance-mode window.
       .addOneshot('talk', {
         subcontainer: nextcloudSub,
         exec: {
@@ -795,7 +797,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             return null
           },
         },
-        requires: ['nextcloud', 'finish-upgrade'],
+        requires: ['nextcloud', 'finish-upgrade', 'long-running-tasks'],
       })
       // Point the office connector at the document server, or clear what we
       // previously set. Always present; a no-op when desired == configured.
@@ -812,7 +814,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             return null
           },
         },
-        requires: ['nextcloud', 'finish-upgrade'],
+        requires: ['nextcloud', 'finish-upgrade', 'long-running-tasks'],
       })
       // A second office connector left enabled silently breaks Word, Excel and
       // PowerPoint editing, and nothing in Nextcloud says so — hence a health
