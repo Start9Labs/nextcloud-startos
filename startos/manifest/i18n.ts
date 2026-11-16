@@ -45,6 +45,19 @@ export const coturnDescription = {
     'Fournit un relais TURN/STUN pour que les appels Talk aboutissent à travers le NAT et les pare-feu restrictifs',
 }
 
+export const hpbDescription = {
+  en_US:
+    'Runs Talk calls through a media server, so calls hold many more participants',
+  es_ES:
+    'Gestiona las llamadas de Talk mediante un servidor multimedia, para que admitan muchos más participantes',
+  de_DE:
+    'Führt Talk-Anrufe über einen Medienserver, sodass sie deutlich mehr Teilnehmer fassen',
+  pl_PL:
+    'Prowadzi połączenia Talk przez serwer multimediów, dzięki czemu mieszczą znacznie więcej uczestników',
+  fr_FR:
+    "Fait passer les appels Talk par un serveur multimédia, pour qu'ils accueillent bien plus de participants",
+}
+
 export const collaboraDescription = {
   en_US:
     'Opens and edits documents, spreadsheets and presentations in the browser, from Nextcloud Files',

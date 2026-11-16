@@ -49,12 +49,17 @@ export const inputSpec = InputSpec.of({
     ),
     default: false,
   }),
-  talk_turn: Value.toggle({
-    name: i18n('Relay Talk Calls Through Coturn'),
+  talk_calls: Value.select({
+    name: i18n('Talk Calls'),
     description: i18n(
-      'Relay Talk calls through the Coturn service so they connect when both parties are behind NAT or a restrictive firewall. Requires the Talk app to be installed in Nextcloud, and Coturn to be installed and running with a public domain of its own; until both are, calls fall back to a direct connection.',
+      'How Nextcloud Talk calls connect. Requires the Talk app to be installed in Nextcloud.\n- Direct only: every participant connects to every other. Works for small calls between people who can reach each other.\n- Relay through Coturn: still peer to peer, but calls also connect when participants are behind NAT or a restrictive firewall. Requires Coturn, running with a public domain of its own.\n- High-performance backend: each participant sends their video once and the server forwards it, so calls hold many more people. Requires Nextcloud Talk HPB, running with a public domain on its TURN Relay interface for calls beyond your local network.',
     ),
-    default: false,
+    default: 'direct',
+    values: {
+      direct: i18n('Direct only'),
+      coturn: i18n('Relay through Coturn'),
+      hpb: i18n('High-performance backend'),
+    },
   }),
 })
 
@@ -88,19 +93,19 @@ export const setConfig = sdk.Action.withInput(
       trashbin_retention_obligation: config?.trashbin_retention_obligation,
       maintenance_window_start: config?.maintenance_window_start,
       disable_skeleton_files: config?.skeletondirectory === '',
-      talk_turn: (await storeJson.read((s) => s.talkTurn).once()) ?? false,
+      talk_calls: (await storeJson.read((s) => s.talkCalls).once()) ?? 'direct',
     }
   },
 
   // the execution function
   async ({ effects, input }) => {
-    const { disable_skeleton_files, talk_turn, ...rest } = input
+    const { disable_skeleton_files, talk_calls, ...rest } = input
     await configPhp.merge(effects, {
       ...rest,
       skeletondirectory: disable_skeleton_files ? '' : undefined,
     })
-    // `main` reads this, resolves the Coturn endpoint and reconciles Talk's
-    // STUN/TURN entries; dependencies.ts reads it to add or drop the dependency.
-    await storeJson.merge(effects, { talkTurn: talk_turn })
+    // `main` reads this and reconciles Talk's STUN, TURN and signaling entries;
+    // dependencies.ts reads it to pick Coturn, the HPB, or neither.
+    await storeJson.merge(effects, { talkCalls: talk_calls })
   },
 )

@@ -22,7 +22,7 @@ import {
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { createHash } from 'node:crypto'
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { createInterface } from 'node:readline'
 import {
   appliedOfficeSuite,
@@ -51,6 +51,15 @@ import {
   getPostgresSub,
   getValkeySub,
   hasNextcloudApp,
+  hpbId,
+  hpbMountpoint,
+  hpbSignalingHostId,
+  hpbSignalingPort,
+  hpbSignalingSecretPath,
+  hpbTurnHostId,
+  hpbTurnInterfaceId,
+  hpbTurnSecretPath,
+  TALK_SIGNALING_PATH,
   readDependencySecret,
   readEnabledApps,
   nextcloudMount,
@@ -253,83 +262,155 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const configured =
     (await storeJson.read().once())?.externalStoragesConfigured ?? ''
 
-  // Talk's STUN/TURN relay: DESIRED read reactively (toggling it in the
+  // Talk's relay and signaling: DESIRED read reactively (choosing a mode in the
   // Configure action rebuilds the chain and reconciles), ACTUAL read
   // non-reactively — same split as the two pairs above.
-  const talkTurn = (await storeJson.read((s) => s.talkTurn).const(effects))
-    ? await resolveTalkTurn()
-    : null
-  const talkTurnConfigured =
-    (await storeJson.read().once())?.talkTurnConfigured ?? ''
+  const talkCalls =
+    (await storeJson.read((s) => s.talkCalls).const(effects)) ?? 'direct'
+  const talk =
+    talkCalls === 'coturn'
+      ? await resolveTalkTurn({
+          packageId: coturnId,
+          hostId: coturnHostId,
+          interfaceId: coturnInterfaceId,
+          mountpoint: coturnMountpoint,
+          secretPath: coturnSecretPath,
+          lan: false,
+        }).then((relay) => relay && { ...relay, signaling: null })
+      : talkCalls === 'hpb'
+        ? await resolveTalkHpb()
+        : null
+  const talkConfigured = (await storeJson.read().once())?.talkConfigured ?? ''
 
-  // Coturn's public TURN endpoint plus its shared secret. Its single `turn`
-  // interface carries the plain `turn:` address (ssl:false) and the
-  // edge-terminated `turns:` address (ssl:true) on one domain, each selected by
-  // its `ssl` flag. Null until the user gives Coturn a public domain.
-  async function resolveTalkTurn(): Promise<TalkTurn | null> {
+  // A relay's TURN endpoint plus its shared secret. Its `turn` interface
+  // carries the plain `turn:` address (ssl:false) and the edge-terminated
+  // `turns:` address (ssl:true) on one domain, each selected by its `ssl` flag.
+  // Without a public domain, Coturn yields nothing and the HPB's relay falls
+  // back to its private IPv4 addresses, since every HPB call goes through it.
+  async function resolveTalkTurn(relay: {
+    packageId: string
+    hostId: string
+    interfaceId: string
+    mountpoint: string
+    secretPath: string
+    lan: boolean
+  }): Promise<Omit<Talk, 'signaling'> | null> {
     const endpoint = await sdk.host
-      .get(effects, { hostId: coturnHostId, packageId: coturnId }, (host) => {
-        const iface =
-          host &&
-          Object.values(host.bindings)
-            .flatMap((b) => Object.values(b.interfaces))
-            .find((i) => i.id === coturnInterfaceId)
-        const hostnames = iface
-          ? iface.addressInfo
-              .filter({ visibility: 'public', kind: 'domain' })
-              .hostnames.filter((h) => h.port != null)
-          : []
-        const domain = hostnames[0]?.hostname
-        if (!domain) return null
-
-        const forDomain = hostnames.filter((h) => h.hostname === domain)
-        return {
-          domain,
-          turnPort: forDomain.find((h) => !h.ssl)?.port ?? null,
-          turnsPort: forDomain.find((h) => h.ssl)?.port ?? null,
-        }
-      })
+      .get(
+        effects,
+        { hostId: relay.hostId, packageId: relay.packageId },
+        (host) => {
+          const iface =
+            host &&
+            Object.values(host.bindings)
+              .flatMap((b) => Object.values(b.interfaces))
+              .find((i) => i.id === relay.interfaceId)
+          if (!iface) return null
+          const hostnames = iface.addressInfo
+            .filter({ visibility: 'public', kind: 'domain' })
+            .hostnames.filter((h) => h.port != null)
+          const domain = hostnames[0]?.hostname
+          if (domain) {
+            const forDomain = hostnames.filter((h) => h.hostname === domain)
+            const turnPort = forDomain.find((h) => !h.ssl)?.port
+            const turnsPort = forDomain.find((h) => h.ssl)?.port
+            return {
+              hosts: turnPort ? [`${domain}:${turnPort}`] : [],
+              turnsHost: turnsPort ? `${domain}:${turnsPort}` : null,
+            }
+          }
+          const lan = relay.lan
+            ? iface.addressInfo.nonLocal
+                .filter({ visibility: 'private', kind: 'ipv4' })
+                .hostnames.filter((h) => !h.ssl && h.port != null)
+            : []
+          return lan.length
+            ? {
+                hosts: lan.map((h) => `${h.hostname}:${h.port}`).sort(),
+                turnsHost: null,
+              }
+            : null
+        },
+      )
       .const()
     if (!endpoint) return null
 
     const secret = await readDependencySecret(effects, {
-      dependencyId: coturnId,
+      dependencyId: relay.packageId,
       volumeId: 'public',
       subpath: null,
-      mountpoint: coturnMountpoint,
-      path: coturnSecretPath,
+      mountpoint: relay.mountpoint,
+      path: relay.secretPath,
     })
     if (!secret) return null
 
-    const { domain, turnPort, turnsPort } = endpoint
+    const { hosts, turnsHost } = endpoint
     return {
       secret,
       // Talk stores a bare `host:port` per entry, so the plain and TLS
       // endpoints — which sit on different ports — are two entries rather than
-      // one carrying `turn,turns`. Coturn serves TURN over TLS on TCP only.
+      // one carrying `turn,turns`. TURN over TLS runs on TCP only.
       turn: [
-        ...(turnPort
-          ? [
-              {
-                schemes: 'turn',
-                server: `${domain}:${turnPort}`,
-                protocols: 'udp,tcp',
-              },
-            ]
-          : []),
-        ...(turnsPort
-          ? [
-              {
-                schemes: 'turns',
-                server: `${domain}:${turnsPort}`,
-                protocols: 'tcp',
-              },
-            ]
+        ...hosts.map((server) => ({
+          schemes: 'turn',
+          server,
+          protocols: 'udp,tcp',
+        })),
+        ...(turnsHost
+          ? [{ schemes: 'turns', server: turnsHost, protocols: 'tcp' }]
           : []),
       ],
       // Reflexive discovery rides the plain listener; Talk's STUN entries carry
       // no scheme and no credentials.
-      stun: turnPort ? [`${domain}:${turnPort}`] : [],
+      stun: hosts,
+    }
+  }
+
+  // The HPB's relay, plus the signaling server on one of Nextcloud's own HTTPS
+  // addresses: Talk hands that URL to every browser and calls it itself.
+  async function resolveTalkHpb(): Promise<Talk | null> {
+    const relay = await resolveTalkTurn({
+      packageId: hpbId,
+      hostId: hpbTurnHostId,
+      interfaceId: hpbTurnInterfaceId,
+      mountpoint: hpbMountpoint,
+      secretPath: hpbTurnSecretPath,
+      lan: true,
+    })
+    const secret = await readDependencySecret(effects, {
+      dependencyId: hpbId,
+      volumeId: 'public',
+      subpath: null,
+      mountpoint: hpbMountpoint,
+      path: hpbSignalingSecretPath,
+    })
+    // A public domain where there is one, so calls work beyond the LAN.
+    const signalingHost = await sdk.host
+      .getOwn(effects, 'main', (host) => {
+        const ui =
+          host &&
+          Object.values(host.bindings)
+            .flatMap((b) => Object.values(b.interfaces))
+            .find((i) => i.id === 'ui')
+        if (!ui) return null
+        const https = ui.addressInfo.filter({
+          predicate: (h) => h.ssl && h.port != null,
+        })
+        const pick =
+          https.filter({ visibility: 'public', kind: 'domain' }).hostnames[0] ??
+          https.filter({ kind: 'mdns' }).hostnames[0]
+        return pick ? { host: pick.hostname, port: pick.port } : null
+      })
+      .const()
+    if (!relay || !secret || !signalingHost) return null
+    const { host, port } = signalingHost
+    return {
+      ...relay,
+      signaling: {
+        host,
+        server: `https://${host}${port === 443 ? '' : `:${port}`}${TALK_SIGNALING_PATH}`,
+        secret,
+      },
     }
   }
 
@@ -407,6 +488,48 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ? renderOfficeProxyConf(officeSuite, officeBackend)
       : '',
   )
+
+  // Browsers and Talk itself reach the HPB's signaling server on Nextcloud's
+  // own origin, proxied over the bridge.
+  const signalingBackend =
+    talkCalls === 'hpb'
+      ? await sdk.host
+          .getBridgeAddress(effects, {
+            hostId: hpbSignalingHostId,
+            packageId: hpbId,
+            internalPort: hpbSignalingPort,
+            ssl: false,
+          })
+          .const()
+      : null
+  await writeFile(
+    `${await nextcloudSub.rootfs}/etc/apache2/conf-enabled/startos-talk.conf`,
+    signalingBackend
+      ? [
+          `<Location "${TALK_SIGNALING_PATH}">`,
+          `  ProxyPass "http://${signalingBackend}/" upgrade=websocket`,
+          `  ProxyPassReverse "http://${signalingBackend}/"`,
+          '</Location>',
+          '',
+        ].join('\n')
+      : '',
+  )
+  // Talk calls the signaling server at its public URL; resolving that host to
+  // the bridge keeps the call on this server.
+  if (talk?.signaling) {
+    const hostsPath = `${await nextcloudSub.rootfs}/etc/hosts`
+    const hosts = (await readFile(hostsPath, 'utf8'))
+      .split('\n')
+      .filter((l) => l && !l.endsWith('# startos-talk'))
+    await writeFile(
+      hostsPath,
+      [
+        ...hosts,
+        `${await sdk.getOsIp(effects)} ${talk.signaling.host} # startos-talk`,
+        '',
+      ].join('\n'),
+    )
+  }
 
   // Build the live HealthCheckResult for a long-running-task health check.
   // Re-reads store.json each poll so the displayed state reflects in-flight
@@ -660,21 +783,16 @@ export const main = sdk.setupMain(async ({ effects }) => {
         },
         requires: ['nextcloud'],
       })
-      // Point Talk's STUN/TURN settings at the Coturn package, or clear what we
-      // previously set. Always present; a no-op when desired == configured.
+      // Point Talk's STUN, TURN and signaling settings at Coturn or the HPB, or
+      // clear what we previously set. Always present; a no-op when desired ==
+      // configured.
       // Behind finish-upgrade so these occ calls never land during a recovery
       // migration's maintenance-mode window.
-      .addOneshot('talk-turn', {
+      .addOneshot('talk', {
         subcontainer: nextcloudSub,
         exec: {
           fn: async (subc, abort) => {
-            await reconcileTalkTurn(
-              subc,
-              abort,
-              effects,
-              talkTurn,
-              talkTurnConfigured,
-            )
+            await reconcileTalk(subc, abort, effects, talk, talkConfigured)
             return null
           },
         },
@@ -1040,30 +1158,43 @@ function logDetails(
 }
 
 type TalkTurnEntry = { schemes: string; server: string; protocols: string }
-type TalkTurn = { secret: string; turn: TalkTurnEntry[]; stun: string[] }
-type TalkTurnApplied = {
+type TalkSignaling = { server: string; secret: string }
+type Talk = {
+  secret: string
+  turn: TalkTurnEntry[]
+  stun: string[]
+  signaling: (TalkSignaling & { host: string }) | null
+}
+// `signaling` is absent rather than null without one, so a relay-only
+// signature matches what a release before the HPB recorded.
+type TalkApplied = {
   v: number
   turn: TalkTurnEntry[]
   stun: string[]
   secret: string
+  signaling?: TalkSignaling
 }
 
-const EMPTY_TALK_TURN: TalkTurnApplied = {
+const EMPTY_TALK: TalkApplied = {
   v: 1,
   turn: [],
   stun: [],
   secret: '',
 }
 
+const secretHash = (secret: string) =>
+  createHash('sha256').update(secret).digest('hex').slice(0, 16)
+
 /**
- * Point Nextcloud Talk's STUN and TURN settings at the Coturn package, or
- * remove what we previously pointed them at.
+ * Point Nextcloud Talk's STUN, TURN and signaling settings at the Coturn or
+ * High-Performance Backend package, or remove what we previously pointed them
+ * at.
  *
  * Only entries this package added are ever touched. The last-applied set is
- * kept verbatim in `store.json.talkTurnConfigured` and deleted before the new
- * set is added, so Talk's default `stun.nextcloud.com:443` — and anything the
- * admin added by hand — survives untouched. The signature carries a hash of
- * Coturn's shared secret rather than the secret itself: enough for a rotated
+ * kept verbatim in `store.json.talkConfigured` and deleted before the new set
+ * is added, so Talk's default `stun.nextcloud.com:443` — and anything the admin
+ * added by hand — survives untouched. The signature carries hashes of the
+ * shared secrets rather than the secrets themselves: enough for a rotated
  * secret to re-apply, without a second copy of it on this volume.
  *
  * Talk is installed by the user from the Nextcloud app store, and `occ` exposes
@@ -1072,42 +1203,51 @@ const EMPTY_TALK_TURN: TalkTurnApplied = {
  * way that is left as a retry rather than an error: the signature is not
  * written, so the next chain build applies the config once Talk is back.
  */
-async function reconcileTalkTurn(
+async function reconcileTalk(
   subc: Awaited<ReturnType<typeof getNextcloudSub>>,
   abort: AbortSignal,
   effects: T.Effects,
-  desired: TalkTurn | null,
+  desired: Talk | null,
   configured: string,
 ): Promise<void> {
-  const applied: TalkTurnApplied = {
+  const applied: TalkApplied = {
     v: 1,
     turn: desired?.turn ?? [],
     stun: desired?.stun ?? [],
-    secret: desired
-      ? createHash('sha256').update(desired.secret).digest('hex').slice(0, 16)
-      : '',
+    secret: desired ? secretHash(desired.secret) : '',
+    ...(desired?.signaling && {
+      signaling: {
+        server: desired.signaling.server,
+        secret: secretHash(desired.signaling.secret),
+      },
+    }),
   }
   const desiredSig = JSON.stringify(applied)
   // A never-written signature means nothing was ever applied, so a fresh
-  // install with the toggle off short-circuits with zero occ calls.
-  if (desiredSig === (configured || JSON.stringify(EMPTY_TALK_TURN))) return
+  // install with Talk calls left direct short-circuits with zero occ calls.
+  if (desiredSig === (configured || JSON.stringify(EMPTY_TALK))) return
 
-  const previous = parseTalkTurnApplied(configured)
-  if (previous.turn.length === 0 && previous.stun.length === 0 && !desired) {
+  const previous = parseTalkApplied(configured)
+  if (
+    previous.turn.length === 0 &&
+    previous.stun.length === 0 &&
+    !previous.signaling &&
+    !desired
+  ) {
     // Nothing applied and nothing wanted — record it and skip the app check, so
-    // turning the toggle on and straight back off doesn't sit retrying forever
+    // choosing a relay and straight back to direct doesn't sit retrying forever
     // on a Nextcloud that never had Talk.
-    await storeJson.merge(effects, { talkTurnConfigured: desiredSig })
+    await storeJson.merge(effects, { talkConfigured: desiredSig })
     return
   }
 
   const enabled = await readEnabledApps(subc).catch((e) => {
-    console.warn(`talk-turn: ${e}`)
+    console.warn(`talk: ${e}`)
     return {}
   })
   if (!(TALK_APP in enabled)) {
     console.warn(
-      'talk-turn: the Talk (spreed) app is not enabled in Nextcloud; leaving its STUN/TURN settings alone until it is',
+      'talk: the Talk (spreed) app is not enabled in Nextcloud; leaving its STUN, TURN and signaling settings alone until it is',
     )
     return
   }
@@ -1128,6 +1268,14 @@ async function reconcileTalkTurn(
     if (abort.aborted) return
     await occ(['talk:stun:delete', s])
   }
+  for (const server of new Set(
+    [previous.signaling?.server, desired?.signaling?.server].filter(
+      (s): s is string => !!s,
+    ),
+  )) {
+    if (abort.aborted) return
+    await occ(['talk:signaling:delete', server])
+  }
 
   let allOk = true
   const add = async (args: string[], what: string) => {
@@ -1135,7 +1283,7 @@ async function reconcileTalkTurn(
     if (r.exitCode !== 0) {
       allOk = false
       console.error(
-        `talk-turn: could not add ${what}: ${r.stdout.toString()} ${r.stderr.toString()}`,
+        `talk: could not add ${what}: ${r.stdout.toString()} ${r.stderr.toString()}`,
       )
     }
   }
@@ -1159,6 +1307,19 @@ async function reconcileTalkTurn(
       if (abort.aborted) return
       await add(['talk:stun:add', s], `STUN server ${s}`)
     }
+    // Without --verify: Nextcloud reaches its own address over the bridge,
+    // where the certificate may chain to this server's root CA.
+    if (desired.signaling) {
+      if (abort.aborted) return
+      await add(
+        [
+          'talk:signaling:add',
+          desired.signaling.server,
+          desired.signaling.secret,
+        ],
+        `signaling server ${desired.signaling.server}`,
+      )
+    }
   }
 
   if (abort.aborted) return
@@ -1166,23 +1327,24 @@ async function reconcileTalkTurn(
   if (allOk) {
     console.info(
       desired
-        ? `talk-turn: Talk is relaying calls through ${desired.turn.map((e) => `${e.schemes}:${e.server}`).join(', ')}`
-        : "talk-turn: removed this package's Talk STUN/TURN entries",
+        ? `talk: Talk is relaying calls through ${desired.turn.map((e) => `${e.schemes}:${e.server}`).join(', ') || 'no TURN server yet'}${desired.signaling ? `, signaling through ${desired.signaling.server}` : ''}`
+        : "talk: removed this package's Talk STUN, TURN and signaling entries",
     )
-    await storeJson.merge(effects, { talkTurnConfigured: desiredSig })
+    await storeJson.merge(effects, { talkConfigured: desiredSig })
   }
 }
 
-/** The entries recorded by the last successful `reconcileTalkTurn`, or none. */
-function parseTalkTurnApplied(configured: string): {
+/** The entries recorded by the last successful `reconcileTalk`, or none. */
+function parseTalkApplied(configured: string): {
   turn: TalkTurnEntry[]
   stun: string[]
+  signaling: { server: string } | null
 } {
   try {
-    const { turn, stun } = JSON.parse(configured) as TalkTurnApplied
-    return { turn: turn ?? [], stun: stun ?? [] }
+    const { turn, stun, signaling } = JSON.parse(configured) as TalkApplied
+    return { turn: turn ?? [], stun: stun ?? [], signaling: signaling ?? null }
   } catch {
-    return { turn: [], stun: [] }
+    return { turn: [], stun: [], signaling: null }
   }
 }
 

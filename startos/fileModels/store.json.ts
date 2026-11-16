@@ -53,16 +53,19 @@ const shape = z.looseObject({
   // `actions.completed`, so the oneshot's write never triggers a chain rebuild.
   // A plain string so FileHelper.merge replaces it wholesale.
   externalStoragesConfigured: z.string().catch('').default(''),
-  // Advertise the Coturn package to Nextcloud Talk as its STUN/TURN relay.
-  // DESIRED state: written by the Configure action, read reactively in
-  // setupMain and dependencies.ts.
-  talkTurn: z.boolean().catch(false).default(false),
-  // ACTUAL state: the Talk STUN/TURN entries this package last applied, as an
-  // opaque signature. Doubles as the record of what to delete on the next
-  // change, so nothing the user added by hand is ever touched. Same
+  // How Talk calls connect: peer to peer, relayed through the Coturn package,
+  // or through the High-Performance Backend package. DESIRED state: written by
+  // the Configure action, read reactively in setupMain and dependencies.ts.
+  talkCalls: z
+    .enum(['direct', 'coturn', 'hpb'])
+    .catch('direct')
+    .default('direct'),
+  // ACTUAL state: the Talk STUN, TURN and signaling entries this package last
+  // applied, as an opaque signature. Doubles as the record of what to delete on
+  // the next change, so nothing the user added by hand is ever touched. Same
   // desired-vs-actual split (and the same non-reactive read) as
   // `externalStoragesConfigured` above.
-  talkTurnConfigured: z.string().catch('').default(''),
+  talkConfigured: z.string().catch('').default(''),
   // Which document server serves the office editors, if any. DESIRED state:
   // written by the Office Suite action, read reactively in
   // setupMain and dependencies.ts.

@@ -88,6 +88,23 @@ export const coturnInterfaceId = 'turn'
 export const coturnMountpoint = '/mnt/coturn'
 export const coturnSecretPath = `${coturnMountpoint}/turn-secret`
 
+// The High-Performance Backend package: signaling server, Janus and its own
+// TURN relay, which is the only way into Janus.
+export const hpbId = 'nextcloud-talk-hpb'
+export const hpbVersionRange = '>=2.2.0:0'
+export const hpbTurnHostId = 'turn'
+export const hpbTurnInterfaceId = 'turn'
+export const hpbSignalingHostId = 'signaling'
+export const hpbSignalingPort = 8081
+// The HPB publishes both secrets on its `public` volume.
+export const hpbMountpoint = '/mnt/talk-hpb'
+export const hpbTurnSecretPath = `${hpbMountpoint}/turn-secret`
+export const hpbSignalingSecretPath = `${hpbMountpoint}/signaling-secret`
+// Where Apache proxies browsers and Talk itself to the signaling server.
+export const TALK_SIGNALING_PATH = '/standalone-signaling/'
+
+export type TalkCalls = 'direct' | 'coturn' | 'hpb'
+
 /**
  * Read a secret another package publishes on one of its volumes, through a
  * throwaway container that mounts it read-only, so a missing dependency can
