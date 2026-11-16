@@ -53,7 +53,9 @@ Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own
 
 **Run `occ` from the host with `start-cli package attach nextcloud -n nextcloud-sub -u www-data -- php occ <command>`.** It is invoked through `php`, and it runs only as `www-data`.
 
-Six oneshots run alongside them, in order: `chown` hands any file in the data directory not already owned by `www-data` to it; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts; `talk` reconciles Nextcloud Talk's STUN, TURN and signaling settings.
+Seven oneshots run alongside them, in order: `chown` hands any file in the data directory not already owned by `www-data` to it; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts; `talk` reconciles Nextcloud Talk's STUN, TURN and signaling settings; `office-suite` reconciles the office connector.
+
+**The three reconciles wait for `finish-upgrade` and `long-running-tasks` to exit**, because either can hold Nextcloud in maintenance mode, where `occ` refuses their commands and a half-applied change would stay that way until the next start. A setting changed during post-update maintenance or a queued Repair therefore applies once that work finishes, which on a large instance can be hours.
 
 **`finish-upgrade` runs after the web daemon is ready, not before it**, which is what makes it safe. In the normal case the upgrade has already happened during init and this is a no-op; when it does have work to do, Apache is up serving the maintenance page while `occ upgrade` runs, exactly as a manual recovery would. It fails open — nothing it does can prevent the service from serving.
 
