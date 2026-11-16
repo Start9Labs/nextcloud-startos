@@ -1,21 +1,31 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { storeJson } from '../fileModels/store.json'
 
 export const current = VersionInfo.of({
-  version: '35.0.3:0',
+  version: '35.0.3:1',
   releaseNotes: {
     en_US:
-      'Updated Nextcloud to 35.0.3, a maintenance release. Fixes include share expiration times being preserved, readable passwords in share-by-mail emails, more reliable CalDAV and CardDAV sync, and uploads of files with no MIME type, along with faster preview generation. Full notes: https://github.com/nextcloud-releases/server/releases/tag/v35.0.3',
+      'Talk calls can now run through the new Nextcloud Talk HPB service, so calls hold many more participants. Choose it under Talk Calls in the Configure action. A server that relayed calls through Coturn keeps doing so.',
     es_ES:
-      'Nextcloud actualizado a 35.0.3, una versión de mantenimiento. Las correcciones incluyen que se conserva la hora de caducidad de los recursos compartidos, contraseñas legibles en los correos de compartir por correo, una sincronización CalDAV y CardDAV más fiable y la subida de archivos sin tipo MIME, además de una generación de vistas previas más rápida. Notas completas: https://github.com/nextcloud-releases/server/releases/tag/v35.0.3',
+      'Las llamadas de Talk ahora pueden funcionar a través del nuevo servicio Nextcloud Talk HPB, para que admitan muchos más participantes. Elíjalo en Llamadas de Talk, en la acción Configurar. Un servidor que retransmitía las llamadas a través de Coturn lo sigue haciendo.',
     de_DE:
-      'Nextcloud auf 35.0.3 aktualisiert, ein Wartungsrelease. Zu den Korrekturen gehören, dass die Ablaufzeit von Freigaben erhalten bleibt, lesbare Passwörter in E-Mails zur Freigabe per E-Mail, zuverlässigere CalDAV- und CardDAV-Synchronisierung und das Hochladen von Dateien ohne MIME-Typ, dazu eine schnellere Vorschaugenerierung. Vollständige Hinweise: https://github.com/nextcloud-releases/server/releases/tag/v35.0.3',
+      'Talk-Anrufe können jetzt über den neuen Dienst Nextcloud Talk HPB laufen und so deutlich mehr Teilnehmer fassen. Wählen Sie ihn unter Talk-Anrufe in der Aktion Konfigurieren. Ein Server, der Anrufe über Coturn weitergeleitet hat, tut das weiterhin.',
     pl_PL:
-      'Zaktualizowano Nextcloud do wersji 35.0.3, wydania konserwacyjnego. Poprawki obejmują zachowywanie czasu wygaśnięcia udostępnień, czytelne hasła w wiadomościach udostępniania przez e-mail, bardziej niezawodną synchronizację CalDAV i CardDAV oraz przesyłanie plików bez typu MIME, a także szybsze generowanie podglądów. Pełne informacje: https://github.com/nextcloud-releases/server/releases/tag/v35.0.3',
+      'Połączenia Talk mogą teraz działać przez nową usługę Nextcloud Talk HPB, dzięki czemu mieszczą znacznie więcej uczestników. Wybierz ją w opcji Połączenia Talk w akcji Konfiguruj. Serwer, który przekazywał połączenia przez Coturn, nadal to robi.',
     fr_FR:
-      "Mise à jour de Nextcloud vers 35.0.3, une version de maintenance. Les corrections incluent la conservation de l'heure d'expiration des partages, des mots de passe lisibles dans les e-mails de partage par e-mail, une synchronisation CalDAV et CardDAV plus fiable et l'envoi de fichiers sans type MIME, ainsi qu'une génération d'aperçus plus rapide. Notes complètes : https://github.com/nextcloud-releases/server/releases/tag/v35.0.3",
+      "Les appels Talk peuvent désormais passer par le nouveau service Nextcloud Talk HPB, pour accueillir bien plus de participants. Choisissez-le sous Appels Talk dans l'action Configurer. Un serveur qui relayait les appels via Coturn continue de le faire.",
   },
   migrations: {
-    up: async () => {},
+    up: async ({ effects }) => {
+      const store = await storeJson.read().once()
+      if (!store) return
+      await storeJson.merge(effects, {
+        ...(store.talkTurn === true && { talkCalls: 'coturn' as const }),
+        ...(typeof store.talkTurnConfigured === 'string' && {
+          talkConfigured: store.talkTurnConfigured,
+        }),
+      })
+    },
     down: IMPOSSIBLE,
   },
 })

@@ -42,17 +42,18 @@ Three images: PostgreSQL and Valkey upstream and unmodified, and Nextcloud's own
 | Images        | Built from `nextcloud.Dockerfile` (`FROM nextcloud:*-apache`), `postgres`, `valkey/valkey` |
 | Architectures | x86_64, aarch64                                                                            |
 
-| Subcontainer         | Runs                                                             |
-| -------------------- | ---------------------------------------------------------------- |
-| `nextcloud-sub`      | The web daemon, and every `occ` oneshot — the one to `attach` to |
-| `nextcloud-cron`     | Nextcloud's background job runner (`/cron.sh`)                   |
-| `postgres-sub`       | The private database                                             |
-| `valkey`             | The memcache, locking, and distributed cache backend             |
-| `coturn-secret-read` | Temporary; reads Coturn's shared secret through its own mount    |
+| Subcontainer                     | Runs                                                                 |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `nextcloud-sub`                  | The web daemon, and every `occ` oneshot — the one to `attach` to     |
+| `nextcloud-cron`                 | Nextcloud's background job runner (`/cron.sh`)                       |
+| `postgres-sub`                   | The private database                                                 |
+| `valkey`                         | The memcache, locking, and distributed cache backend                 |
+| `coturn-secret-read`             | Temporary; reads Coturn's shared secret through its own mount        |
+| `nextcloud-talk-hpb-secret-read` | Temporary; reads the High-Performance Backend's secrets the same way |
 
 **Run `occ` from the host with `start-cli package attach nextcloud -n nextcloud-sub -u www-data -- php occ <command>`.** It is invoked through `php`, and it runs only as `www-data`.
 
-Six oneshots run alongside them, in order: `chown` hands any file in the data directory not already owned by `www-data` to it; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts; `talk-turn` reconciles Nextcloud Talk's STUN/TURN settings.
+Six oneshots run alongside them, in order: `chown` hands any file in the data directory not already owned by `www-data` to it; `pg-recover` clears a stranded `postmaster.pid`; `finish-upgrade` completes a Nextcloud upgrade an interrupted start left half-done; `long-running-tasks` runs whatever `occ` work has been queued; `external-storage` reconciles the mounts; `talk` reconciles Nextcloud Talk's STUN, TURN and signaling settings.
 
 **`finish-upgrade` runs after the web daemon is ready, not before it**, which is what makes it safe. In the normal case the upgrade has already happened during init and this is a no-op; when it does have work to do, Apache is up serving the maintenance page while `occ upgrade` runs, exactly as a manual recovery would. It fails open — nothing it does can prevent the service from serving.
 
@@ -102,25 +103,28 @@ Four settings depart from what upstream would do:
 | `integrity.check.disabled`         | `true`                               | The image adds `ffmpeg` and the package rewrites `config.php`, so the signature check would fail on a correct install         |
 | `default_certificates_bundle_path` | `/etc/ssl/certs/ca-certificates.crt` | Nextcloud's shipped CA bundle changes only with a Nextcloud release; the system store is current with every image build       |
 
-`store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, the Talk STUN/TURN relay toggle, and the office-suite choice — each of the last two alongside a signature of what was last applied for it, which is how a reconcile knows what to clear before it writes.
+`store.json` is StartOS state that has no place in `config.php`: the install-time admin password (held only until it is shown once), the queue of long-running `occ` tasks, the external-storage selection, the Talk call mode, and the office-suite choice — each of the last two alongside a signature of what was last applied for it, which is how a reconcile knows what to clear before it writes.
 
 ## Dependencies
 
 None are required. All are optional and exist only while they are selected.
 
-| Dependency         | Kind      | Health checks    | Required                                                                                              |
-| ------------------ | --------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `nextexplorer`     | `exists`  | —                | Only while chosen in the External Storage action                                                      |
-| `filebrowser`      | `exists`  | —                | Only while chosen in the External Storage action                                                      |
-| `coturn`           | `running` | **none**         | Only while Talk call relaying is on in the Configure action                                           |
-| `collabora-online` | `running` | `cool`           | Only while chosen in the Office Suite action                                                          |
-| `onlyoffice-docs`  | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
+| Dependency           | Kind      | Health checks    | Required                                                                                              |
+| -------------------- | --------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `nextexplorer`       | `exists`  | —                | Only while chosen in the External Storage action                                                      |
+| `filebrowser`        | `exists`  | —                | Only while chosen in the External Storage action                                                      |
+| `coturn`             | `running` | **none**         | Only while Talk Calls is Relay through Coturn in the Configure action                                 |
+| `nextcloud-talk-hpb` | `running` | `signaling`      | Only while Talk Calls is High-performance backend in the Configure action                             |
+| `collabora-online`   | `running` | `cool`           | Only while chosen in the Office Suite action                                                          |
+| `onlyoffice-docs`    | `running` | `documentserver` | Only while chosen in the Office Suite action; published to the Community Registry, not the Start9 one |
 
 The External Storage action offers only the sources whose backing service is actually installed, so an uninstalled one never appears in the form.
 
 **Coturn declares no health check, deliberately.** Coturn's own `TURN Server` check fails until you attach a public domain to it, and naming it here would leave Nextcloud showing a permanently unmet dependency even though Talk works fine without a relay. Coturn's own check already says what is missing.
 
-The shared secret is read through a throwaway container that mounts Coturn's `public` volume read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and nothing else of Coturn's is in view. ONLYOFFICE's JWT secret is read the same way, from its own `public` volume.
+**The High-Performance Backend names only its `signaling` check**, for the same reason: its TURN Relay Address check is disabled until its relay has a public domain, and calls still work on the LAN without one. Coturn and the HPB are never required together; Talk Calls picks one.
+
+The shared secret is read through a throwaway container that mounts Coturn's `public` volume read-only — so a missing or broken Coturn can never take Nextcloud's own daemons down, and nothing else of Coturn's is in view. The HPB's TURN and signaling secrets, and ONLYOFFICE's JWT secret, are read the same way, from each one's `public` volume.
 
 **The office backends are mutually exclusive**, and only the chosen one is declared. Unlike Coturn they do name a health check: Nextcloud can hand a document to a document server that is up, and cannot to one that is starting.
 
@@ -157,17 +161,23 @@ Eleven actions in three groups, plus one hidden.
 
 ### Configure
 
-The five general settings — default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts are seeded with skeleton files — plus the Talk call-relay toggle.
+The five general settings — default locale, default phone region, how long deleted files are kept, the maintenance-window start hour, and whether new accounts are seeded with skeleton files — plus how Talk calls connect.
 
-- **What it changes:** the first five are keys in `config.php`. **Relay Talk Calls Through Coturn** is a flag in `store.json`; through it the package's Coturn dependency and Nextcloud Talk's own STUN/TURN settings, which the `talk-turn` oneshot reconciles on the next start.
+- **What it changes:** the first five are keys in `config.php`. **Talk Calls** is `talkCalls` in `store.json` — `direct`, `coturn` or `hpb`; through it the package's Coturn or HPB dependency, Apache's signaling proxy, and Nextcloud Talk's own STUN, TURN and signaling settings, which the `talk` oneshot reconciles on the next start.
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** idempotent; the form is pre-filled.
 
 **Delete Files in Trash** sets `trashbin_retention_obligation`. Nextcloud's default (`auto`) keeps a deleted file for at least 30 days and then removes it only as disk space is needed, so on a server with room to spare the trash grows without bound; the presets write `auto, <days>` to cap it, or `disabled` to keep everything. Only the maximum is offered — Nextcloud's `D1, D2` form also sets a guaranteed floor, which would hold files past the cap the user chose.
 
-**Relaying is advertised only once Coturn has a public domain.** With the toggle on but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway. The toggle also does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
+**Coturn is advertised only once it has a public domain.** With Relay through Coturn chosen but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway.
 
-**Only the entries this package added are ever touched.** The `talk-turn` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Removing that default is a deliberate choice left to the admin — see Limitations.
+**High-performance backend points Talk at three things:** the HPB's TURN relay, as `turn:` and `turns:` entries on its public domain or, without one, a `turn:` entry on each of the server's private IPv4 addresses; a STUN entry on the plain listener; and the signaling server at `https://<host>/standalone-signaling/`, where `<host>` is the Web UI's first public domain, or its `.local` name without one. Apache proxies that path to the HPB's bridge-only signaling port (`startos-talk.conf`, written before the web daemon starts). Talk hands the URL to every browser and also calls it itself, so the host is mapped to the StartOS bridge in the container's `/etc/hosts` and the signaling entry is added without `--verify`: the call never leaves the server. Nothing is applied until the HPB is installed and has published its secrets.
+
+Either mode does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
+
+**Only the entries this package added are ever touched.** The `talk` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Pending signaling URLs are recorded before writes so an interrupted reconcile can retry without claiming an admin's entry. Removing the default STUN server is a deliberate choice left to the admin — see Limitations.
+
+**Talk has one secret shared by all signaling servers.** An admin-configured signaling entry therefore blocks HPB setup before any Talk settings are changed; the service logs explain the conflict. Remove that entry in Nextcloud's Talk administration settings and restart Nextcloud to use the packaged HPB, or leave Talk Calls on Direct only to manage signaling manually.
 
 ### External Storage
 
@@ -291,8 +301,8 @@ Mixed, and each half is scoped deliberately.
 6. **The admin password is shown once and then discarded.** Reset Admin Password is the only recovery.
 7. **The long-running actions restart the service** to run their work, and continue after the action returns.
 8. **External storage is limited to registered sources** — NextExplorer and FileBrowser Quantum — and only while that service is installed.
-9. **Talk's default `stun.nextcloud.com:443` is left in place** when relaying is enabled. Coturn's own STUN entry is added alongside it rather than replacing it, since removing an entry the package did not add is the admin's call; delete it in Talk's admin settings to keep reflexive discovery entirely on your own server.
-10. **Talk call relaying is Coturn or nothing.** There is no field for an external TURN server — configure one directly in Talk's admin settings instead, and leave the toggle off.
+9. **Talk's default `stun.nextcloud.com:443` is left in place** when Talk calls use Coturn or the HPB. The relay's own STUN entry is added alongside it rather than replacing it, since removing an entry the package did not add is the admin's call; delete it in Talk's admin settings to keep reflexive discovery entirely on your own server.
+10. **Talk calls use Coturn, the HPB, or neither.** There is no field for an external TURN or signaling server — configure one directly in Talk's admin settings instead, and leave Talk Calls on Direct only.
 11. **No riscv64 build.** x86_64 and aarch64 only.
 12. **A single request is capped at 1 GiB.** Apache's `LimitRequestBody` is the upstream image's `APACHE_BODY_LIMIT` default (1073741824), which the package doesn't set, so a one-request WebDAV `PUT` above it gets `413` and `PHP_UPLOAD_LIMIT` (`20480M`) never binds. Chunked uploads — the web uploader and the desktop and mobile clients, 100 MiB chunks by default (`max_chunk_size`) — have no per-file cap but free disk space.
 
@@ -312,6 +322,7 @@ subcontainers:
   - postgres-sub # private database
   - valkey # memcache, locking, distributed cache
   - coturn-secret-read # temporary; reads Coturn's shared secret
+  - nextcloud-talk-hpb-secret-read # temporary; reads the HPB's secrets
 volumes:
   nextcloud: /var/www/html
   db: /var/lib/postgresql (in postgres-sub)
@@ -333,7 +344,8 @@ startos_managed_env_vars:
 dependencies:
   - nextexplorer # optional, exists; only while selected as an external-storage source
   - filebrowser # optional, exists; only while selected as an external-storage source
-  - coturn # optional, running, no health checks; only while Talk call relaying is on
+  - coturn # optional, running, no health checks; only while Talk Calls is Relay through Coturn
+  - nextcloud-talk-hpb # optional, running, health check `signaling`; only while Talk Calls is High-performance backend
   - collabora-online # optional, running, health check `cool`; only while selected as the office suite
   - onlyoffice-docs # optional, running, health check `documentserver`; only while selected as the office suite; Community Registry
 interfaces:

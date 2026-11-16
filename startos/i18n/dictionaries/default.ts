@@ -27,8 +27,8 @@ const dict = {
   'UTC start time for non-time sensitive background jobs. Setting this to a low-usage time frees up resources during the rest of the day by only running these non-time sensitive jobs in the 4 hours following the specified start time. Set to 24 (default) if there is no preference for when these jobs are run, but beware that resource intensive jobs may then run unnecessarily during high usage periods. This may lead to slower performance and a lower quality user experience.': 17,
   'Disable Skeleton Files for New Accounts': 45,
   "When enabled, new user accounts are not seeded with Nextcloud's default skeleton files (sample documents, photos, README, etc.). Existing accounts are unaffected.": 46,
-  'Relay Talk Calls Through Coturn': 135,
-  'Relay Talk calls through the Coturn service so they connect when both parties are behind NAT or a restrictive firewall. Requires the Talk app to be installed in Nextcloud, and Coturn to be installed and running with a public domain of its own; until both are, calls fall back to a direct connection.': 136,
+  'Talk Calls': 135,
+  'How Nextcloud Talk calls connect. Requires the Talk app to be installed in Nextcloud.\n- Direct only: every participant connects to every other. Works for small calls between people who can reach each other.\n- Relay through Coturn: still peer to peer, but calls also connect when participants are behind NAT or a restrictive firewall. Requires Coturn, running with a public domain of its own.\n- High-performance backend: each participant sends their video once and the server forwards it, so calls hold many more people. Requires Nextcloud Talk HPB, running with a public domain on its TURN Relay interface for calls beyond your local network.': 136,
 
   // resetAdmin.ts
   'Reset Admin Password': 18,
@@ -211,6 +211,9 @@ const dict = {
   'Adding missing database indices or migrating file types after the update exited with an error — tap for the last log lines. Run the "Repair" action to retry.': 178,
   'Maintenance mode: ${step}': 179,
   'no output for ${time}': 180,
+  'Direct only': 181,
+  'Relay through Coturn': 182,
+  'High-performance backend': 183,
 } as const
 
 /**

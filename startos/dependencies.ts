@@ -5,12 +5,19 @@ import {
   collaboraDescription,
   coturnDescription,
   filebrowserDescription,
+  hpbDescription,
   nextexplorerDescription,
   onlyofficeDescription,
 } from './manifest/i18n'
 import { OfficeSuite, officeSuiteMeta } from './officeSuite'
 import { sdk } from './sdk'
-import { coturnId, coturnVersionRange } from './utils'
+import {
+  coturnId,
+  coturnVersionRange,
+  hpbId,
+  hpbVersionRange,
+  TalkCalls,
+} from './utils'
 
 // Required only while selected. `exists`, not `running`: Nextcloud needs the
 // source's volume on disk to mount, not the service itself.
@@ -23,6 +30,11 @@ const externalSource =
 
 // The document server has to be up before Nextcloud can hand it a document,
 // and its own health check is the readiness signal.
+const talkCalls =
+  (mode: TalkCalls) =>
+  async ({ effects }: { effects: T.Effects }) =>
+    (await storeJson.read((s) => s.talkCalls).const(effects)) === mode
+
 const officeSuite =
   (suite: OfficeSuite) =>
   async ({ effects }: { effects: T.Effects }) =>
@@ -54,7 +66,7 @@ export const dependencies = sdk.Dependencies.of()
     }),
   )
   .addDependency(
-    // Only while the user has asked Talk to use it. No healthChecks: Coturn's
+    // Only while Talk calls relay through it. No healthChecks: Coturn's
     // own `TURN Server` check fails until a public domain is attached to it,
     // which would surface here as a permanently unmet dependency even though
     // Talk falls back to direct connections.
@@ -67,8 +79,22 @@ export const dependencies = sdk.Dependencies.of()
       versionRange: coturnVersionRange,
       kind: 'running',
       healthChecks: [],
-      enabled: async ({ effects }) =>
-        (await storeJson.read((s) => s.talkTurn).const(effects)) ?? false,
+      enabled: talkCalls('coturn'),
+    }),
+  )
+  .addDependency(
+    // The TURN Relay Address check is left out for the same reason as
+    // Coturn's: without a public domain, calls still work on the LAN.
+    sdk.Dependency.optional(hpbId, {
+      description: hpbDescription,
+      metadata: {
+        title: 'Nextcloud Talk HPB',
+        icon: 'https://raw.githubusercontent.com/Start9Labs/nextcloud-talk-hpb-startos/1b5dc29168154c8fe6643bda2c25bf8694ef113c/icon.svg',
+      },
+      versionRange: hpbVersionRange,
+      kind: 'running',
+      healthChecks: ['signaling'],
+      enabled: talkCalls('hpb'),
     }),
   )
   .addDependency(
