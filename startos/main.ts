@@ -878,7 +878,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
                       return {
                         result: 'failure' as const,
                         message: i18n(
-                          'Install and enable the Talk app in Nextcloud.',
+                          'Install and enable the Talk app in Nextcloud, then restart Nextcloud.',
                         ),
                       }
                     case 'blocked':
@@ -1295,6 +1295,7 @@ const secretHash = (secret: string) =>
  * hashes of the shared secrets rather than the secrets themselves.
  *
  * Unowned signaling entries block HPB setup; Talk shares one signaling secret.
+ * An applied relay requires Talk to be enabled on this start.
  *
  * Talk is installed by the user from the Nextcloud app store, and `occ` exposes
  * its `talk:*` namespace only while the app is enabled — which a major
@@ -1322,10 +1323,10 @@ async function reconcileTalk(
     }),
   }
   const desiredSig = JSON.stringify(applied)
+  const unchanged = desiredSig === (configured || JSON.stringify(EMPTY_TALK))
   // A never-written signature means nothing was ever applied, so a fresh
   // install with Talk calls left direct short-circuits with zero occ calls.
-  if (desiredSig === (configured || JSON.stringify(EMPTY_TALK)))
-    return 'applied'
+  if (!desired && unchanged) return 'applied'
 
   const previous = parseTalkApplied(configured)
   if (
@@ -1344,14 +1345,16 @@ async function reconcileTalk(
 
   const enabled = await readEnabledApps(subc).catch((e) => {
     console.warn(`talk: ${e}`)
-    return {}
+    return null
   })
+  if (!enabled) return 'failed'
   if (!(TALK_APP in enabled)) {
     console.warn(
       'talk: the Talk (spreed) app is not enabled in Nextcloud; leaving its STUN, TURN and signaling settings alone until it is',
     )
     return 'talk-disabled'
   }
+  if (unchanged) return 'applied'
 
   const occ = (args: string[]) =>
     subc.exec(['php', 'occ', ...args], { user: 'www-data' })

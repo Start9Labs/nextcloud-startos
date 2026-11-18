@@ -220,7 +220,7 @@ const dict = {
   'Nextcloud has no HTTPS address for Talk to reach the backend at.': 187,
   'Talk calls run through Nextcloud Talk HPB': 188,
   'Talk calls relay through Coturn': 189,
-  'Install and enable the Talk app in Nextcloud.': 190,
+  'Install and enable the Talk app in Nextcloud, then restart Nextcloud.': 190,
   'A signaling server added in Talk’s admin settings is in the way. Remove it there and restart Nextcloud, or choose Direct only.': 191,
   'Talk’s settings could not be applied. Restart Nextcloud to retry; the service logs have details.': 192,
   'Waiting for maintenance to finish': 193,

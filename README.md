@@ -171,15 +171,15 @@ The five general settings — default locale, default phone region, how long del
 
 **Delete Files in Trash** sets `trashbin_retention_obligation`. Nextcloud's default (`auto`) keeps a deleted file for at least 30 days and then removes it only as disk space is needed, so on a server with room to spare the trash grows without bound; the presets write `auto, <days>` to cap it, or `disabled` to keep everything. Only the maximum is offered — Nextcloud's `D1, D2` form also sets a guaranteed floor, which would hold files past the cap the user chose.
 
-**Coturn is advertised only once it has a public domain.** With Relay through Coturn chosen but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway.
+**Coturn is advertised only once it has a public domain.** With Relay through Coturn chosen but Coturn lacking one, no relay is configured and the Talk Calls health check names the missing public domain — Talk falls back to direct connections, which is what it would do anyway.
 
 **High-performance backend points Talk at three things:** the HPB's TURN relay, as `turn:` and `turns:` entries on its public domain or, without one, a `turn:` entry on each of the server's private IPv4 addresses; a STUN entry on the plain listener; and the signaling server at `https://<host>/standalone-signaling/`, where `<host>` is the first of the Web UI's HTTPS addresses in this order: a public domain, a private domain, its `.local` name, a LAN IPv4. Apache proxies that path to the HPB's bridge-only signaling port (`startos-talk.conf`, written before the web daemon starts). Talk hands the URL to every browser and also calls it itself, so a host name is mapped to the StartOS bridge in the container's `/etc/hosts` and the signaling entry is added without `--verify`: the call never leaves the server. Nothing is applied until the HPB is installed and has published its secrets.
 
-Either mode does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
+Either mode does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and the Talk Calls health check names the missing app. Restart Nextcloud after installing or re-enabling Talk to retry the setup.
 
 **Only the entries this package added are ever touched.** The `talk` oneshot records what it applied and deletes exactly that before writing the new set, so Talk's default `stun.nextcloud.com:443` and anything an admin added by hand survive. Pending signaling URLs are recorded before writes so an interrupted reconcile can retry without claiming an admin's entry. Removing the default STUN server is a deliberate choice left to the admin — see Limitations.
 
-**Talk has one secret shared by all signaling servers.** An admin-configured signaling entry therefore blocks HPB setup before any Talk settings are changed; the service logs explain the conflict. Remove that entry in Nextcloud's Talk administration settings and restart Nextcloud to use the packaged HPB, or leave Talk Calls on Direct only to manage signaling manually.
+**Talk has one secret shared by all signaling servers.** An admin-configured signaling entry therefore blocks HPB setup before any Talk settings are changed; the Talk Calls health check and service logs explain the conflict. Remove that entry in Nextcloud's Talk administration settings and restart Nextcloud to use the packaged HPB, or leave Talk Calls on Direct only to manage signaling manually.
 
 ### External Storage
 
@@ -289,7 +289,7 @@ Both clear on the next poll once the condition is resolved. It is a check rather
 - **Waiting**, as `loading`, while the oneshot has not run yet: _Waiting for maintenance to finish_ while a queued task is pending, otherwise _Applying Talk settings…_.
 - **Success** once the settings are applied, or already were.
 
-The outcome is held for the life of the daemon chain, so a Talk app disabled after the settings were applied is not noticed until the next start.
+The outcome is held for the life of the daemon chain, so a Talk app disabled after the settings were applied is not noticed until the next start. Each start checks that Talk is enabled even when the stored settings already match. Installing or re-enabling Talk after a failure also needs a restart.
 
 ## Backups and Restore
 
