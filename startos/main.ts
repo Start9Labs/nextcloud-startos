@@ -267,7 +267,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // non-reactively — same split as the two pairs above.
   const talkCalls =
     (await storeJson.read((s) => s.talkCalls).const(effects)) ?? 'direct'
-  const talk =
+  // A string names what the chosen mode is missing.
+  const talkResolved =
     talkCalls === 'coturn'
       ? await resolveTalkTurn({
           packageId: coturnId,
@@ -276,10 +277,21 @@ export const main = sdk.setupMain(async ({ effects }) => {
           mountpoint: coturnMountpoint,
           secretPath: coturnSecretPath,
           lan: false,
-        }).then((relay) => relay && { ...relay, signaling: null })
+          missing: i18n(
+            'Install and start ${service}, or choose another option under Talk Calls.',
+            { service: 'Coturn' },
+          ),
+          noAddress: i18n(
+            'Add a public domain to Coturn’s TURN/STUN interface.',
+          ),
+        }).then((relay) =>
+          typeof relay === 'string' ? relay : { ...relay, signaling: null },
+        )
       : talkCalls === 'hpb'
         ? await resolveTalkHpb()
         : null
+  const talk = typeof talkResolved === 'string' ? null : talkResolved
+  let talkOutcome: TalkOutcome | null = null
 
   // A relay's TURN endpoint plus its shared secret. Its `turn` interface
   // carries the plain `turn:` address (ssl:false) and the edge-terminated
@@ -293,7 +305,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
     mountpoint: string
     secretPath: string
     lan: boolean
-  }): Promise<Omit<Talk, 'signaling'> | null> {
+    missing: string
+    noAddress: string
+  }): Promise<Omit<Talk, 'signaling'> | string> {
     const endpoint = await sdk.host
       .get(
         effects,
@@ -304,7 +318,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             Object.values(host.bindings)
               .flatMap((b) => Object.values(b.interfaces))
               .find((i) => i.id === relay.interfaceId)
-          if (!iface) return null
+          if (!iface) return 'absent' as const
           const hostnames = iface.addressInfo
             .filter({ visibility: 'public', kind: 'domain' })
             .hostnames.filter((h) => h.port != null)
@@ -332,7 +346,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
         },
       )
       .const()
-    if (!endpoint) return null
+    if (endpoint === 'absent') return relay.missing
+    if (!endpoint) return relay.noAddress
 
     const secret = await readDependencySecret(effects, {
       dependencyId: relay.packageId,
@@ -341,7 +356,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: relay.mountpoint,
       path: relay.secretPath,
     })
-    if (!secret) return null
+    if (!secret) return relay.missing
 
     const { hosts, turnsHost } = endpoint
     return {
@@ -367,7 +382,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
   // The HPB's relay, plus the signaling server on one of Nextcloud's own HTTPS
   // addresses: Talk hands that URL to every browser and calls it itself.
-  async function resolveTalkHpb(): Promise<Talk | null> {
+  async function resolveTalkHpb(): Promise<Talk | string> {
+    const missing = i18n(
+      'Install and start ${service}, or choose another option under Talk Calls.',
+      { service: 'Nextcloud Talk HPB' },
+    )
     const relay = await resolveTalkTurn({
       packageId: hpbId,
       hostId: hpbTurnHostId,
@@ -375,7 +394,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: hpbMountpoint,
       secretPath: hpbTurnSecretPath,
       lan: true,
+      missing,
+      noAddress: i18n('Nextcloud Talk HPB has no address to relay calls on.'),
     })
+    if (typeof relay === 'string') return relay
     const secret = await readDependencySecret(effects, {
       dependencyId: hpbId,
       volumeId: 'public',
@@ -392,21 +414,34 @@ export const main = sdk.setupMain(async ({ effects }) => {
             .flatMap((b) => Object.values(b.interfaces))
             .find((i) => i.id === 'ui')
         if (!ui) return null
-        const https = ui.addressInfo.filter({
+        const https = ui.addressInfo.nonLocal.filter({
           predicate: (h) => h.ssl && h.port != null,
         })
         const pick =
           https.filter({ visibility: 'public', kind: 'domain' }).hostnames[0] ??
-          https.filter({ kind: 'mdns' }).hostnames[0]
-        return pick ? { host: pick.hostname, port: pick.port } : null
+          https.filter({ kind: 'domain' }).hostnames[0] ??
+          https.filter({ kind: 'mdns' }).hostnames[0] ??
+          https.filter({ kind: 'ipv4' }).hostnames[0]
+        return pick
+          ? {
+              host: pick.hostname,
+              port: pick.port,
+              ip: pick.metadata.kind === 'ipv4',
+            }
+          : null
       })
       .const()
-    if (!relay || !secret || !signalingHost) return null
-    const { host, port } = signalingHost
+    if (!secret) return missing
+    if (!signalingHost)
+      return i18n(
+        'Nextcloud has no HTTPS address for Talk to reach the backend at.',
+      )
+    const { host, port, ip } = signalingHost
     return {
       ...relay,
       signaling: {
         host,
+        ip,
         server: `https://${host}${port === 443 ? '' : `:${port}`}${TALK_SIGNALING_PATH}`,
         secret,
       },
@@ -515,7 +550,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   )
   // Talk calls the signaling server at its public URL; resolving that host to
   // the bridge keeps the call on this server.
-  if (talk?.signaling) {
+  if (talk?.signaling && !talk.signaling.ip) {
     const hostsPath = `${await nextcloudSub.rootfs}/etc/hosts`
     const hosts = (await readFile(hostsPath, 'utf8'))
       .split('\n')
@@ -793,7 +828,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         subcontainer: nextcloudSub,
         exec: {
           fn: async (subc, abort) => {
-            await reconcileTalk(subc, abort, effects, talk)
+            talkOutcome = await reconcileTalk(subc, abort, effects, talk)
             return null
           },
         },
@@ -816,6 +851,65 @@ export const main = sdk.setupMain(async ({ effects }) => {
         },
         requires: ['nextcloud', 'finish-upgrade', 'long-running-tasks'],
       })
+      .addHealthCheck('talk-calls', () =>
+        talkCalls === 'direct'
+          ? null
+          : {
+              ready: {
+                display: i18n('Talk Calls'),
+                trigger: sdk.trigger.statusTrigger(60_000, {
+                  starting: 2_000,
+                  loading: 5_000,
+                  failure: 15_000,
+                }),
+                fn: () => {
+                  if (typeof talkResolved === 'string')
+                    return { result: 'failure' as const, message: talkResolved }
+                  switch (talkOutcome) {
+                    case 'applied':
+                      return {
+                        result: 'success' as const,
+                        message:
+                          talkCalls === 'hpb'
+                            ? i18n('Talk calls run through Nextcloud Talk HPB')
+                            : i18n('Talk calls relay through Coturn'),
+                      }
+                    case 'talk-disabled':
+                      return {
+                        result: 'failure' as const,
+                        message: i18n(
+                          'Install and enable the Talk app in Nextcloud.',
+                        ),
+                      }
+                    case 'blocked':
+                      return {
+                        result: 'failure' as const,
+                        message: i18n(
+                          'A signaling server added in Talk’s admin settings is in the way. Remove it there and restart Nextcloud, or choose Direct only.',
+                        ),
+                      }
+                    case 'failed':
+                      return {
+                        result: 'failure' as const,
+                        message: i18n(
+                          'Talk’s settings could not be applied. Restart Nextcloud to retry; the service logs have details.',
+                        ),
+                      }
+                    default:
+                      return {
+                        result: 'loading' as const,
+                        message: ACTION_IDS.some((id) =>
+                          isPending(pending, completed, id),
+                        )
+                          ? i18n('Waiting for maintenance to finish')
+                          : i18n('Applying Talk settings...'),
+                      }
+                  }
+                },
+              },
+              requires: ['nextcloud'] as const,
+            },
+      )
       // A second office connector left enabled silently breaks Word, Excel and
       // PowerPoint editing, and nothing in Nextcloud says so — hence a health
       // check rather than a task, which can be dismissed while still broken.
@@ -1159,12 +1253,13 @@ function logDetails(
 }
 
 type TalkTurnEntry = { schemes: string; server: string; protocols: string }
+type TalkOutcome = 'applied' | 'talk-disabled' | 'blocked' | 'failed'
 type TalkSignaling = { server: string; secret: string }
 type Talk = {
   secret: string
   turn: TalkTurnEntry[]
   stun: string[]
-  signaling: (TalkSignaling & { host: string }) | null
+  signaling: (TalkSignaling & { host: string; ip: boolean }) | null
 }
 // `signaling` is absent rather than null without one, so a relay-only
 // signature matches what a release before the HPB recorded.
@@ -1212,7 +1307,7 @@ async function reconcileTalk(
   abort: AbortSignal,
   effects: T.Effects,
   desired: Talk | null,
-): Promise<void> {
+): Promise<TalkOutcome | null> {
   const configured = (await storeJson.read().once())?.talkConfigured ?? ''
   const applied: TalkApplied = {
     v: 1,
@@ -1229,7 +1324,8 @@ async function reconcileTalk(
   const desiredSig = JSON.stringify(applied)
   // A never-written signature means nothing was ever applied, so a fresh
   // install with Talk calls left direct short-circuits with zero occ calls.
-  if (desiredSig === (configured || JSON.stringify(EMPTY_TALK))) return
+  if (desiredSig === (configured || JSON.stringify(EMPTY_TALK)))
+    return 'applied'
 
   const previous = parseTalkApplied(configured)
   if (
@@ -1243,7 +1339,7 @@ async function reconcileTalk(
     // choosing a relay and straight back to direct doesn't sit retrying forever
     // on a Nextcloud that never had Talk.
     await storeJson.merge(effects, { talkConfigured: desiredSig })
-    return
+    return 'applied'
   }
 
   const enabled = await readEnabledApps(subc).catch((e) => {
@@ -1254,7 +1350,7 @@ async function reconcileTalk(
     console.warn(
       'talk: the Talk (spreed) app is not enabled in Nextcloud; leaving its STUN, TURN and signaling settings alone until it is',
     )
-    return
+    return 'talk-disabled'
   }
 
   const occ = (args: string[]) =>
@@ -1287,14 +1383,14 @@ async function reconcileTalk(
         console.error(
           'talk: an admin-configured signaling server prevents HPB setup. Remove it in Nextcloud’s Talk administration settings and restart Nextcloud, or select Direct only to manage signaling manually. Leaving Talk unchanged.',
         )
-        return
+        return 'blocked'
       }
     } catch (e) {
       console.error(
         'talk: could not inspect signaling settings; leaving Talk unchanged',
         e,
       )
-      return
+      return 'failed'
     }
     ownedSignaling.add(desired.signaling.server)
     await storeJson.merge(effects, {
@@ -1311,19 +1407,19 @@ async function reconcileTalk(
   // are best effort — an entry the admin already removed is already absent.
   // Signaling deletion must succeed before a replacement is added.
   for (const e of [...previous.turn, ...(desired?.turn ?? [])]) {
-    if (abort.aborted) return
+    if (abort.aborted) return null
     await occ(['talk:turn:delete', e.schemes, e.server, e.protocols])
   }
   for (const s of [...previous.stun, ...(desired?.stun ?? [])]) {
-    if (abort.aborted) return
+    if (abort.aborted) return null
     await occ(['talk:stun:delete', s])
   }
   for (const server of ownedSignaling) {
-    if (abort.aborted) return
+    if (abort.aborted) return null
     const removed = await occ(['talk:signaling:delete', server])
     if (removed.exitCode !== 0) {
       console.error(`talk: could not remove signaling server ${server}`)
-      return
+      return 'failed'
     }
   }
 
@@ -1340,7 +1436,7 @@ async function reconcileTalk(
 
   if (desired) {
     for (const e of desired.turn) {
-      if (abort.aborted) return
+      if (abort.aborted) return null
       await add(
         [
           'talk:turn:add',
@@ -1354,13 +1450,13 @@ async function reconcileTalk(
       )
     }
     for (const s of desired.stun) {
-      if (abort.aborted) return
+      if (abort.aborted) return null
       await add(['talk:stun:add', s], `STUN server ${s}`)
     }
     // Without --verify: Nextcloud reaches its own address over the bridge,
     // where the certificate may chain to this server's root CA.
     if (desired.signaling) {
-      if (abort.aborted) return
+      if (abort.aborted) return null
       await add(
         [
           'talk:signaling:add',
@@ -1372,7 +1468,7 @@ async function reconcileTalk(
     }
   }
 
-  if (abort.aborted) return
+  if (abort.aborted) return null
   // Record only on full success, so a failure retries on the next chain build.
   if (allOk) {
     console.info(
@@ -1381,7 +1477,9 @@ async function reconcileTalk(
         : "talk: removed this package's Talk STUN, TURN and signaling entries",
     )
     await storeJson.merge(effects, { talkConfigured: desiredSig })
+    return 'applied'
   }
+  return 'failed'
 }
 
 /** Completed settings and signaling URLs reserved by an unfinished reconcile. */

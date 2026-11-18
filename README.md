@@ -173,7 +173,7 @@ The five general settings — default locale, default phone region, how long del
 
 **Coturn is advertised only once it has a public domain.** With Relay through Coturn chosen but Coturn lacking one, no relay is configured and nothing reports that as an error — Talk falls back to direct connections, which is what it would do anyway.
 
-**High-performance backend points Talk at three things:** the HPB's TURN relay, as `turn:` and `turns:` entries on its public domain or, without one, a `turn:` entry on each of the server's private IPv4 addresses; a STUN entry on the plain listener; and the signaling server at `https://<host>/standalone-signaling/`, where `<host>` is the Web UI's first public domain, or its `.local` name without one. Apache proxies that path to the HPB's bridge-only signaling port (`startos-talk.conf`, written before the web daemon starts). Talk hands the URL to every browser and also calls it itself, so the host is mapped to the StartOS bridge in the container's `/etc/hosts` and the signaling entry is added without `--verify`: the call never leaves the server. Nothing is applied until the HPB is installed and has published its secrets.
+**High-performance backend points Talk at three things:** the HPB's TURN relay, as `turn:` and `turns:` entries on its public domain or, without one, a `turn:` entry on each of the server's private IPv4 addresses; a STUN entry on the plain listener; and the signaling server at `https://<host>/standalone-signaling/`, where `<host>` is the first of the Web UI's HTTPS addresses in this order: a public domain, a private domain, its `.local` name, a LAN IPv4. Apache proxies that path to the HPB's bridge-only signaling port (`startos-talk.conf`, written before the web daemon starts). Talk hands the URL to every browser and also calls it itself, so a host name is mapped to the StartOS bridge in the container's `/etc/hosts` and the signaling entry is added without `--verify`: the call never leaves the server. Nothing is applied until the HPB is installed and has published its secrets.
 
 Either mode does nothing until the Talk app itself is installed from the Nextcloud app store **and enabled** — `occ` exposes an app's command namespace only while it is enabled, and a major Nextcloud upgrade disables any app without a compatible release. Until then the oneshot logs that it is waiting and applies the setting on a later start.
 
@@ -282,6 +282,15 @@ The transient checks — Post-Update Maintenance, Recognize Model Download, Memo
 
 Both clear on the next poll once the condition is resolved. It is a check rather than a task because a task can be dismissed while the breakage remains.
 
+**Talk Calls** (`talk-calls`) — present only while Talk Calls is Coturn or High-performance backend. It reports, in order:
+
+- **What the chosen mode is missing**, as a failure, before anything is applied: the service is not installed or has not published its secret; Coturn has no public domain; the HPB's relay has no address; Nextcloud has no HTTPS address for the signaling URL.
+- **Why the `talk` oneshot stopped**, as a failure: the Talk app is not enabled, a hand-added signaling server blocks HPB setup, or an `occ` call failed. The last clears only on a restart, since that is when the oneshot retries.
+- **Waiting**, as `loading`, while the oneshot has not run yet: _Waiting for maintenance to finish_ while a queued task is pending, otherwise _Applying Talk settings…_.
+- **Success** once the settings are applied, or already were.
+
+The outcome is held for the life of the daemon chain, so a Talk app disabled after the settings were applied is not noticed until the next start.
+
 ## Backups and Restore
 
 Mixed, and each half is scoped deliberately.
@@ -374,6 +383,7 @@ health_checks:
   - nextcloud # displayed "Web Interface"
   - cron # hidden
   - office-connectors # only while an office suite is selected
+  - talk-calls # only while Talk Calls is Coturn or High-performance backend
   - post-update # only while that task is pending; queued on every update
   - recognize-models # only while that task is pending
   - memories-indexing # only while that task is pending

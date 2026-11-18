@@ -58,6 +58,8 @@ Nextcloud Talk places calls directly between participants. That fails when both 
 
 Either way, **install the Talk app** in Nextcloud first, from **Apps** in the Nextcloud web UI. It also has to stay enabled — a Nextcloud major upgrade disables any app that has no compatible release yet, and the setting is not applied again until you update Talk and re-enable it. Until everything is in place, calls still work wherever a direct connection is possible, and nothing reports the missing relay as an error.
 
+The **Talk Calls** health check on this service's page says what is still missing or in the way, and turns green once Talk is set up.
+
 Nextcloud is what tells Talk where the relay and the backend are, so there is nothing to enter in Talk's own admin settings — and nothing you have already entered there gets overwritten. If you already configured a signaling server there, HPB setup leaves Talk unchanged and reports the conflict in the service logs. Remove the existing signaling entry under **Administration settings → Talk** and restart Nextcloud to use the packaged backend, or leave **Talk Calls** on **Direct only** to manage signaling yourself.
 
 Talk's default STUN server, `stun.nextcloud.com:443`, is also left in place; remove it under **Administration settings → Talk** if you would rather every part of call setup stayed on your own server.

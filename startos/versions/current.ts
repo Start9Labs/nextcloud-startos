@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.3:2',
+  version: '35.0.3:3',
   releaseNotes: {
     en_US:
-      'Changes to Talk Calls, Office Suite or External Storage made while Post-Update Maintenance or Repair is running now apply once it finishes.',
+      'A new Talk Calls health check says what is missing or in the way when Talk calls are set to use Coturn or Nextcloud Talk HPB.',
     es_ES:
-      'Los cambios en Llamadas de Talk, Suite ofimática o Almacenamiento externo realizados mientras se ejecuta Mantenimiento posterior a la actualización o Reparar ahora se aplican cuando termina.',
+      'Una nueva comprobación de estado, Llamadas de Talk, indica qué falta o qué lo impide cuando las llamadas de Talk están configuradas para usar Coturn o Nextcloud Talk HPB.',
     de_DE:
-      'Änderungen an Talk-Anrufe, Office-Suite oder Externer Speicher, die während Wartung nach dem Update oder Reparieren vorgenommen werden, werden jetzt angewendet, sobald dies abgeschlossen ist.',
+      'Eine neue Zustandsprüfung, Talk-Anrufe, zeigt, was fehlt oder im Weg steht, wenn Talk-Anrufe Coturn oder Nextcloud Talk HPB verwenden sollen.',
     pl_PL:
-      'Zmiany w ustawieniach Połączenia Talk, Pakiet biurowy lub Magazyn zewnętrzny wprowadzone podczas Konserwacji po aktualizacji lub Naprawy są teraz stosowane po jej zakończeniu.',
+      'Nowa kontrola stanu Połączenia Talk pokazuje, czego brakuje lub co przeszkadza, gdy połączenia Talk mają korzystać z Coturn lub Nextcloud Talk HPB.',
     fr_FR:
-      "Les modifications d'Appels Talk, de Suite bureautique ou de Stockage externe effectuées pendant Maintenance post-mise à jour ou Réparer s'appliquent désormais une fois celle-ci terminée.",
+      "Une nouvelle vérification d'état, Appels Talk, indique ce qui manque ou fait obstacle lorsque les appels Talk doivent utiliser Coturn ou Nextcloud Talk HPB.",
   },
   migrations: {
     up: async () => {},
