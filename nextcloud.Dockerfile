@@ -5,6 +5,17 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
+# Exchange Connector (EWS calendar sync with on-premises Exchange) requires
+# ext-soap, which the upstream image doesn't build. libxml2-dev is needed only
+# to compile it; the runtime libxml2 is already in the PHP base.
+# See https://github.com/Start9Labs/nextcloud-startos/issues/188
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libxml2-dev \
+ && docker-php-ext-install soap \
+ && apt-get purge -y libxml2-dev \
+ && rm -rf /var/lib/apt/lists/* \
+ && php -m | grep -qx soap
+
 # PHP's JIT segfaults every worker on aarch64 once an app update replaces
 # compiled files. See https://github.com/nextcloud/docker/issues/2576
 RUN printf 'opcache.jit=0\nopcache.jit_buffer_size=0\n' \
