@@ -19,19 +19,19 @@ Current pin: the `NEXTCLOUD_VERSION` `ARG` default in `nextcloud.Dockerfile`.
 
 ```bash
 curl -fsSL "https://hub.docker.com/v2/repositories/library/postgres/tags?page_size=30&ordering=last_updated" \
-  | jq -r '.results[].name' | grep -E '^17.*alpine' | head
+  | jq -r '.results[].name' | grep -E '^17\.[0-9]+-alpine$' | head
 ```
 
-Current pin: `postgres:17-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`).
+Current pin: `postgres:17.12-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`).
 
 **Valkey** ([valkey/valkey](https://hub.docker.com/r/valkey/valkey) on Docker Hub):
 
 ```bash
 curl -fsSL "https://hub.docker.com/v2/repositories/valkey/valkey/tags?page_size=30&ordering=last_updated" \
-  | jq -r '.results[].name' | grep -E '^9.*alpine' | head
+  | jq -r '.results[].name' | grep -E '^9\.[0-9]+\.[0-9]+-alpine$' | head
 ```
 
-Current pin: `valkey/valkey:9-alpine` in `startos/manifest/index.ts` (`images.valkey.source.dockerTag`).
+Current pin: `valkey/valkey:9.2.0-alpine` in `startos/manifest/index.ts` (`images.valkey.source.dockerTag`).
 
 ## Applying the bump
 
@@ -45,6 +45,6 @@ A **major** bump (e.g. `33.0.8` → `34.0.3`) needs five more checks:
 - Diff `config/config.sample.php` between the two tags against the keys `startos/fileModels/config.php.ts` models, and against the defaults the README and `instructions.md` quote.
 - Re-check the new major's system requirements page for the supported PostgreSQL and PHP versions.
 
-**Postgres** — change the `dockerTag` value in `images.postgres.source` in `startos/manifest/index.ts`. The pin tracks the `17` major; bumping across major versions (e.g. `17` → `18`) requires a data migration in `startos/versions/`.
+**Postgres** — change the `dockerTag` value in `images.postgres.source` in `startos/manifest/index.ts`. Pin the newest `17.<minor>-alpine` tag; bumping across major versions (e.g. `17` → `18`) requires a data migration in `startos/versions/`.
 
-**Valkey** — change the `dockerTag` value in `images.valkey.source` in `startos/manifest/index.ts`. The pin tracks the `9` major.
+**Valkey** — change the `dockerTag` value in `images.valkey.source` in `startos/manifest/index.ts`. Pin the newest `9.<minor>.<patch>-alpine` tag.

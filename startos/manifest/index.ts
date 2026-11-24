@@ -14,7 +14,7 @@ export const manifest = setupManifest({
   images: {
     postgres: {
       source: {
-        dockerTag: 'postgres:17-alpine',
+        dockerTag: 'postgres:17.12-alpine',
       },
       arch: ['x86_64', 'aarch64'],
     },
@@ -28,7 +28,7 @@ export const manifest = setupManifest({
     },
     valkey: {
       source: {
-        dockerTag: 'valkey/valkey:9-alpine',
+        dockerTag: 'valkey/valkey:9.2.0-alpine',
       },
       arch: ['x86_64', 'aarch64'],
     },
