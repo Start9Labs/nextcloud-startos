@@ -22,7 +22,7 @@ curl -fsSL "https://hub.docker.com/v2/repositories/library/postgres/tags?page_si
   | jq -r '.results[].name' | grep -E '^17\.[0-9]+-alpine$' | head
 ```
 
-Current pin: `postgres:17.12-alpine` in `startos/manifest/index.ts` (`images.postgres.source.dockerTag`).
+Current pin: `images.postgres.source.dockerTag` in `startos/manifest/index.ts`.
 
 **Valkey** ([valkey/valkey](https://hub.docker.com/r/valkey/valkey) on Docker Hub):
 
@@ -31,7 +31,7 @@ curl -fsSL "https://hub.docker.com/v2/repositories/valkey/valkey/tags?page_size=
   | jq -r '.results[].name' | grep -E '^9\.[0-9]+\.[0-9]+-alpine$' | head
 ```
 
-Current pin: `valkey/valkey:9.2.0-alpine` in `startos/manifest/index.ts` (`images.valkey.source.dockerTag`).
+Current pin: `images.valkey.source.dockerTag` in `startos/manifest/index.ts`.
 
 ## Applying the bump
 
