@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '35.0.3:4',
+  version: '35.0.3:5',
   releaseNotes: {
     en_US:
-      'Adds the PHP soap extension, so the Exchange Connector app can be enabled.',
+      'The bundled PostgreSQL database and Valkey cache accept connections from Nextcloud alone.',
     es_ES:
-      'Añade la extensión soap de PHP, para que se pueda activar la aplicación Exchange Connector.',
+      'La base de datos PostgreSQL y la caché Valkey incluidas solo aceptan conexiones de Nextcloud.',
     de_DE:
-      'Fügt die PHP-Erweiterung soap hinzu, sodass sich die App Exchange Connector aktivieren lässt.',
+      'Die mitgelieferte PostgreSQL-Datenbank und der Valkey-Cache nehmen nur Verbindungen von Nextcloud an.',
     pl_PL:
-      'Dodaje rozszerzenie PHP soap, dzięki czemu można włączyć aplikację Exchange Connector.',
+      'Dołączona baza danych PostgreSQL i pamięć podręczna Valkey przyjmują połączenia wyłącznie od Nextcloud.',
     fr_FR:
-      "Ajoute l'extension PHP soap, afin que l'application Exchange Connector puisse être activée.",
+      "La base de données PostgreSQL et le cache Valkey intégrés n'acceptent les connexions que de Nextcloud.",
   },
   migrations: {
     up: async () => {},

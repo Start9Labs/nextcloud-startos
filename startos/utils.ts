@@ -298,7 +298,7 @@ export function getBaseDaemons(
     .addDaemon('postgres', {
       subcontainer: postgresSub,
       exec: {
-        command: sdk.useEntrypoint(),
+        command: sdk.useEntrypoint(['-c', 'listen_addresses=127.0.0.1']),
         env: postgresEnv,
       },
       ready: {
@@ -328,7 +328,16 @@ export function getBaseDaemons(
     })
     .addDaemon('valkey', {
       subcontainer: valkeySub,
-      exec: { command: 'valkey-server' },
+      exec: {
+        command: [
+          'valkey-server',
+          '--bind',
+          '127.0.0.1',
+          '-::1',
+          '--protected-mode',
+          'yes',
+        ],
+      },
       ready: {
         display: null,
         fn: async () => {
